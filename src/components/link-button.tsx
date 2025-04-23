@@ -1,5 +1,6 @@
 import { Link } from "lucide-react";
 import { useEffect, useState } from "react";
+import useSpreadsheetStore from "../lib/store";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -95,12 +96,18 @@ interface LinkButtonProps {
 
 export function LinkButton({ link, disabled, onSave }: LinkButtonProps) {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const { appMode } = useSpreadsheetStore();
+  const isPreviewMode = appMode === "preview";
+
   return (
     <>
       <Toggle
         aria-label="Toggle link"
         pressed={link !== null}
-        onPressedChange={() => setIsLinkDialogOpen(true)}
+        onPressedChange={() => {
+          if (isPreviewMode) return;
+          setIsLinkDialogOpen(true);
+        }}
         disabled={disabled}
       >
         <Link className="h-4 w-4" />

@@ -23,6 +23,8 @@ type ColumnHeadersProps = {
 };
 
 const ColumnHeaders: FC<ColumnHeadersProps> = ({ onContextMenu }) => {
+  const { appMode } = useSpreadsheetStore();
+  const isPreviewMode = appMode === "preview";
   const { columnWidths, data, activeCell, startResize } = useSpreadsheetStore();
   const columnsLength = data[0].length;
 
@@ -38,10 +40,12 @@ const ColumnHeaders: FC<ColumnHeadersProps> = ({ onContextMenu }) => {
     >
       <div className="flex items-center justify-center px-2 py-1">
         <span>{getColumnLabel(idx)}</span>
-        <div
-          className="absolute top-0 right-0 h-full w-1 cursor-col-resize"
-          onMouseDown={(e) => startResize(idx, e.clientX)}
-        ></div>
+        {!isPreviewMode && (
+          <div
+            className="absolute top-0 right-0 h-full w-1 cursor-col-resize"
+            onMouseDown={(e) => startResize(idx, e.clientX)}
+          ></div>
+        )}
       </div>
     </th>
   ));
@@ -54,6 +58,8 @@ type RowHeaderProps = {
 
 const RowHeader: FC<RowHeaderProps> = ({ rowIndex, onContextMenu }) => {
   const { rowHeights, activeCell, startRowResize } = useSpreadsheetStore();
+  const { appMode } = useSpreadsheetStore();
+  const isPreviewMode = appMode === "preview";
 
   return (
     <td
@@ -72,10 +78,12 @@ const RowHeader: FC<RowHeaderProps> = ({ rowIndex, onContextMenu }) => {
       </div>
 
       {/* Row resize handle */}
-      <div
-        className="absolute right-0 bottom-0 left-0 h-1 cursor-row-resize"
-        onMouseDown={(e) => startRowResize(rowIndex, e.clientY)}
-      />
+      {!isPreviewMode && (
+        <div
+          className="absolute right-0 bottom-0 left-0 h-1 cursor-row-resize"
+          onMouseDown={(e) => startRowResize(rowIndex, e.clientY)}
+        />
+      )}
     </td>
   );
 };

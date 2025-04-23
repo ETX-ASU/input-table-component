@@ -24,6 +24,7 @@ export function SpreadsheetGrid() {
     rowHeights,
     isResizing,
     isResizingRow,
+    appMode,
     setActiveCell,
     updateCellContent,
     updateResize,
@@ -41,6 +42,8 @@ export function SpreadsheetGrid() {
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
+  const isPreviewMode = appMode === "preview";
+
   const handleCellClick = (row: number, col: number) => {
     setActiveCell(row, col);
   };
@@ -50,13 +53,13 @@ export function SpreadsheetGrid() {
   };
 
   const handleSelectChange = (value: string, row: number, col: number) => {
-    // First set the active cell to ensure the correct cell gets updated
     setActiveCell(row, col);
-    // Then update the content
     updateCellContent(value);
   };
 
   const handleRowContextMenu = (e: React.MouseEvent, rowIndex: number) => {
+    if (isPreviewMode) return;
+
     e.preventDefault();
     setContextMenu({
       type: "row",
@@ -67,6 +70,8 @@ export function SpreadsheetGrid() {
   };
 
   const handleColumnContextMenu = (e: React.MouseEvent, colIndex: number) => {
+    if (isPreviewMode) return;
+
     e.preventDefault();
     setContextMenu({
       type: "column",
@@ -384,7 +389,7 @@ export function SpreadsheetGrid() {
       </div>
 
       {/* Context Menu - Positioned outside the spreadsheet container */}
-      {contextMenu && (
+      {contextMenu && !isPreviewMode && (
         <ContextMenu
           x={contextMenu.x}
           y={contextMenu.y}

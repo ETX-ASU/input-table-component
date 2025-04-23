@@ -10,8 +10,8 @@ import { buildDefaultCell } from "./utils";
 export type TextAlign = "left" | "center" | "right";
 export type CellContentType = "text" | "number" | "select";
 export type CellCoordinates = { row: number; col: number };
+export type AppMode = "config" | "preview";
 
-// Define cell data structure
 export interface CellData {
   content: string;
   isBold: boolean;
@@ -28,7 +28,6 @@ export interface CellData {
   link: string | null;
 }
 
-// Define history entry
 interface HistoryEntry {
   data: CellData[][];
   activeCell: CellCoordinates | null;
@@ -36,7 +35,6 @@ interface HistoryEntry {
   rowHeights: number[];
 }
 
-// Define the store state
 interface SpreadsheetState {
   data: CellData[][];
   activeCell: CellCoordinates | null;
@@ -49,13 +47,14 @@ interface SpreadsheetState {
   startWidth: number;
   startHeight: number;
 
-  // History state
+  appMode: AppMode;
+  toggleAppMode: () => void;
+
   undoStack: HistoryEntry[];
   redoStack: HistoryEntry[];
   isUndoRedo: boolean;
   lastHistoryId: number;
 
-  // Actions
   setActiveCell: (row: number, col: number) => void;
   updateCellContent: (content: string) => void;
   toggleFormat: (format: "isBold" | "isItalic" | "isStrikethrough") => void;
@@ -76,17 +75,14 @@ interface SpreadsheetState {
   deleteRow: (rowIndex: number) => void;
   deleteColumn: (colIndex: number) => void;
 
-  // Column resize actions
   startResize: (index: number, clientX: number) => void;
   updateResize: (clientX: number) => void;
   endResize: () => void;
 
-  // Row resize actions
   startRowResize: (index: number, clientY: number) => void;
   updateRowResize: (clientY: number) => void;
   endRowResize: () => void;
 
-  // History actions
   pushToHistory: () => void;
   undo: () => void;
   redo: () => void;
@@ -96,14 +92,12 @@ interface SpreadsheetState {
   getData: (cell: CellCoordinates) => CellData;
 }
 
-// Create initial data
 const createInitialData = (rows: number, cols: number): CellData[][] => {
   return Array(rows)
     .fill(0)
     .map(() => Array(cols).fill(0).map(buildDefaultCell));
 };
 
-// Create the store
 const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
   const initialData = createInitialData(5, 5);
 
@@ -119,7 +113,12 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     startWidth: 0,
     startHeight: 0,
 
-    // History state
+    appMode: "config",
+    toggleAppMode: () =>
+      set((state) => ({
+        appMode: state.appMode === "config" ? "preview" : "config",
+      })),
+
     undoStack: [],
     redoStack: [],
     isUndoRedo: false,
@@ -130,20 +129,17 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       return get().data[row][col];
     },
 
-    // Push current state to history
     pushToHistory: () => {
       set((state) => {
-        // Don't push to history if we're in the middle of an undo/redo operation
         if (state.isUndoRedo) return state;
 
         const currentState: HistoryEntry = {
           data: cloneDeep(state.data),
           activeCell: state.activeCell ? { ...state.activeCell } : null,
           columnWidths: [...state.columnWidths],
-          rowHeights: [...state.rowHeights], // Include row heights in history
+          rowHeights: [...state.rowHeights],
         };
 
-        // Add to undo stack and clear redo stack
         const newUndoStack = [currentState, ...state.undoStack].slice(
           0,
           MAX_HISTORY_LENGTH,
@@ -157,7 +153,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       });
     },
 
-    // Undo the last action
+    // Undo the ast action
     undo: () => {
       const canUndo = get().canUndo();
       if (!canUndo) return;
@@ -168,7 +164,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
           data: cloneDeep(state.data),
           activeCell: state.activeCell ? { ...state.activeCell } : null,
           columnWidths: [...state.columnWidths],
-          rowHeights: [...state.rowHeights], // Include row heights
+          rowHeights: [...state.rowHeights],
         };
 
         // Get the state to restore from the undo stack
@@ -181,7 +177,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
             ? { ...stateToRestore.activeCell }
             : null,
           columnWidths: [...stateToRestore.columnWidths],
-          rowHeights: [...stateToRestore.rowHeights], // Restore row heights
+          rowHeights: [...stateToRestore.rowHeights],
 
           // Update the stacks
           undoStack: newUndoStack,
@@ -195,7 +191,6 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       setTimeout(() => set({ isUndoRedo: false }), 0);
     },
 
-    // Redo the last undone action
     redo: () => {
       const canRedo = get().canRedo();
       if (!canRedo) return;
@@ -206,7 +201,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
           data: cloneDeep(state.data),
           activeCell: state.activeCell ? { ...state.activeCell } : null,
           columnWidths: [...state.columnWidths],
-          rowHeights: [...state.rowHeights], // Include row heights
+          rowHeights: [...state.rowHeights],
         };
 
         // Get the state to restore from the redo stack
@@ -219,7 +214,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
             ? { ...stateToRestore.activeCell }
             : null,
           columnWidths: [...stateToRestore.columnWidths],
-          rowHeights: [...stateToRestore.rowHeights], // Restore row heights
+          rowHeights: [...stateToRestore.rowHeights],
 
           // Update the stacks
           redoStack: newRedoStack,
@@ -233,20 +228,16 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       setTimeout(() => set({ isUndoRedo: false }), 0);
     },
 
-    // Check if undo is available
     canUndo: () => {
       return get().undoStack.length > 0;
     },
 
-    // Check if redo is available
     canRedo: () => {
       return get().redoStack.length > 0;
     },
 
-    // Set active cell
     setActiveCell: (row, col) => set({ activeCell: { row, col } }),
 
-    // Update cell content
     updateCellContent: (content) =>
       set((state) => {
         if (!state.activeCell) return state;
@@ -257,7 +248,6 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         // Validate content based on content type
         let validatedContent = content;
         if (cell.contentType === "number") {
-          // Allow empty string or valid number
           if (content === "" || !isNaN(Number(content))) {
             validatedContent = content;
           } else {
@@ -280,10 +270,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Toggle formatting
     toggleFormat: (format) =>
       set((state) => {
-        if (!state.activeCell) return state;
+        if (!state.activeCell || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         const currentCell = newData[state.activeCell.row][state.activeCell.col];
@@ -298,10 +287,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Set text alignment
     setAlignment: (alignment) =>
       set((state) => {
-        if (!state.activeCell) return state;
+        if (!state.activeCell || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         newData[state.activeCell.row][state.activeCell.col] = {
@@ -315,10 +303,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Set text color
     setTextColor: (color) =>
       set((state) => {
-        if (!state.activeCell) return state;
+        if (!state.activeCell || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         newData[state.activeCell.row][state.activeCell.col] = {
@@ -332,10 +319,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Set border width
     setBorderWidth: (width) =>
       set((state) => {
-        if (!state.activeCell) return state;
+        if (!state.activeCell || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         newData[state.activeCell.row][state.activeCell.col] = {
@@ -349,10 +335,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Set border color
     setBorderColor: (color) =>
       set((state) => {
-        if (!state.activeCell) return state;
+        if (!state.activeCell || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         newData[state.activeCell.row][state.activeCell.col] = {
@@ -366,10 +351,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Set background color
     setBackgroundColor: (color) =>
       set((state) => {
-        if (!state.activeCell) return state;
+        if (!state.activeCell || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         newData[state.activeCell.row][state.activeCell.col] = {
@@ -383,10 +367,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Set font family
     setFontFamily: (fontFamily) =>
       set((state) => {
-        if (!state.activeCell) return state;
+        if (!state.activeCell || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         newData[state.activeCell.row][state.activeCell.col] = {
@@ -400,10 +383,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Set content type
     setContentType: (contentType) =>
       set((state) => {
-        if (!state.activeCell) return state;
+        if (!state.activeCell || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         const cell = newData[state.activeCell.row][state.activeCell.col];
@@ -427,10 +409,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Set select options
     setSelectOptions: (options) =>
       set((state) => {
-        if (!state.activeCell) return state;
+        if (!state.activeCell || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         const cell = newData[state.activeCell.row][state.activeCell.col];
@@ -455,7 +436,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     setLink: (url) =>
       set((state) => {
-        if (!state.activeCell) return state;
+        if (!state.activeCell || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         newData[state.activeCell.row][state.activeCell.col] = {
@@ -469,9 +450,10 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Add a new row
     addRow: () =>
       set((state) => {
+        if (state.appMode === "preview") return state;
+
         const newRow = Array(state.data[0].length)
           .fill(0)
           .map(buildDefaultCell);
@@ -485,16 +467,15 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Remove the last row
     removeRow: () =>
       set((state) => {
-        if (state.data.length <= 1) return state;
+        if (state.data.length <= 1 || state.appMode === "preview") return state;
 
         const newData = [...state.data];
         newData.pop();
 
         const newRowHeights = [...state.rowHeights];
-        newRowHeights.pop(); // Remove the height of the removed row
+        newRowHeights.pop();
 
         // Reset active cell if it's in the removed row
         let activeCell = state.activeCell;
@@ -508,11 +489,10 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Delete a specific row
     deleteRow: (rowIndex) =>
       set((state) => {
         // Don't delete if it's the last row
-        if (state.data.length <= 1) return state;
+        if (state.data.length <= 1 || state.appMode === "preview") return state;
 
         // Create new data array without the specified row
         const newData = [...state.data];
@@ -539,9 +519,10 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Add a new column
     addColumn: () =>
       set((state) => {
+        if (state.appMode === "preview") return state;
+
         const newData = state.data.map((row) => [...row, buildDefaultCell()]);
 
         const newColumnWidths = [...state.columnWidths, DEFAULT_COLUMN_WIDTH];
@@ -552,10 +533,10 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Remove the last column
     removeColumn: () =>
       set((state) => {
-        if (state.data[0].length <= 1) return state;
+        if (state.data[0].length <= 1 || state.appMode === "preview")
+          return state;
 
         const newData = state.data.map((row) => {
           const newRow = [...row];
@@ -582,11 +563,11 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Delete a specific column
     deleteColumn: (colIndex) =>
       set((state) => {
         // Don't delete if it's the last column
-        if (state.data[0].length <= 1) return state;
+        if (state.data[0].length <= 1 || state.appMode === "preview")
+          return state;
 
         // Create new data array without the specified column
         const newData = state.data.map((row) => {
@@ -620,18 +601,21 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    // Start column resize
-    startResize: (index, clientX) =>
-      set({
-        isResizing: index,
-        startX: clientX,
-        startWidth: get().columnWidths[index],
-      }),
+    startResize: (index, clientX) => {
+      set((state) => {
+        if (state.appMode === "preview") return state;
+        return {
+          isResizing: index,
+          startX: clientX,
+          startWidth: get().columnWidths[index],
+        };
+      });
+    },
 
-    // Update during column resize
     updateResize: (clientX) =>
       set((state) => {
-        if (state.isResizing === null) return state;
+        if (state.isResizing === null || state.appMode === "preview")
+          return state;
 
         const diff = clientX - state.startX;
         const newWidth = Math.max(50, state.startWidth + diff); // Minimum width of 50px
@@ -642,26 +626,28 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return { columnWidths: newColumnWidths };
       }),
 
-    // End column resize
     endResize: () => {
-      // Push to history after resize is complete
+      if (get().appMode === "preview") return set({});
+
       const result = { isResizing: null };
       get().pushToHistory();
       return set(result);
     },
 
-    // Start row resize
     startRowResize: (index, clientY) =>
-      set({
-        isResizingRow: index,
-        startY: clientY,
-        startHeight: get().rowHeights[index],
+      set((state) => {
+        if (state.appMode === "preview") return state;
+        return {
+          isResizingRow: index,
+          startY: clientY,
+          startHeight: get().rowHeights[index],
+        };
       }),
 
-    // Update during row resize
     updateRowResize: (clientY) =>
       set((state) => {
-        if (state.isResizingRow === null) return state;
+        if (state.isResizingRow === null || state.appMode === "preview")
+          return state;
 
         const diff = clientY - state.startY;
         const newHeight = Math.max(20, state.startHeight + diff); // Minimum height of 20px
@@ -672,9 +658,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return { rowHeights: newRowHeights };
       }),
 
-    // End row resize
     endRowResize: () => {
-      // Push to history after resize is complete
+      if (get().appMode === "preview") return set({});
+
       const result = { isResizingRow: null };
       get().pushToHistory();
       return set(result);
@@ -682,5 +668,4 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
   };
 });
 
-// Export the store
 export default useSpreadsheetStore;
