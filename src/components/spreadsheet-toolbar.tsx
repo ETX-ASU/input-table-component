@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import {
   AlignCenter,
   AlignLeft,
@@ -21,6 +22,7 @@ import { CellTypeSelector } from "./cell-type-selector";
 import { ColorPicker } from "./color-picker";
 import { FontSelector } from "./font-selector";
 import { LinkButton } from "./link-button";
+import { ModeToggle } from "./mode-toggle";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Toggle } from "./ui/toggle";
@@ -28,6 +30,7 @@ import { UndoRedo } from "./undo-redo";
 
 export function SpreadsheetToolbar() {
   const {
+    appMode,
     activeCell,
     toggleFormat,
     setAlignment,
@@ -47,145 +50,194 @@ export function SpreadsheetToolbar() {
   // Get formatting state for the active cell
   const cell = activeCell ? getData(activeCell) : buildDefaultCell();
 
+  const isPreviewMode = appMode === "preview";
+
   return (
-    <div className="relative z-40 mb-4 flex flex-wrap items-center gap-2">
-      <UndoRedo />
-
-      <Separator orientation="vertical" className="h-8" />
-
-      <CellTypeSelector
-        value={cell.contentType}
-        onChange={setContentType}
-        selectOptions={cell.selectOptions}
-        onSelectOptionsChange={setSelectOptions}
-        disabled={!activeCell}
-      />
-
-      <Separator orientation="vertical" className="h-8" />
-
-      <FontSelector
-        value={cell.fontFamily}
-        onChange={setFontFamily}
-        disabled={!activeCell}
-      />
-
-      <Separator orientation="vertical" className="h-8" />
-
-      <div className="flex items-center gap-1 rounded-md border p-1">
-        <Toggle
-          aria-label="Toggle bold"
-          pressed={cell.isBold}
-          onPressedChange={() => toggleFormat("isBold")}
-          disabled={!activeCell}
-        >
-          <Bold className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          aria-label="Toggle italic"
-          pressed={cell.isItalic}
-          onPressedChange={() => toggleFormat("isItalic")}
-          disabled={!activeCell}
-        >
-          <Italic className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          aria-label="Toggle strikethrough"
-          pressed={cell.isStrikethrough}
-          onPressedChange={() => toggleFormat("isStrikethrough")}
-          disabled={!activeCell}
-        >
-          <Type className="h-4 w-4" />
-        </Toggle>
-
-        <LinkButton link={cell.link} disabled={!activeCell} onSave={setLink} />
-
-        <ColorPicker
-          value={cell.textColor}
-          onChange={setTextColor}
-          disabled={!activeCell}
-          defaultColor={DEFAULT_FONT_COLOR}
-          label="Text Color"
-        />
+    <>
+      <div className="mr-2">
+        <ModeToggle />
       </div>
+      <div
+        className={clsx(
+          "relative z-40 mb-4 flex flex-wrap items-center gap-2",
+          isPreviewMode && "hidden",
+        )}
+      >
+        <Separator orientation="vertical" className="h-8" />
 
-      <Separator orientation="vertical" className="h-8" />
+        <div className={clsx(isPreviewMode && "pointer-events-none")}>
+          <UndoRedo />
+        </div>
 
-      <div className="flex items-center gap-1 rounded-md border p-1">
-        <Toggle
-          aria-label="Align left"
-          pressed={cell.textAlign === "left"}
-          onPressedChange={() => setAlignment("left")}
-          disabled={!activeCell}
-        >
-          <AlignLeft className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          aria-label="Align center"
-          pressed={cell.textAlign === "center"}
-          onPressedChange={() => setAlignment("center")}
-          disabled={!activeCell}
-        >
-          <AlignCenter className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          aria-label="Align right"
-          pressed={cell.textAlign === "right"}
-          onPressedChange={() => setAlignment("right")}
-          disabled={!activeCell}
-        >
-          <AlignRight className="h-4 w-4" />
-        </Toggle>
-      </div>
+        <Separator orientation="vertical" className="h-8" />
 
-      <Separator orientation="vertical" className="h-8" />
-
-      <div className="flex items-center gap-1 rounded-md border p-1">
-        <BorderWidthSelector
-          value={cell.borderWidth}
-          onChange={setBorderWidth}
-          disabled={!activeCell}
-        />
-        <div className="relative">
-          <ColorPicker
-            value={cell.borderColor}
-            onChange={setBorderColor}
-            disabled={!activeCell}
-            defaultColor={DEFAULT_BORDER_COLOR}
-            label="Border Color"
+        <div className={clsx(isPreviewMode && "pointer-events-none")}>
+          <CellTypeSelector
+            value={cell.contentType}
+            onChange={setContentType}
+            selectOptions={cell.selectOptions}
+            onSelectOptionsChange={setSelectOptions}
+            disabled={!activeCell || isPreviewMode}
           />
-          <div className="absolute -top-1 -right-1">
-            <Square className="h-3 w-3 text-gray-500" />
+        </div>
+
+        <Separator orientation="vertical" className="h-8" />
+
+        <div className={clsx(isPreviewMode && "pointer-events-none")}>
+          <FontSelector
+            value={cell.fontFamily}
+            onChange={setFontFamily}
+            disabled={!activeCell || isPreviewMode}
+          />
+        </div>
+
+        <Separator orientation="vertical" className="h-8" />
+
+        <div
+          className={clsx(
+            "flex items-center gap-1 rounded-md border p-1",
+            isPreviewMode && "pointer-events-none",
+          )}
+        >
+          <Toggle
+            aria-label="Toggle bold"
+            pressed={cell.isBold}
+            onPressedChange={() => toggleFormat("isBold")}
+            disabled={!activeCell || isPreviewMode}
+          >
+            <Bold className="h-4 w-4" />
+          </Toggle>
+          <Toggle
+            aria-label="Toggle italic"
+            pressed={cell.isItalic}
+            onPressedChange={() => toggleFormat("isItalic")}
+            disabled={!activeCell || isPreviewMode}
+          >
+            <Italic className="h-4 w-4" />
+          </Toggle>
+          <Toggle
+            aria-label="Toggle strikethrough"
+            pressed={cell.isStrikethrough}
+            onPressedChange={() => toggleFormat("isStrikethrough")}
+            disabled={!activeCell || isPreviewMode}
+          >
+            <Type className="h-4 w-4" />
+          </Toggle>
+
+          <LinkButton
+            link={cell.link}
+            disabled={!activeCell || isPreviewMode}
+            onSave={setLink}
+          />
+
+          <ColorPicker
+            value={cell.textColor}
+            onChange={setTextColor}
+            disabled={!activeCell || isPreviewMode}
+            defaultColor={DEFAULT_FONT_COLOR}
+            label="Text Color"
+          />
+        </div>
+
+        <Separator orientation="vertical" className="h-8" />
+
+        <div
+          className={clsx(
+            "flex items-center gap-1 rounded-md border p-1",
+            isPreviewMode && "pointer-events-none",
+          )}
+        >
+          <Toggle
+            aria-label="Align left"
+            pressed={cell.textAlign === "left"}
+            onPressedChange={() => setAlignment("left")}
+            disabled={!activeCell || isPreviewMode}
+          >
+            <AlignLeft className="h-4 w-4" />
+          </Toggle>
+          <Toggle
+            aria-label="Align center"
+            pressed={cell.textAlign === "center"}
+            onPressedChange={() => setAlignment("center")}
+            disabled={!activeCell || isPreviewMode}
+          >
+            <AlignCenter className="h-4 w-4" />
+          </Toggle>
+          <Toggle
+            aria-label="Align right"
+            pressed={cell.textAlign === "right"}
+            onPressedChange={() => setAlignment("right")}
+            disabled={!activeCell || isPreviewMode}
+          >
+            <AlignRight className="h-4 w-4" />
+          </Toggle>
+        </div>
+
+        <Separator orientation="vertical" className="h-8" />
+
+        <div
+          className={clsx(
+            "flex items-center gap-1 rounded-md border p-1",
+            isPreviewMode && "pointer-events-none",
+          )}
+        >
+          <BorderWidthSelector
+            value={cell.borderWidth}
+            onChange={setBorderWidth}
+            disabled={!activeCell || isPreviewMode}
+          />
+          <div className="relative">
+            <ColorPicker
+              value={cell.borderColor}
+              onChange={setBorderColor}
+              disabled={!activeCell || isPreviewMode}
+              defaultColor={DEFAULT_BORDER_COLOR}
+              label="Border Color"
+            />
+            <div className="absolute -top-1 -right-1">
+              <Square className="h-3 w-3 text-gray-500" />
+            </div>
+          </div>
+          <div className="relative">
+            <ColorPicker
+              value={cell.backgroundColor}
+              onChange={setBackgroundColor}
+              disabled={!activeCell || isPreviewMode}
+              defaultColor={DEFAULT_BACKGROUND_COLOR}
+              label="Background Color"
+            />
+            <div className="absolute -top-1 -right-1">
+              <Paintbrush className="h-3 w-3 text-gray-500" />
+            </div>
           </div>
         </div>
-        <div className="relative">
-          <ColorPicker
-            value={cell.backgroundColor}
-            onChange={setBackgroundColor}
-            disabled={!activeCell}
-            defaultColor={DEFAULT_BACKGROUND_COLOR}
-            label="Background Color"
-          />
-          <div className="absolute -top-1 -right-1">
-            <Paintbrush className="h-3 w-3 text-gray-500" />
-          </div>
+
+        <Separator orientation="vertical" className="h-8" />
+
+        <div
+          className={clsx(
+            "flex items-center gap-1",
+            isPreviewMode && "pointer-events-none",
+          )}
+        >
+          <Button variant="outline" size="sm" onClick={addRow}>
+            <Plus className="mr-1 h-4 w-4" /> Row
+          </Button>
+        </div>
+
+        <Separator orientation="vertical" className="h-8" />
+
+        <div
+          className={clsx(
+            "flex items-center gap-1",
+            isPreviewMode && "pointer-events-none",
+          )}
+        >
+          <Button variant="outline" size="sm" onClick={addColumn}>
+            <Plus className="mr-1 h-4 w-4" /> Column
+          </Button>
         </div>
       </div>
-
-      <Separator orientation="vertical" className="h-8" />
-
-      <div className="flex items-center gap-1">
-        <Button variant="outline" size="sm" onClick={addRow}>
-          <Plus className="mr-1 h-4 w-4" /> Row
-        </Button>
-      </div>
-
-      <Separator orientation="vertical" className="h-8" />
-
-      <div className="flex items-center gap-1">
-        <Button variant="outline" size="sm" onClick={addColumn}>
-          <Plus className="mr-1 h-4 w-4" /> Column
-        </Button>
-      </div>
-    </div>
+    </>
   );
 }
