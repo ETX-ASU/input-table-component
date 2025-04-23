@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "irongeek.vscode-env",
+    "dbaeumer.vscode-eslint",
+    "yoavbls.pretty-ts-errors",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss"
+  ]
+}

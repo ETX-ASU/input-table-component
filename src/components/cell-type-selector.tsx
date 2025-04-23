@@ -1,0 +1,207 @@
+import { Check, ChevronDown, Hash, ListFilter, TextIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "../components/ui/button";
+import { CellContentType } from "../lib/store";
+import { Command, CommandGroup, CommandItem, CommandList } from "./ui/command";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+
+interface CellTypeSelectorProps {
+  value: CellContentType;
+  onChange: (type: CellContentType) => void;
+  selectOptions: string[];
+  onSelectOptionsChange: (options: string[]) => void;
+  disabled?: boolean;
+}
+
+const cellTypeOptions = [
+  { value: "text", label: "Text", icon: TextIcon },
+  { value: "number", label: "Number", icon: Hash },
+  { value: "select", label: "Select", icon: ListFilter },
+];
+
+export function CellTypeSelector({
+  value,
+  onChange,
+  selectOptions,
+  onSelectOptionsChange,
+  disabled = false,
+}: CellTypeSelectorProps) {
+  const [open, setOpen] = useState(false);
+  const [showSelectDialog, setShowSelectDialog] = useState(false);
+  const [optionsInput, setOptionsInput] = useState("");
+  const [tempOptions, setTempOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    setTempOptions([...selectOptions]);
+  }, [selectOptions]);
+
+  const currentType =
+    cellTypeOptions.find((type) => type.value === value) || cellTypeOptions[0];
+
+  const handleTypeChange = (type: CellContentType) => {
+    onChange(type);
+    setOpen(false);
+
+    // If changing to select type, open the options dialog
+    if (type === "select") {
+      setShowSelectDialog(true);
+    }
+  };
+
+  const handleAddOption = () => {
+    if (optionsInput.trim() && !tempOptions.includes(optionsInput.trim())) {
+      setTempOptions([...tempOptions, optionsInput.trim()]);
+      setOptionsInput("");
+    }
+  };
+
+  const handleRemoveOption = (option: string) => {
+    setTempOptions(tempOptions.filter((o) => o !== option));
+  };
+
+  const handleSaveOptions = () => {
+    onSelectOptionsChange(tempOptions);
+    setShowSelectDialog(false);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddOption();
+    }
+  };
+
+  // Handle dialog close
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      onChange("text");
+      setShowSelectDialog(false);
+    }
+  };
+
+  return (
+    <>
+      <Popover open={open} onOpenChange={setOpen} modal={true}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            disabled={disabled}
+          >
+            <div className="flex items-center gap-2">
+              {currentType.icon && <currentType.icon className="h-4 w-4" />}
+              <span>{currentType.label}</span>
+            </div>
+            <ChevronDown className="h-4 w-4 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[140px] p-0" style={{ zIndex: 9999 }}>
+          <Command>
+            <CommandList>
+              <CommandGroup>
+                {cellTypeOptions.map((type) => (
+                  <CommandItem
+                    key={type.value}
+                    value={type.label}
+                    onSelect={() =>
+                      handleTypeChange(type.value as CellContentType)
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      {type.icon && <type.icon className="h-4 w-4" />}
+                      <span>{type.label}</span>
+                    </div>
+                    {value === type.value && (
+                      <Check className="ml-auto h-4 w-4" />
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+
+      {/* Dialog for configuring select options */}
+      <Dialog open={showSelectDialog} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Configure Select Options</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <Label htmlFor="option-input">Add Option</Label>
+                <Input
+                  id="option-input"
+                  value={optionsInput}
+                  onChange={(e) => setOptionsInput(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Enter option value"
+                />
+              </div>
+              <Button type="button" onClick={handleAddOption}>
+                Add
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Current Options</Label>
+              {tempOptions.length === 0 ? (
+                <div className="rounded-md border p-2 text-sm text-muted-foreground">
+                  No options added. Add at least one option.
+                </div>
+              ) : (
+                <div className="max-h-[200px] divide-y overflow-y-auto rounded-md border">
+                  {tempOptions.map((option, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2"
+                    >
+                      <span className="text-sm">{option}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveOption(option)}
+                        className="h-8 w-8 p-0"
+                        disabled={tempOptions.length <= 1}
+                      >
+                        &times;
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowSelectDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={tempOptions.length === 0}
+              onClick={handleSaveOptions}
+            >
+              Save Options
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
