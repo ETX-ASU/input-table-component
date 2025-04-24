@@ -1,8 +1,8 @@
 import clsx from "clsx";
-import { ChevronDown, ExternalLink } from "lucide-react";
+import { ChevronDown, ExternalLink, Lock } from "lucide-react";
 import { FC, RefObject } from "react";
 import { DEFAULT_ROW_HEIGHT } from "../lib/constants";
-import { CellCoordinates, CellData, TextAlign } from "../lib/store";
+import { AppMode, CellCoordinates, CellData, TextAlign } from "../lib/store";
 import {
   Select,
   SelectContent,
@@ -26,28 +26,30 @@ const buildCommonStyles = (cell: CellData) => ({
   fontFamily: cell.fontFamily,
 });
 
-const buildCommonClasses = (cell: CellData) =>
+const buildCommonClasses = (cell: CellData, appMode: AppMode) =>
   clsx(
     "h-full w-full bg-transparent px-2 py-1 focus:outline-none",
     buildAlignmentClass(cell.textAlign),
     cell.isBold && "font-bold",
     cell.isItalic && "italic",
     cell.isStrikethrough && "line-through",
+    cell.disabled && appMode === "preview" && "cursor-not-allowed opacity-70",
   );
 
 type LinkCellProps = {
   cell: CellData;
+  appMode: AppMode;
 };
 
-const LinkCell: FC<LinkCellProps> = ({ cell }) => (
+const LinkCell: FC<LinkCellProps> = ({ cell, appMode }) => (
   <div
     className={clsx(
-      buildCommonClasses(cell),
+      buildCommonClasses(cell, appMode),
       "flex items-center gap-1 overflow-hidden text-blue-600 underline",
     )}
     style={{ ...buildCommonStyles(cell), height: DEFAULT_ROW_HEIGHT - 1 }}
   >
-    <span className="truncate">{cell.content}</span>
+    <span className="flex-1 truncate">{cell.content}</span>
     <a href={cell.link!} target="_blank" rel="noopener noreferrer">
       <ExternalLink className="h-3 w-3" />
     </a>
@@ -55,6 +57,7 @@ const LinkCell: FC<LinkCellProps> = ({ cell }) => (
 );
 
 type InputCellProps = {
+  appMode: AppMode;
   inputMode: "numeric" | "text";
   cell: CellData;
   coordinates: CellCoordinates;
@@ -68,6 +71,7 @@ type InputCellProps = {
 };
 
 const InputCell: FC<InputCellProps> = ({
+  appMode,
   inputMode,
   cell,
   coordinates,
@@ -88,8 +92,9 @@ const InputCell: FC<InputCellProps> = ({
       value={cell.content}
       onChange={handleCellChange}
       onKeyDown={(e) => handleKeyDown(e, row, col)}
-      className={buildCommonClasses(cell)}
+      className={buildCommonClasses(cell, appMode)}
       style={buildCommonStyles(cell)}
+      disabled={cell.disabled && appMode === "preview"}
     />
   );
 };
@@ -101,6 +106,7 @@ type SelectCellProps = {
   onCellClick: (row: number, col: number) => void;
   onOpenSelectDropdown: (cellKey: string | null) => void;
   onSelectChange: (value: string, row: number, col: number) => void;
+  appMode: AppMode;
 };
 
 const SelectCell: FC<SelectCellProps> = ({
@@ -110,15 +116,18 @@ const SelectCell: FC<SelectCellProps> = ({
   onCellClick,
   onOpenSelectDropdown,
   onSelectChange,
+  appMode,
 }) => {
   const { row, col } = coordinates;
   const key = buildCellKey(coordinates);
+  const isPreviewDisabled = appMode === "preview" && cell.disabled;
 
   return (
     <div
       className={clsx(
-        buildCommonClasses(cell),
-        "relative flex h-full cursor-pointer items-center",
+        buildCommonClasses(cell, appMode),
+        "relative flex h-full items-center",
+        isPreviewDisabled ? "cursor-not-allowed" : "cursor-pointer",
       )}
       style={buildCommonStyles(cell)}
       onClick={() => onCellClick(row, col)}
@@ -128,7 +137,11 @@ const SelectCell: FC<SelectCellProps> = ({
         className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-gray-100"
         onClick={() => onOpenSelectDropdown(key)}
       >
-        <ChevronDown className="h-3 w-3" />
+        {isPreviewDisabled ? (
+          <Lock className="h-3 w-3" />
+        ) : (
+          <ChevronDown className="h-3 w-3" />
+        )}
       </div>
       {/* Hidden Select component that opens when dropdown icon is clicked */}
       <Select
@@ -136,6 +149,7 @@ const SelectCell: FC<SelectCellProps> = ({
         onValueChange={(value) => onSelectChange(value, row, col)}
         open={openSelectCell === key}
         onOpenChange={(open) => !open && onOpenSelectDropdown(null)}
+        disabled={cell.disabled && appMode === "preview"}
       >
         <SelectTrigger className="sr-only">
           <SelectValue />

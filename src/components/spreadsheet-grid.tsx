@@ -1,7 +1,8 @@
 import { Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ROW_HEADER_WIDTH } from "../lib/constants";
-import useSpreadsheetStore, { CellData } from "../lib/store";
+import useSpreadsheetStore, { CellCoordinates, CellData } from "../lib/store";
+import { Cell } from "./cell";
 import { InputCell, LinkCell, SelectCell } from "./cell-types";
 import { ContextMenu } from "./context-menu";
 import { ColumnHeaders, RowHeader } from "./spreadsheet-headers";
@@ -21,7 +22,6 @@ export function SpreadsheetGrid() {
     data,
     activeCell,
     columnWidths,
-    rowHeights,
     isResizing,
     isResizingRow,
     appMode,
@@ -45,7 +45,19 @@ export function SpreadsheetGrid() {
   const isPreviewMode = appMode === "preview";
 
   const handleCellClick = (row: number, col: number) => {
+    if (isPreviewMode && getData({ row, col }).disabled) return;
+
     setActiveCell(row, col);
+  };
+
+  const handleOpenSelectDropdown = (
+    cellKey: string | null,
+    coordinates: CellCoordinates,
+  ) => {
+    const cell = getData(coordinates);
+    if (isPreviewMode && cell.disabled) return;
+
+    setOpenSelectCell(cellKey);
   };
 
   const handleCellChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,6 +65,8 @@ export function SpreadsheetGrid() {
   };
 
   const handleSelectChange = (value: string, row: number, col: number) => {
+    if (isPreviewMode && getData({ row, col }).disabled) return;
+
     setActiveCell(row, col);
     updateCellContent(value);
   };
@@ -216,6 +230,72 @@ export function SpreadsheetGrid() {
 
     // Only update if the cell position has changed
     if (newRow !== row || newCol !== col) {
+      // In preview mode, skip disabled cells
+      if (isPreviewMode && getData({ row: newRow, col: newCol }).disabled) {
+        let foundNonDisabled = false;
+        let attempts = 0;
+        const maxAttempts = rowCount * colCount;
+
+        const movingDown = newRow > row;
+        const movingUp = newRow < row;
+        const movingRight = newCol > col;
+        const movingLeft = newCol < col;
+
+        // Store original target position
+        const [originalNewRow, originalNewCol] = [newRow, newCol];
+
+        while (!foundNonDisabled && attempts < maxAttempts) {
+          attempts++;
+
+          if (movingDown) {
+            newRow++;
+            if (newRow >= rowCount) {
+              newRow = 0;
+              newCol = (newCol + 1) % colCount;
+            }
+          } else if (movingUp) {
+            newRow--;
+            if (newRow < 0) {
+              newRow = rowCount - 1;
+              newCol = (newCol - 1 + colCount) % colCount;
+            }
+          } else if (movingRight) {
+            newCol++;
+            if (newCol >= colCount) {
+              newCol = 0;
+              newRow = (newRow + 1) % rowCount;
+            }
+          } else if (movingLeft) {
+            newCol--;
+            if (newCol < 0) {
+              newCol = colCount - 1;
+              newRow = (newRow - 1 + rowCount) % rowCount;
+            }
+          }
+
+          if (newRow === row && newCol === col) {
+            return;
+          }
+
+          if (
+            newRow >= 0 &&
+            newRow < rowCount &&
+            newCol >= 0 &&
+            newCol < colCount
+          ) {
+            if (!data[newRow][newCol].disabled) {
+              foundNonDisabled = true;
+            }
+          }
+
+          if (attempts >= maxAttempts) {
+            newRow = originalNewRow;
+            newCol = originalNewCol;
+            return;
+          }
+        }
+      }
+
       setActiveCell(newRow, newCol);
     }
   };
@@ -252,28 +332,6 @@ export function SpreadsheetGrid() {
     endRowResize,
   ]);
 
-  // Helper function to determine cell background color based on active cell
-  const getCellBackgroundColor = (
-    rowIndex: number,
-    colIndex: number,
-    cellBackgroundColor: string,
-  ) => {
-    if (!activeCell)
-      return cellBackgroundColor !== "transparent"
-        ? cellBackgroundColor
-        : "transparent";
-
-    // Only the active cell gets highlighted
-    if (activeCell.row === rowIndex && activeCell.col === colIndex) {
-      return "#e6f0ff"; // Light blue
-    }
-
-    // Other cells use their set background color or transparent
-    return cellBackgroundColor !== "transparent"
-      ? cellBackgroundColor
-      : "transparent";
-  };
-
   const renderCellContent = (
     cell: CellData,
     rowIndex: number,
@@ -284,7 +342,7 @@ export function SpreadsheetGrid() {
 
     // If cell has a link and is not being edited, show a link display
     if (cell.link && !isActive) {
-      return <LinkCell cell={cell} />;
+      return <LinkCell cell={cell} appMode={appMode} />;
     }
 
     switch (cell.contentType) {
@@ -292,6 +350,7 @@ export function SpreadsheetGrid() {
         return (
           <InputCell
             inputMode="numeric"
+            appMode={appMode}
             cell={cell}
             coordinates={{ row: rowIndex, col: colIndex }}
             cellRefs={cellRefs}
@@ -303,10 +362,16 @@ export function SpreadsheetGrid() {
         return (
           <SelectCell
             cell={cell}
+            appMode={appMode}
             coordinates={{ row: rowIndex, col: colIndex }}
             openSelectCell={openSelectCell}
             onCellClick={handleCellClick}
-            onOpenSelectDropdown={setOpenSelectCell}
+            onOpenSelectDropdown={(cellKey) =>
+              handleOpenSelectDropdown(cellKey, {
+                row: rowIndex,
+                col: colIndex,
+              })
+            }
             onSelectChange={handleSelectChange}
           />
         );
@@ -314,6 +379,7 @@ export function SpreadsheetGrid() {
         return (
           <InputCell
             inputMode="text"
+            appMode={appMode}
             cell={cell}
             coordinates={{ row: rowIndex, col: colIndex }}
             cellRefs={cellRefs}
@@ -354,33 +420,15 @@ export function SpreadsheetGrid() {
                     rowIndex={rowIndex}
                     onContextMenu={handleRowContextMenu}
                   />
-
-                  {/* Data cells */}
-                  {row.map((cell, colIndex) => {
-                    const bgColor = getCellBackgroundColor(
-                      rowIndex,
-                      colIndex,
-                      cell.backgroundColor,
-                    );
-
-                    return (
-                      <td
-                        key={colIndex}
-                        className="p-0"
-                        onClick={() => handleCellClick(rowIndex, colIndex)}
-                        style={{
-                          width: columnWidths[colIndex],
-                          height: rowHeights[rowIndex],
-                          borderWidth: cell.borderWidth,
-                          borderStyle: "solid",
-                          borderColor: cell.borderColor,
-                          backgroundColor: bgColor,
-                        }}
-                      >
-                        {renderCellContent(cell, rowIndex, colIndex)}
-                      </td>
-                    );
-                  })}
+                  {row.map((cell, colIndex) => (
+                    <Cell
+                      key={colIndex}
+                      coordinates={{ row: rowIndex, col: colIndex }}
+                      onCellClick={handleCellClick}
+                    >
+                      {renderCellContent(cell, rowIndex, colIndex)}
+                    </Cell>
+                  ))}
                 </tr>
               ))}
             </tbody>

@@ -26,6 +26,7 @@ export interface CellData {
   contentType: CellContentType;
   selectOptions: string[];
   link: string | null;
+  disabled: boolean;
 }
 
 interface HistoryEntry {
@@ -67,6 +68,7 @@ interface SpreadsheetState {
   setContentType: (contentType: CellContentType) => void;
   setSelectOptions: (options: string[]) => void;
   setLink: (url: string | null) => void;
+  toggleCellDisabled: () => void;
   addRow: () => void;
   removeRow: () => void;
   addColumn: () => void;
@@ -242,8 +244,13 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => {
         if (!state.activeCell) return state;
 
+        const cell = state.data[state.activeCell.row][state.activeCell.col];
+
+        if (state.appMode === "preview" && cell.disabled) {
+          return state;
+        }
+
         const newData = [...state.data];
-        const cell = newData[state.activeCell.row][state.activeCell.col];
 
         // Validate content based on content type
         let validatedContent = content;
@@ -262,6 +269,23 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         newData[state.activeCell.row][state.activeCell.col] = {
           ...cell,
           content: validatedContent,
+        };
+
+        // Push to history immediately
+        const result = { data: newData };
+        get().pushToHistory();
+        return result;
+      }),
+
+    toggleCellDisabled: () =>
+      set((state) => {
+        if (!state.activeCell || state.appMode === "preview") return state;
+
+        const newData = [...state.data];
+        const currentCell = newData[state.activeCell.row][state.activeCell.col];
+        newData[state.activeCell.row][state.activeCell.col] = {
+          ...currentCell,
+          disabled: !currentCell.disabled,
         };
 
         // Push to history immediately

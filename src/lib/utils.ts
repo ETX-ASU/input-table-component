@@ -22,6 +22,7 @@ const buildDefaultCell = (): CellData => ({
   contentType: "text",
   selectOptions: [],
   link: null,
+  disabled: false,
 });
 
 export { buildDefaultCell };

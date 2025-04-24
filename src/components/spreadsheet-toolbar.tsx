@@ -5,6 +5,7 @@ import {
   AlignRight,
   Bold,
   Italic,
+  Lock,
   Paintbrush,
   Plus,
   Square,
@@ -42,6 +43,7 @@ export function SpreadsheetToolbar() {
     setContentType,
     setSelectOptions,
     setLink,
+    toggleCellDisabled,
     addRow,
     addColumn,
     getData,
@@ -210,6 +212,15 @@ export function SpreadsheetToolbar() {
               <Paintbrush className="h-3 w-3 text-gray-500" />
             </div>
           </div>
+          <Toggle
+            aria-label="Toggle cell disabled"
+            pressed={cell.disabled}
+            onPressedChange={toggleCellDisabled}
+            disabled={!activeCell || isPreviewMode}
+            title="Disable cell in preview mode"
+          >
+            <Lock className="h-4 w-4" />
+          </Toggle>
         </div>
 
         <Separator orientation="vertical" className="h-8" />
