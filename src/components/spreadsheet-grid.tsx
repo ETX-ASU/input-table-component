@@ -2,6 +2,7 @@ import { Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ROW_HEADER_WIDTH } from "../lib/constants";
 import useSpreadsheetStore, { CellCoordinates, CellData } from "../lib/store";
+import { Cell } from "./cell";
 import { InputCell, LinkCell, SelectCell } from "./cell-types";
 import { ContextMenu } from "./context-menu";
 import { ColumnHeaders, RowHeader } from "./spreadsheet-headers";
@@ -21,7 +22,6 @@ export function SpreadsheetGrid() {
     data,
     activeCell,
     columnWidths,
-    rowHeights,
     isResizing,
     isResizingRow,
     appMode,
@@ -332,36 +332,6 @@ export function SpreadsheetGrid() {
     endRowResize,
   ]);
 
-  // Helper function to determine cell background color based on active cell
-  const getCellBackgroundColor = (
-    rowIndex: number,
-    colIndex: number,
-    cellBackgroundColor: string,
-    isDisabled: boolean,
-  ) => {
-    // Base background color
-    const bgColor =
-      cellBackgroundColor !== "transparent"
-        ? cellBackgroundColor
-        : "transparent";
-
-    if (activeCell?.row === rowIndex && activeCell?.col === colIndex) {
-      return "#e6f0ff"; // Light blue
-    }
-
-    // In preview mode, add a stronger visual for disabled cells
-    if (isPreviewMode && isDisabled) {
-      return bgColor !== "transparent" ? `${bgColor}80` : "#f5f5f5"; // Add transparency or light gray
-    }
-
-    // In config mode, add a subtle visual for disabled cells
-    if (!isPreviewMode && isDisabled) {
-      return bgColor !== "transparent" ? bgColor : "#fafafa"; // Very subtle gray
-    }
-
-    return bgColor;
-  };
-
   const renderCellContent = (
     cell: CellData,
     rowIndex: number,
@@ -450,34 +420,15 @@ export function SpreadsheetGrid() {
                     rowIndex={rowIndex}
                     onContextMenu={handleRowContextMenu}
                   />
-
-                  {/* Data cells */}
-                  {row.map((cell, colIndex) => {
-                    const bgColor = getCellBackgroundColor(
-                      rowIndex,
-                      colIndex,
-                      cell.backgroundColor,
-                      cell.disabled,
-                    );
-
-                    return (
-                      <td
-                        key={colIndex}
-                        className="p-0"
-                        onClick={() => handleCellClick(rowIndex, colIndex)}
-                        style={{
-                          width: columnWidths[colIndex],
-                          height: rowHeights[rowIndex],
-                          borderWidth: cell.borderWidth,
-                          borderStyle: "solid",
-                          borderColor: cell.borderColor,
-                          backgroundColor: bgColor,
-                        }}
-                      >
-                        {renderCellContent(cell, rowIndex, colIndex)}
-                      </td>
-                    );
-                  })}
+                  {row.map((cell, colIndex) => (
+                    <Cell
+                      key={colIndex}
+                      coordinates={{ row: rowIndex, col: colIndex }}
+                      onCellClick={handleCellClick}
+                    >
+                      {renderCellContent(cell, rowIndex, colIndex)}
+                    </Cell>
+                  ))}
                 </tr>
               ))}
             </tbody>
