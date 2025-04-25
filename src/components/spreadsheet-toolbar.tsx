@@ -53,10 +53,11 @@ export function SpreadsheetToolbar() {
   const cell = activeCell ? getData(activeCell) : buildDefaultCell();
 
   const isPreviewMode = appMode === "preview";
+  const actionsDisabled = !activeCell || isPreviewMode;
 
   return (
     <>
-      <div className="mr-2">
+      <div>
         <ModeToggle />
       </div>
       <div
@@ -67,45 +68,34 @@ export function SpreadsheetToolbar() {
       >
         <Separator orientation="vertical" className="h-8" />
 
-        <div className={clsx(isPreviewMode && "pointer-events-none")}>
-          <UndoRedo />
-        </div>
+        <UndoRedo />
 
         <Separator orientation="vertical" className="h-8" />
 
-        <div className={clsx(isPreviewMode && "pointer-events-none")}>
-          <CellTypeSelector
-            value={cell.contentType}
-            onChange={setContentType}
-            selectOptions={cell.selectOptions}
-            onSelectOptionsChange={setSelectOptions}
-            disabled={!activeCell || isPreviewMode}
-          />
-        </div>
+        <CellTypeSelector
+          value={cell.contentType}
+          onChange={setContentType}
+          selectOptions={cell.selectOptions}
+          onSelectOptionsChange={setSelectOptions}
+          disabled={actionsDisabled}
+        />
 
         <Separator orientation="vertical" className="h-8" />
 
-        <div className={clsx(isPreviewMode && "pointer-events-none")}>
-          <FontSelector
-            value={cell.fontFamily}
-            onChange={setFontFamily}
-            disabled={!activeCell || isPreviewMode}
-          />
-        </div>
+        <FontSelector
+          value={cell.fontFamily}
+          onChange={setFontFamily}
+          disabled={actionsDisabled}
+        />
 
         <Separator orientation="vertical" className="h-8" />
 
-        <div
-          className={clsx(
-            "flex items-center gap-1 rounded-md border p-1",
-            isPreviewMode && "pointer-events-none",
-          )}
-        >
+        <div className="flex items-center gap-1 rounded-md border p-1">
           <Toggle
             aria-label="Toggle bold"
             pressed={cell.isBold}
             onPressedChange={() => toggleFormat("isBold")}
-            disabled={!activeCell || isPreviewMode}
+            disabled={actionsDisabled}
           >
             <Bold className="h-4 w-4" />
           </Toggle>
@@ -113,7 +103,7 @@ export function SpreadsheetToolbar() {
             aria-label="Toggle italic"
             pressed={cell.isItalic}
             onPressedChange={() => toggleFormat("isItalic")}
-            disabled={!activeCell || isPreviewMode}
+            disabled={actionsDisabled}
           >
             <Italic className="h-4 w-4" />
           </Toggle>
@@ -121,21 +111,21 @@ export function SpreadsheetToolbar() {
             aria-label="Toggle strikethrough"
             pressed={cell.isStrikethrough}
             onPressedChange={() => toggleFormat("isStrikethrough")}
-            disabled={!activeCell || isPreviewMode}
+            disabled={actionsDisabled}
           >
             <Type className="h-4 w-4" />
           </Toggle>
 
           <LinkButton
             link={cell.link}
-            disabled={!activeCell || isPreviewMode}
+            disabled={actionsDisabled}
             onSave={setLink}
           />
 
           <ColorPicker
             value={cell.textColor}
             onChange={setTextColor}
-            disabled={!activeCell || isPreviewMode}
+            disabled={actionsDisabled}
             defaultColor={DEFAULT_FONT_COLOR}
             label="Text Color"
           />
@@ -143,17 +133,12 @@ export function SpreadsheetToolbar() {
 
         <Separator orientation="vertical" className="h-8" />
 
-        <div
-          className={clsx(
-            "flex items-center gap-1 rounded-md border p-1",
-            isPreviewMode && "pointer-events-none",
-          )}
-        >
+        <div className={clsx("flex items-center gap-1 rounded-md border p-1")}>
           <Toggle
             aria-label="Align left"
             pressed={cell.textAlign === "left"}
             onPressedChange={() => setAlignment("left")}
-            disabled={!activeCell || isPreviewMode}
+            disabled={actionsDisabled}
           >
             <AlignLeft className="h-4 w-4" />
           </Toggle>
@@ -161,7 +146,7 @@ export function SpreadsheetToolbar() {
             aria-label="Align center"
             pressed={cell.textAlign === "center"}
             onPressedChange={() => setAlignment("center")}
-            disabled={!activeCell || isPreviewMode}
+            disabled={actionsDisabled}
           >
             <AlignCenter className="h-4 w-4" />
           </Toggle>
@@ -169,7 +154,7 @@ export function SpreadsheetToolbar() {
             aria-label="Align right"
             pressed={cell.textAlign === "right"}
             onPressedChange={() => setAlignment("right")}
-            disabled={!activeCell || isPreviewMode}
+            disabled={actionsDisabled}
           >
             <AlignRight className="h-4 w-4" />
           </Toggle>
@@ -177,22 +162,17 @@ export function SpreadsheetToolbar() {
 
         <Separator orientation="vertical" className="h-8" />
 
-        <div
-          className={clsx(
-            "flex items-center gap-1 rounded-md border p-1",
-            isPreviewMode && "pointer-events-none",
-          )}
-        >
+        <div className={clsx("flex items-center gap-1 rounded-md border p-1")}>
           <BorderWidthSelector
             value={cell.borderWidth}
             onChange={setBorderWidth}
-            disabled={!activeCell || isPreviewMode}
+            disabled={actionsDisabled}
           />
           <div className="relative">
             <ColorPicker
               value={cell.borderColor}
               onChange={setBorderColor}
-              disabled={!activeCell || isPreviewMode}
+              disabled={actionsDisabled}
               defaultColor={DEFAULT_BORDER_COLOR}
               label="Border Color"
             />
@@ -204,7 +184,7 @@ export function SpreadsheetToolbar() {
             <ColorPicker
               value={cell.backgroundColor}
               onChange={setBackgroundColor}
-              disabled={!activeCell || isPreviewMode}
+              disabled={actionsDisabled}
               defaultColor={DEFAULT_BACKGROUND_COLOR}
               label="Background Color"
             />
@@ -216,7 +196,7 @@ export function SpreadsheetToolbar() {
             aria-label="Toggle cell disabled"
             pressed={cell.disabled}
             onPressedChange={toggleCellDisabled}
-            disabled={!activeCell || isPreviewMode}
+            disabled={actionsDisabled}
             title="Disable cell in preview mode"
           >
             <Lock className="h-4 w-4" />
@@ -225,12 +205,7 @@ export function SpreadsheetToolbar() {
 
         <Separator orientation="vertical" className="h-8" />
 
-        <div
-          className={clsx(
-            "flex items-center gap-1",
-            isPreviewMode && "pointer-events-none",
-          )}
-        >
+        <div className={clsx("flex items-center gap-1")}>
           <Button variant="outline" size="sm" onClick={addRow}>
             <Plus className="mr-1 h-4 w-4" /> Row
           </Button>
@@ -238,12 +213,7 @@ export function SpreadsheetToolbar() {
 
         <Separator orientation="vertical" className="h-8" />
 
-        <div
-          className={clsx(
-            "flex items-center gap-1",
-            isPreviewMode && "pointer-events-none",
-          )}
-        >
+        <div className={clsx("flex items-center gap-1")}>
           <Button variant="outline" size="sm" onClick={addColumn}>
             <Plus className="mr-1 h-4 w-4" /> Column
           </Button>
