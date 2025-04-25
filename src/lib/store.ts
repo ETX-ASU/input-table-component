@@ -36,7 +36,7 @@ interface HistoryEntry {
   rowHeights: number[];
 }
 
-interface SpreadsheetState {
+export interface SpreadsheetState {
   data: CellData[][];
   activeCell: CellCoordinates | null;
   columnWidths: number[];
