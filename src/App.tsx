@@ -1,5 +1,5 @@
 import Spreadsheet from "./components/spreadsheet";
-import { useSimCapi } from "./lib/simcapi/hooks/useSimCapi";
+import { useSimCapi } from "./hooks/useSimCapi";
 import useSpreadsheetStore from "./lib/store";
 
 export default function Home() {

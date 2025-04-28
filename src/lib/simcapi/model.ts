@@ -5,12 +5,12 @@ export const capi = {
     TableJSON: "", // Current configuration including what a student might change
     IsModifed: false, // Indicates if the student has modified every table cell.
     IsComplete: false, // If the LD sets this to true, then the correct answers should be shown
-    IsCorrect: false, // Indicated whether the table is enabled or disabled for students to interact with it
-    Enabled: true, // When true, highlights correct cells in green and incorrect cells in red.
-    ShowHints: false, // Allows importing table structure and data from a formatted CSV string. (Stretch Goal)
-    CSVImport: "", // When set to true, resets the table to its default state.
-    Reset: false, // Could be hex, color name, etc
-    Color: "",
+    IsCorrect: false, // If the LD sets this to true, then the correct answers should be shown
+    Enabled: true, // Indicated whether the table is enabled or disabled for students to interact with it
+    ShowHints: false, // When true, highlights correct cells in green and incorrect cells in red.
+    CSVImport: "", // Allows importing table structure and data from a formatted CSV string. (Stretch Goal)
+    Reset: false, // When set to true, resets the table to its default state.
+    Color: "", // Could be hex, color name, etc
     CSS: "",
     Title: "",
     Summary: "",

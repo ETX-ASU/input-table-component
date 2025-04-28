@@ -1,13 +1,13 @@
 import { cloneDeep, isEqual } from "lodash";
 import { useEffect, useRef } from "react";
-import { simModel } from "..";
-import { useOnce } from "../../../hooks/useOnce";
+import { simModel } from "../lib/simcapi";
 import useSpreadsheetStore, {
   CellCoordinates,
   CellData,
   SpreadsheetState,
-} from "../../store";
-import { injectCSS } from "../../utils";
+} from "../lib/store";
+import { injectCSS } from "../lib/utils";
+import { useOnce } from "./useOnce";
 
 const stringifyState = (state: Partial<SpreadsheetState>) => {
   let strInitialConfig;
@@ -56,7 +56,9 @@ const handlers = {
   // },
   InitialConfig: {
     stateChange: (state: Partial<SpreadsheetState>) => {
-      simModel.set("InitialConfig", stringifyState(state));
+      if (state.permissionLevel === "ld") {
+        simModel.set("InitialConfig", stringifyState(state));
+      }
     },
     capiChange: () => {
       const strInitialConfig = simModel.get("InitialConfig");
@@ -147,6 +149,12 @@ const handlers = {
       injectCSS(css);
     },
   },
+  // Disable: {
+  //   capiChange: () => {
+  //     const disable = simModel.get("Disable");
+  //     useSpreadsheetStore.setState((state) => {});
+  //   },
+  // },
 };
 
 export const useSimCapi = () => {
