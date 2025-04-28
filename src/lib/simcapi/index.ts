@@ -1,5 +1,5 @@
 import { capi } from "./model.ts";
-import "./simcapi.ts";
+import "./simcapi.js";
 
 const simcapi = window.simcapi;
 if (!simcapi) throw new Error("Error loading simcapi");

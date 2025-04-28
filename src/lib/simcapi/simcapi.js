@@ -4,7 +4,7 @@
 
   // Testing
   var x = this;
-  console.log({ x });
+  console.log({ this: x });
 
   var previousSimcapi = root.simcapi;
   /**
