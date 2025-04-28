@@ -25,4 +25,14 @@ const buildDefaultCell = (): CellData => ({
   disabled: false,
 });
 
-export { buildDefaultCell };
+const injectCSS = (cssString: string, styleId = "dynamic-style") => {
+  let styleTag = document.getElementById(styleId);
+  if (!styleTag) {
+    styleTag = document.createElement("style");
+    styleTag.id = styleId;
+    document.head.appendChild(styleTag);
+  }
+  styleTag.textContent = cssString;
+};
+
+export { buildDefaultCell, injectCSS };

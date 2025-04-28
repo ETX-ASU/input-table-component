@@ -56,8 +56,8 @@ export function SpreadsheetToolbar() {
   const actionsDisabled = !activeCell || isPreviewMode;
 
   return (
-    <>
-      <div>
+    <div id="spreadsheet-toolbar">
+      <div id="mode-toggle">
         <ModeToggle />
       </div>
       <div
@@ -96,6 +96,7 @@ export function SpreadsheetToolbar() {
             pressed={cell.isBold}
             onPressedChange={() => toggleFormat("isBold")}
             disabled={actionsDisabled}
+            id="toggle-bold"
           >
             <Bold className="h-4 w-4" />
           </Toggle>
@@ -104,6 +105,7 @@ export function SpreadsheetToolbar() {
             pressed={cell.isItalic}
             onPressedChange={() => toggleFormat("isItalic")}
             disabled={actionsDisabled}
+            id="toggle-italic"
           >
             <Italic className="h-4 w-4" />
           </Toggle>
@@ -112,6 +114,7 @@ export function SpreadsheetToolbar() {
             pressed={cell.isStrikethrough}
             onPressedChange={() => toggleFormat("isStrikethrough")}
             disabled={actionsDisabled}
+            id="toggle-strikethrough"
           >
             <Type className="h-4 w-4" />
           </Toggle>
@@ -139,6 +142,7 @@ export function SpreadsheetToolbar() {
             pressed={cell.textAlign === "left"}
             onPressedChange={() => setAlignment("left")}
             disabled={actionsDisabled}
+            id="toggle-align-left"
           >
             <AlignLeft className="h-4 w-4" />
           </Toggle>
@@ -147,6 +151,7 @@ export function SpreadsheetToolbar() {
             pressed={cell.textAlign === "center"}
             onPressedChange={() => setAlignment("center")}
             disabled={actionsDisabled}
+            id="toggle-align-center"
           >
             <AlignCenter className="h-4 w-4" />
           </Toggle>
@@ -155,6 +160,7 @@ export function SpreadsheetToolbar() {
             pressed={cell.textAlign === "right"}
             onPressedChange={() => setAlignment("right")}
             disabled={actionsDisabled}
+            id="toggle-align-right"
           >
             <AlignRight className="h-4 w-4" />
           </Toggle>
@@ -198,6 +204,7 @@ export function SpreadsheetToolbar() {
             onPressedChange={toggleCellDisabled}
             disabled={actionsDisabled}
             title="Disable cell in preview mode"
+            id="toggle-cell-disabled"
           >
             <Lock className="h-4 w-4" />
           </Toggle>
@@ -205,7 +212,7 @@ export function SpreadsheetToolbar() {
 
         <Separator orientation="vertical" className="h-8" />
 
-        <div className={clsx("flex items-center gap-1")}>
+        <div id="add-row" className={clsx("flex items-center gap-1")}>
           <Button variant="outline" size="sm" onClick={addRow}>
             <Plus className="mr-1 h-4 w-4" /> Row
           </Button>
@@ -213,12 +220,12 @@ export function SpreadsheetToolbar() {
 
         <Separator orientation="vertical" className="h-8" />
 
-        <div className={clsx("flex items-center gap-1")}>
+        <div id="add-column" className={clsx("flex items-center gap-1")}>
           <Button variant="outline" size="sm" onClick={addColumn}>
             <Plus className="mr-1 h-4 w-4" /> Column
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 }

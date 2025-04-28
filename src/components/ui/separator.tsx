@@ -12,6 +12,7 @@ const Separator = forwardRef<
   ) => (
     <SeparatorPrimitive.Root
       ref={ref}
+      id="separator"
       decorative={decorative}
       orientation={orientation}
       className={clsx(
