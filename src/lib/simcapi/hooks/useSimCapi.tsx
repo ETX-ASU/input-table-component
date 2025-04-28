@@ -9,30 +9,6 @@ import useSpreadsheetStore, {
 } from "../../store";
 import { injectCSS } from "../../utils";
 
-const addCapiEventListener = (value: string, handler: () => void) => {
-  simModel.on("change:" + value, handler);
-  return () => {
-    simModel.off("change:" + value, handler);
-  };
-};
-
-const appModeHandlers = {
-  stateChange: (mode: "config" | "preview") => {
-    if (mode === "config") {
-      simModel.set("Mode", "Config");
-    } else {
-      simModel.set("Mode", "Preview");
-    }
-  },
-  capiChange: () => {
-    const mode = simModel.get("Mode");
-    const zustandMode = mode === "Config" ? "config" : "preview";
-    if (useSpreadsheetStore.getState().appMode !== zustandMode) {
-      useSpreadsheetStore.setState({ appMode: zustandMode });
-    }
-  },
-};
-
 const stringifyState = (state: Partial<SpreadsheetState>) => {
   let strInitialConfig;
   try {
@@ -54,116 +30,131 @@ const parseState = (str: string) => {
   return state;
 };
 
-const initialConfigHandler = {
-  stateChange: (state: Partial<SpreadsheetState>) => {
-    simModel.set("InitialConfig", stringifyState(state));
-  },
-  capiChange: () => {
-    const strInitialConfig = simModel.get("InitialConfig");
-    const initialConfig = parseState(strInitialConfig);
-    if (initialConfig) {
-      useSpreadsheetStore.setState(initialConfig);
-    }
-  },
-};
-const permissionLevelHandlers = {
-  capiChange: () => {
-    const capiMode = window.simcapi.Transporter.getConfig().context;
-    const zustandMode = capiMode === "AUTHOR" ? "ld" : "student";
-    appModeHandlers.stateChange(zustandMode === "ld" ? "config" : "preview");
-    if (useSpreadsheetStore.getState().permissionLevel !== zustandMode) {
-      useSpreadsheetStore.setState({ permissionLevel: zustandMode });
-    }
-  },
+const addCapiEventListener = (value: string, handler: VoidFunction) => {
+  simModel.on("change:" + value, handler);
+  return () => {
+    simModel.off("change:" + value, handler);
+  };
 };
 
-const jsonTableHandlers = {
-  stateChange: (state: Partial<SpreadsheetState>) => {
-    simModel.set("JsonTable", stringifyState(state));
+const handlers = {
+  // Mode: {
+  //   stateChange: (mode: "config" | "preview") => {
+  //     if (mode === "config") {
+  //       simModel.set("Mode", "Config");
+  //     } else {
+  //       simModel.set("Mode", "Preview");
+  //     }
+  //   },
+  //   capiChange: () => {
+  //     const mode = simModel.get("Mode");
+  //     const zustandMode = mode === "Config" ? "config" : "preview";
+  //     if (useSpreadsheetStore.getState().appMode !== zustandMode) {
+  //       useSpreadsheetStore.setState({ appMode: zustandMode });
+  //     }
+  //   },
+  // },
+  InitialConfig: {
+    stateChange: (state: Partial<SpreadsheetState>) => {
+      simModel.set("InitialConfig", stringifyState(state));
+    },
+    capiChange: () => {
+      const strInitialConfig = simModel.get("InitialConfig");
+      const initialConfig = parseState(strInitialConfig);
+      if (initialConfig) {
+        useSpreadsheetStore.setState(initialConfig);
+      }
+    },
   },
-  capiChange: () => {
-    const strJsonTable = simModel.get("JsonTable");
-    const jsonTable = parseState(strJsonTable);
-    if (jsonTable) {
-      useSpreadsheetStore.setState(jsonTable);
-    }
-  },
-};
+  PermissionLevel: {
+    capiChange: () => {
+      const { context } = window.simcapi.Transporter.getConfig() || {};
+      const env = process.env.NODE_ENV;
 
-const isModifiedHandlers = {
-  stateChange: (prevCells: CellData[][], newCells: CellData[][]) => {
-    let isModified = false;
-    for (let i = 0; i < prevCells.length; i++) {
-      if (isModified) break;
-      for (let j = 0; j < prevCells[i].length; j++) {
-        if (!isEqual(prevCells[i][j], newCells[i][j])) {
-          isModified = true;
-          break;
+      if (env === "development") {
+        return useSpreadsheetStore.setState({
+          permissionLevel: "ld",
+          appMode: "config",
+        });
+      }
+
+      if (context === "AUTHOR") {
+        useSpreadsheetStore.setState({
+          permissionLevel: "ld",
+          appMode: "config",
+        });
+      } else {
+        useSpreadsheetStore.setState({
+          permissionLevel: "student",
+          appMode: "preview",
+        });
+      }
+    },
+  },
+  JsonTable: {
+    stateChange: (state: Partial<SpreadsheetState>) => {
+      simModel.set("JsonTable", stringifyState(state));
+    },
+    capiChange: () => {
+      const strJsonTable = simModel.get("JsonTable");
+      const jsonTable = parseState(strJsonTable);
+      if (jsonTable) {
+        useSpreadsheetStore.setState(jsonTable);
+      }
+    },
+  },
+  IsModified: {
+    stateChange: (prevCells: CellData[][], newCells: CellData[][]) => {
+      let isModified = false;
+      for (let i = 0; i < prevCells.length; i++) {
+        if (isModified) break;
+        for (let j = 0; j < prevCells[i].length; j++) {
+          if (!isEqual(prevCells[i][j], newCells[i][j])) {
+            isModified = true;
+            break;
+          }
         }
       }
-    }
 
-    if (isModified) simModel.set("IsModified", true);
+      if (isModified) simModel.set("IsModified", true);
+    },
   },
-};
-
-const isCompletedHandlers = {
-  stateChange: (state: SpreadsheetState) => {
-    const isCompleted = state.data.every((row) =>
-      row
-        .filter((cell) => !cell.disabled)
-        .every((cell) => cell.content.trim() !== ""),
-    );
-    if (isCompleted) simModel.set("IsCompleted", true);
+  IsCompleted: {
+    stateChange: (state: SpreadsheetState) => {
+      const isCompleted = state.data.every((row) =>
+        row
+          .filter((cell) => !cell.disabled)
+          .every((cell) => cell.content.trim() !== ""),
+      );
+      if (isCompleted) simModel.set("IsCompleted", true);
+    },
   },
-};
-
-const permissionLevelHandler = () => {
-  const { context } = window.simcapi.Transporter.getConfig() || {};
-  const env = process.env.NODE_ENV;
-
-  if (env === "development") {
-    useSpreadsheetStore.setState({ permissionLevel: "ld" });
-    appModeHandlers.stateChange("config");
-    return;
-  }
-
-  if (context === "AUTHOR") {
-    useSpreadsheetStore.setState({ permissionLevel: "ld" });
-    appModeHandlers.stateChange("config");
-  } else {
-    useSpreadsheetStore.setState({ permissionLevel: "student" });
-    appModeHandlers.stateChange("preview");
-  }
-};
-
-const titleHandler = {
-  capiChange: () => {
-    const title = simModel.get("Title");
-    useSpreadsheetStore.setState({ title });
+  Title: {
+    capiChange: () => {
+      const title = simModel.get("Title");
+      useSpreadsheetStore.setState({ title });
+    },
   },
-};
-
-const subtitleHandler = {
-  capiChange: () => {
-    const subtitle = simModel.get("Subtitle");
-    useSpreadsheetStore.setState({ subtitle });
+  Subtitle: {
+    capiChange: () => {
+      const subtitle = simModel.get("Subtitle");
+      useSpreadsheetStore.setState({ subtitle });
+    },
   },
-};
-
-const handleCSS = {
-  capiChange: () => {
-    const css = simModel.get("CSS");
-    injectCSS(css);
+  CSS: {
+    capiChange: () => {
+      const css = simModel.get("CSS");
+      injectCSS(css);
+    },
   },
 };
 
 export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
-  useOnce(permissionLevelHandler);
+  useOnce(handlers.PermissionLevel.capiChange);
 
   useEffect(() => {
-    const unsub = useSpreadsheetStore.subscribe((state, prevState) => {
+    const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
 
       const changedKeys = Object.keys(state).filter((k) => {
@@ -192,45 +183,28 @@ export const useSimCapi = () => {
       delete clonedState.isUndoRedo;
       delete clonedState.isResizingRow;
 
-      if (changedKeys.includes("appMode")) {
-        appModeHandlers.stateChange(state.appMode);
-      }
+      handlers.InitialConfig.stateChange(clonedState);
+      handlers.JsonTable.stateChange(clonedState);
+      handlers.IsModified.stateChange(prevData.current, state.data);
+      handlers.IsCompleted.stateChange(state);
 
-      initialConfigHandler.stateChange(clonedState);
-      jsonTableHandlers.stateChange(clonedState);
-      isModifiedHandlers.stateChange(prevData.current, state.data);
-      isCompletedHandlers.stateChange(state);
-
-      prevData.current = cloneDeep(clonedState.data as CellData[][]);
+      prevData.current = cloneDeep(clonedState.data!);
     });
 
-    const unsubMode = addCapiEventListener(
-      "Mode",
-      permissionLevelHandlers.capiChange,
-    );
-    const unsubInitialConfig = addCapiEventListener(
-      "InitialConfig",
-      initialConfigHandler.capiChange,
-    );
-    const unsubJsonTable = addCapiEventListener(
-      "JsonTable",
-      jsonTableHandlers.capiChange,
-    );
-    const unsubCSS = addCapiEventListener("CSS", handleCSS.capiChange);
-    const unsubTitle = addCapiEventListener("Title", titleHandler.capiChange);
-    const unsubSubtitle = addCapiEventListener(
-      "Subtitle",
-      subtitleHandler.capiChange,
-    );
+    const unsubsCapi = (
+      [
+        /*"Mode",*/
+        "InitialConfig",
+        "JsonTable",
+        "CSS",
+        "Title",
+        "Subtitle",
+      ] as const
+    ).map((key) => addCapiEventListener(key, handlers[key].capiChange));
 
     return () => {
-      unsub();
-      unsubMode();
-      unsubInitialConfig();
-      unsubJsonTable();
-      unsubCSS();
-      unsubTitle();
-      unsubSubtitle();
+      unsubState();
+      unsubsCapi.forEach((unsub) => unsub());
     };
   }, []);
 };
