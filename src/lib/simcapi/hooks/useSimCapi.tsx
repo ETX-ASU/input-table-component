@@ -1,6 +1,7 @@
 import { cloneDeep, isEqual } from "lodash";
 import { useEffect, useRef } from "react";
 import { simModel } from "..";
+import { useOnce } from "../../../hooks/useOnce";
 import useSpreadsheetStore, {
   CellCoordinates,
   CellData,
@@ -116,14 +117,31 @@ const isCompletedHandlers = {
   },
 };
 
+const handlePermissionLevel = () => {
+  const { context } = window.simcapi.Transporter.getConfig() || {};
+  const env = process.env.NODE_ENV;
+
+  if (env === "development") {
+    useSpreadsheetStore.setState({ permissionLevel: "ld" });
+    appModeHandlers.stateChange("config");
+    return;
+  }
+
+  if (context === "AUTHOR") {
+    useSpreadsheetStore.setState({ permissionLevel: "ld" });
+    appModeHandlers.stateChange("config");
+  } else {
+    useSpreadsheetStore.setState({ permissionLevel: "student" });
+    appModeHandlers.stateChange("preview");
+  }
+};
 export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
+  useOnce(handlePermissionLevel);
 
   useEffect(() => {
     const unsub = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
-
-      console.log(window.simcapi.Transporter.getConfig());
 
       const changedKeys = Object.keys(state).filter((k) => {
         const key = k as keyof SpreadsheetState;
