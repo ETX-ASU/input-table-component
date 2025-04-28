@@ -123,6 +123,8 @@ export const useSimCapi = () => {
     const unsub = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
 
+      console.log(window.simcapi.Transporter.getConfig());
+
       const changedKeys = Object.keys(state).filter((k) => {
         const key = k as keyof SpreadsheetState;
         return !isEqual(state[key], prevState[key]);
