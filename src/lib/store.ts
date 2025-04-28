@@ -36,7 +36,10 @@ interface HistoryEntry {
   rowHeights: number[];
 }
 
-interface SpreadsheetState {
+export interface SpreadsheetState {
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
+
   data: CellData[][];
   activeCell: CellCoordinates | null;
   columnWidths: number[];
@@ -104,6 +107,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
   const initialData = createInitialData(5, 5);
 
   return {
+    isLoading: false,
+    setIsLoading: (isLoading: boolean) => set({ isLoading }),
+
     data: initialData,
     activeCell: null,
     columnWidths: Array(initialData[0].length).fill(DEFAULT_COLUMN_WIDTH),
