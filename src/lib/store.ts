@@ -11,6 +11,7 @@ export type TextAlign = "left" | "center" | "right";
 export type CellContentType = "text" | "number" | "select";
 export type CellCoordinates = { row: number; col: number };
 export type AppMode = "config" | "preview";
+export type PermissionLevel = "student" | "ld";
 
 export interface CellData {
   content: string;
@@ -51,6 +52,8 @@ export interface SpreadsheetState {
   startWidth: number;
   startHeight: number;
 
+  permissionLevel: PermissionLevel;
+  setPermissionLevel: (level: PermissionLevel) => void;
   appMode: AppMode;
   toggleAppMode: () => void;
 
@@ -121,6 +124,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     startWidth: 0,
     startHeight: 0,
 
+    permissionLevel: "student",
+    setPermissionLevel: (level: PermissionLevel) =>
+      set({ permissionLevel: level }),
     appMode: "config",
     toggleAppMode: () =>
       set((state) => ({

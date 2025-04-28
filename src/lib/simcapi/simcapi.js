@@ -2,10 +2,6 @@
   //   var root = this;
   var root = window;
 
-  // Testing
-  var x = this;
-  console.log({ this: x });
-
   var previousSimcapi = root.simcapi;
   /**
    * @license almond 0.3.3 Copyright jQuery Foundation and other contributors.
