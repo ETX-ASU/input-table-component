@@ -62,6 +62,11 @@ export interface SpreadsheetState {
   isUndoRedo: boolean;
   lastHistoryId: number;
 
+  title: string | null;
+  subtitle: string | null;
+  setTitle: (title: string | null) => void;
+  setSubtitle: (subtitle: string | null) => void;
+
   setActiveCell: (row: number, col: number) => void;
   updateCellContent: (content: string) => void;
   toggleFormat: (format: "isBold" | "isItalic" | "isStrikethrough") => void;
@@ -137,6 +142,11 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     redoStack: [],
     isUndoRedo: false,
     lastHistoryId: 0,
+
+    title: null,
+    subtitle: null,
+    setTitle: (title: string | null) => set({ title }),
+    setSubtitle: (subtitle: string | null) => set({ subtitle }),
 
     getData: (cell: CellCoordinates) => {
       const { row, col } = cell;

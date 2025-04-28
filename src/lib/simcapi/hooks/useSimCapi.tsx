@@ -118,7 +118,7 @@ const isCompletedHandlers = {
   },
 };
 
-const handlePermissionLevel = () => {
+const permissionLevelHandler = () => {
   const { context } = window.simcapi.Transporter.getConfig() || {};
   const env = process.env.NODE_ENV;
 
@@ -137,6 +137,20 @@ const handlePermissionLevel = () => {
   }
 };
 
+const titleHandler = {
+  capiChange: () => {
+    const title = simModel.get("Title");
+    useSpreadsheetStore.setState({ title });
+  },
+};
+
+const subtitleHandler = {
+  capiChange: () => {
+    const subtitle = simModel.get("Subtitle");
+    useSpreadsheetStore.setState({ subtitle });
+  },
+};
+
 const handleCSS = {
   capiChange: () => {
     const css = simModel.get("CSS");
@@ -146,7 +160,7 @@ const handleCSS = {
 
 export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
-  useOnce(handlePermissionLevel);
+  useOnce(permissionLevelHandler);
 
   useEffect(() => {
     const unsub = useSpreadsheetStore.subscribe((state, prevState) => {
@@ -203,6 +217,11 @@ export const useSimCapi = () => {
       jsonTableHandlers.capiChange,
     );
     const unsubCSS = addCapiEventListener("CSS", handleCSS.capiChange);
+    const unsubTitle = addCapiEventListener("Title", titleHandler.capiChange);
+    const unsubSubtitle = addCapiEventListener(
+      "Subtitle",
+      subtitleHandler.capiChange,
+    );
 
     return () => {
       unsub();
@@ -210,6 +229,8 @@ export const useSimCapi = () => {
       unsubInitialConfig();
       unsubJsonTable();
       unsubCSS();
+      unsubTitle();
+      unsubSubtitle();
     };
   }, []);
 };
