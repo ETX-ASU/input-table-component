@@ -2,7 +2,7 @@ export const capi = {
   defaults: {
     Mode: "Config", // Determines if the component is in set up (config) mode or student mode
     InitialConfig: "", // Captures the current config of the table, including any student input values in cells.
-    TableJSON: "", // Indicates if the student has modified any table cell.
+    TableJSON: "", // Current configuration including what a student might change
     IsModifed: false, // Indicates if the student has modified every table cell.
     IsComplete: false, // If the LD sets this to true, then the correct answers should be shown
     IsCorrect: false, // Indicated whether the table is enabled or disabled for students to interact with it

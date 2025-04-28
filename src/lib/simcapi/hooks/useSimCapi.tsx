@@ -1,7 +1,18 @@
 import { cloneDeep, isEqual } from "lodash";
 import { useEffect, useRef } from "react";
 import { simModel } from "..";
-import useSpreadsheetStore, { SpreadsheetState } from "../../store";
+import useSpreadsheetStore, {
+  CellCoordinates,
+  CellData,
+  SpreadsheetState,
+} from "../../store";
+
+const addCapiEventListener = (value: string, handler: () => void) => {
+  simModel.on("change:" + value, handler);
+  return () => {
+    simModel.off("change:" + value, handler);
+  };
+};
 
 const appModeHandlers = {
   stateChange: (mode: "config" | "preview") => {
@@ -20,6 +31,39 @@ const appModeHandlers = {
   },
 };
 
+const stringifyState = (state: Partial<SpreadsheetState>) => {
+  let strInitialConfig;
+  try {
+    strInitialConfig = JSON.stringify(state);
+  } catch {
+    strInitialConfig = "";
+  }
+  return strInitialConfig;
+};
+
+const parseState = (str: string) => {
+  let state: Partial<SpreadsheetState> | null;
+  try {
+    state = JSON.parse(str);
+  } catch {
+    state = null;
+    console.error("Error parsing initial config");
+  }
+  return state;
+};
+
+const initialConfigHandler = {
+  stateChange: (state: Partial<SpreadsheetState>) => {
+    simModel.set("InitialConfig", stringifyState(state));
+  },
+  capiChange: () => {
+    const strInitialConfig = simModel.get("InitialConfig");
+    const initialConfig = parseState(strInitialConfig);
+    if (initialConfig) {
+      useSpreadsheetStore.setState(initialConfig);
+    }
+  },
+};
 const permissionLevelHandlers = {
   capiChange: () => {
     const capiMode = window.simcapi.Transporter.getConfig().context;
@@ -31,6 +75,47 @@ const permissionLevelHandlers = {
   },
 };
 
+const jsonTableHandlers = {
+  stateChange: (state: Partial<SpreadsheetState>) => {
+    simModel.set("JsonTable", stringifyState(state));
+  },
+  capiChange: () => {
+    const strJsonTable = simModel.get("JsonTable");
+    const jsonTable = parseState(strJsonTable);
+    if (jsonTable) {
+      useSpreadsheetStore.setState(jsonTable);
+    }
+  },
+};
+
+const isModifiedHandlers = {
+  stateChange: (prevCells: CellData[][], newCells: CellData[][]) => {
+    let isModified = false;
+    for (let i = 0; i < prevCells.length; i++) {
+      if (isModified) break;
+      for (let j = 0; j < prevCells[i].length; j++) {
+        if (!isEqual(prevCells[i][j], newCells[i][j])) {
+          isModified = true;
+          break;
+        }
+      }
+    }
+
+    if (isModified) simModel.set("IsModified", true);
+  },
+};
+
+const isCompletedHandlers = {
+  stateChange: (state: SpreadsheetState) => {
+    const isCompleted = state.data.every((row) =>
+      row
+        .filter((cell) => !cell.disabled)
+        .every((cell) => cell.content.trim() !== ""),
+    );
+    if (isCompleted) simModel.set("IsCompleted", true);
+  },
+};
+
 export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
 
@@ -38,30 +123,62 @@ export const useSimCapi = () => {
     const unsub = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
 
-      Object.keys(state).forEach((k) => {
+      const changedKeys = Object.keys(state).filter((k) => {
         const key = k as keyof SpreadsheetState;
-        if (!isEqual(state[key], prevState[key])) {
-          if (key === "appMode") appModeHandlers.stateChange(state[key]);
-        }
+        return !isEqual(state[key], prevState[key]);
       });
 
+      const changedCells: CellCoordinates[] = [];
       state.data.forEach((row, rowIndex) => {
         row.forEach((cell, colIndex) => {
           if (!isEqual(cell, prevData.current[rowIndex][colIndex])) {
-            // This one should be updated in the simcapi model
-            // data[rowIndex][colIndex]
+            changedCells.push({ row: rowIndex, col: colIndex });
           }
         });
       });
 
-      prevData.current = cloneDeep(state.data);
+      // Avoid unnecessary updates
+      if (!isEqual(changedKeys, ["activeCell"]) && !changedCells.length) return;
+
+      const clonedState: Partial<SpreadsheetState> = cloneDeep(state);
+      delete clonedState.activeCell;
+      delete clonedState.undoStack;
+      delete clonedState.lastHistoryId;
+      delete clonedState.isLoading;
+      delete clonedState.isResizing;
+      delete clonedState.isUndoRedo;
+      delete clonedState.isResizingRow;
+
+      if (changedKeys.includes("appMode")) {
+        appModeHandlers.stateChange(state.appMode);
+      }
+
+      initialConfigHandler.stateChange(clonedState);
+      jsonTableHandlers.stateChange(clonedState);
+      isModifiedHandlers.stateChange(prevData.current, state.data);
+      isCompletedHandlers.stateChange(state);
+
+      prevData.current = cloneDeep(clonedState.data as CellData[][]);
     });
 
-    simModel.on("change:Context", permissionLevelHandlers.capiChange);
+    const unsubMode = addCapiEventListener(
+      "Mode",
+      permissionLevelHandlers.capiChange,
+    );
+    const unsubInitialConfig = addCapiEventListener(
+      "InitialConfig",
+      initialConfigHandler.capiChange,
+    );
+    const unsubJsonTable = addCapiEventListener(
+      "JsonTable",
+      jsonTableHandlers.capiChange,
+    );
 
     return () => {
       unsub();
-      simModel.off("change:Mode", appModeHandlers.capiChange);
+      unsubMode();
+      unsubInitialConfig();
+      unsubJsonTable();
     };
   }, []);
 };
