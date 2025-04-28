@@ -19,6 +19,7 @@ export const capi = {
   exposeWith: {
     Mode: {
       type: "enum",
+      allowedValues: ["Config", "Preview"],
       alias: "Mode",
       readonly: false,
       writeonly: false,
