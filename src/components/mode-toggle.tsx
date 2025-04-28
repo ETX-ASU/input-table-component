@@ -3,7 +3,9 @@ import useSpreadsheetStore from "../lib/store";
 import { Button } from "./ui/button";
 
 export function ModeToggle() {
-  const { appMode, toggleAppMode } = useSpreadsheetStore();
+  const { appMode, toggleAppMode, permissionLevel } = useSpreadsheetStore();
+
+  if (permissionLevel === "student") return null;
 
   return (
     <Button

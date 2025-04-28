@@ -3,8 +3,6 @@ import { useEffect, useRef } from "react";
 import { simModel } from "..";
 import useSpreadsheetStore, { SpreadsheetState } from "../../store";
 
-console.log(simModel);
-
 const appModeHandlers = {
   stateChange: (mode: "config" | "preview") => {
     if (mode === "config") {
@@ -21,6 +19,20 @@ const appModeHandlers = {
     }
   },
 };
+
+const permissionLevelHandlers = {
+  capiChange: () => {
+    const capiMode = window.simcapi.Transporter.getConfig().context;
+    const zustandMode = capiMode === "AUTHOR" ? "ld" : "student";
+    appModeHandlers.stateChange(zustandMode === "ld" ? "config" : "preview");
+    if (useSpreadsheetStore.getState().permissionLevel !== zustandMode) {
+      useSpreadsheetStore.setState({ permissionLevel: zustandMode });
+    }
+  },
+};
+
+// Check how to subscribe to this
+permissionLevelHandlers.capiChange();
 
 export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
@@ -48,7 +60,7 @@ export const useSimCapi = () => {
       prevData.current = cloneDeep(state.data);
     });
 
-    simModel.on("change:Mode", appModeHandlers.capiChange);
+    simModel.on("change:Context", permissionLevelHandlers.capiChange);
 
     return () => {
       unsub();
