@@ -31,11 +31,15 @@ const permissionLevelHandlers = {
   },
 };
 
-// Check how to subscribe to this
-permissionLevelHandlers.capiChange();
-
 export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
+  const isFirstRender = useRef(true);
+
+  // Check how to subscribe to this
+  if (isFirstRender.current) {
+    permissionLevelHandlers.capiChange();
+    isFirstRender.current = false;
+  }
 
   useEffect(() => {
     const unsub = useSpreadsheetStore.subscribe((state, prevState) => {
