@@ -55,55 +55,57 @@ function FontSelector({
     fontOptions.find((font) => font.value === value) || fontOptions[0];
 
   return (
-    <Popover open={open} onOpenChange={setOpen} modal={true}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[150px] justify-start overflow-hidden"
-          disabled={disabled}
-        >
-          <div className="flex flex-1 items-center gap-2 truncate">
-            <Type className="h-4 w-4 shrink-0" />
-            <span className="truncate" style={{ fontFamily: value }}>
-              {currentFont.label}
-            </span>
-          </div>
-          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[180px] p-0" style={{ zIndex: 9999 }}>
-        <Command>
-          <CommandInput placeholder="Search font..." />
-          <CommandList>
-            <CommandEmpty>No font found.</CommandEmpty>
-            <CommandGroup>
-              {fontOptions.map((font) => (
-                <CommandItem
-                  key={font.value}
-                  value={font.label}
-                  onSelect={() => {
-                    onChange(font.value);
-                    setOpen(false);
-                  }}
-                >
-                  <span
-                    className="flex w-full items-center"
-                    style={{ fontFamily: font.value }}
+    <div id="font-selector">
+      <Popover open={open} onOpenChange={setOpen} modal={true}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-[150px] justify-start overflow-hidden"
+            disabled={disabled}
+          >
+            <div className="flex flex-1 items-center gap-2 truncate">
+              <Type className="h-4 w-4 shrink-0" />
+              <span className="truncate" style={{ fontFamily: value }}>
+                {currentFont.label}
+              </span>
+            </div>
+            <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[180px] p-0" style={{ zIndex: 9999 }}>
+          <Command>
+            <CommandInput placeholder="Search font..." />
+            <CommandList>
+              <CommandEmpty>No font found.</CommandEmpty>
+              <CommandGroup>
+                {fontOptions.map((font) => (
+                  <CommandItem
+                    key={font.value}
+                    value={font.label}
+                    onSelect={() => {
+                      onChange(font.value);
+                      setOpen(false);
+                    }}
                   >
-                    {font.label}
-                  </span>
-                  {value === font.value && (
-                    <Check className="ml-auto h-4 w-4" />
-                  )}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                    <span
+                      className="flex w-full items-center"
+                      style={{ fontFamily: font.value }}
+                    >
+                      {font.label}
+                    </span>
+                    {value === font.value && (
+                      <Check className="ml-auto h-4 w-4" />
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 

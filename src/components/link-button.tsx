@@ -100,7 +100,7 @@ export function LinkButton({ link, disabled, onSave }: LinkButtonProps) {
   const isPreviewMode = appMode === "preview";
 
   return (
-    <>
+    <div id="link-button">
       <Toggle
         aria-label="Toggle link"
         pressed={link !== null}
@@ -118,6 +118,6 @@ export function LinkButton({ link, disabled, onSave }: LinkButtonProps) {
         onSave={onSave}
         initialUrl={link}
       />
-    </>
+    </div>
   );
 }

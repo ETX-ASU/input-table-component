@@ -76,78 +76,80 @@ export function ColorPicker({
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen} modal={true}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="relative h-8 w-8 p-0"
-          disabled={disabled}
+    <div id="color-picker">
+      <Popover open={isOpen} onOpenChange={setIsOpen} modal={true}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="relative h-8 w-8 p-0"
+            disabled={disabled}
+          >
+            <Palette className="h-4 w-4" />
+            <div
+              className="absolute right-0 bottom-0 left-0 h-1"
+              style={{ backgroundColor: value }}
+            />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-64 p-3"
+          style={{ zIndex: 9999 }}
+          align="start"
+          side="top"
+          sideOffset={5}
+          avoidCollisions={true}
+          collisionPadding={20}
         >
-          <Palette className="h-4 w-4" />
-          <div
-            className="absolute right-0 bottom-0 left-0 h-1"
-            style={{ backgroundColor: value }}
-          />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-64 p-3"
-        style={{ zIndex: 9999 }}
-        align="start"
-        side="top"
-        sideOffset={5}
-        avoidCollisions={true}
-        collisionPadding={20}
-      >
-        <div className="space-y-3">
-          <div className="flex">
-            <div className="flex-1 text-sm font-medium">{label}</div>
-            <div>
-              <button className="cursor-pointer" onClick={handleReset}>
-                <RotateCcw className="h-3.5 w-3.5" />
-              </button>
+          <div className="space-y-3">
+            <div className="flex">
+              <div className="flex-1 text-sm font-medium">{label}</div>
+              <div>
+                <button className="cursor-pointer" onClick={handleReset}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Color grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {colorPalette.map((row, rowIndex) =>
-              row.map((color, colIndex) => (
-                <button
-                  key={`${rowIndex}-${colIndex}`}
-                  className="h-8 w-8 cursor-pointer rounded-md border border-gray-200"
-                  style={{ backgroundColor: color }}
-                  onClick={() => {
-                    onChange(color);
-                    setIsOpen(false);
-                  }}
-                  aria-label={`Select color ${color}`}
+            {/* Color grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {colorPalette.map((row, rowIndex) =>
+                row.map((color, colIndex) => (
+                  <button
+                    key={`${rowIndex}-${colIndex}`}
+                    className="h-8 w-8 cursor-pointer rounded-md border border-gray-200"
+                    style={{ backgroundColor: color }}
+                    onClick={() => {
+                      onChange(color);
+                      setIsOpen(false);
+                    }}
+                    aria-label={`Select color ${color}`}
+                  />
+                )),
+              )}
+            </div>
+
+            <div className="pt-2">
+              <div className="mb-1 text-sm font-medium">Custom Color</div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-8 w-8 rounded-md border border-gray-200"
+                  style={{ backgroundColor: customColor }}
                 />
-              )),
-            )}
-          </div>
-
-          <div className="pt-2">
-            <div className="mb-1 text-sm font-medium">Custom Color</div>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-8 w-8 rounded-md border border-gray-200"
-                style={{ backgroundColor: customColor }}
-              />
-              <Input
-                ref={inputRef}
-                value={customColor}
-                onChange={handleCustomColorChange}
-                onBlur={handleCustomColorBlur}
-                onKeyDown={handleCustomColorKeyDown}
-                placeholder="#RRGGBB"
-                className="h-8"
-              />
+                <Input
+                  ref={inputRef}
+                  value={customColor}
+                  onChange={handleCustomColorChange}
+                  onBlur={handleCustomColorBlur}
+                  onKeyDown={handleCustomColorKeyDown}
+                  placeholder="#RRGGBB"
+                  className="h-8"
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }

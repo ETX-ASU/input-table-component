@@ -7,6 +7,7 @@ import useSpreadsheetStore, {
   CellData,
   SpreadsheetState,
 } from "../../store";
+import { injectCSS } from "../../utils";
 
 const addCapiEventListener = (value: string, handler: () => void) => {
   simModel.on("change:" + value, handler);
@@ -135,6 +136,14 @@ const handlePermissionLevel = () => {
     appModeHandlers.stateChange("preview");
   }
 };
+
+const handleCSS = {
+  capiChange: () => {
+    const css = simModel.get("CSS");
+    injectCSS(css);
+  },
+};
+
 export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
   useOnce(handlePermissionLevel);
@@ -193,12 +202,14 @@ export const useSimCapi = () => {
       "JsonTable",
       jsonTableHandlers.capiChange,
     );
+    const unsubCSS = addCapiEventListener("CSS", handleCSS.capiChange);
 
     return () => {
       unsub();
       unsubMode();
       unsubInitialConfig();
       unsubJsonTable();
+      unsubCSS();
     };
   }, []);
 };

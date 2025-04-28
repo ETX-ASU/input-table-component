@@ -68,6 +68,7 @@ const Cell: FC<PropsWithChildren<CellProps>> = ({
 
   return (
     <td
+      id={`cell-${row}-${col}`}
       className="p-0"
       onClick={() => onCellClick(row, col)}
       style={{

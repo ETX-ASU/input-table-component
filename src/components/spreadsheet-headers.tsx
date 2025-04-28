@@ -30,6 +30,7 @@ const ColumnHeaders: FC<ColumnHeadersProps> = ({ onContextMenu }) => {
 
   return Array.from({ length: columnsLength }).map((_, idx) => (
     <th
+      id={`column-header-${idx}`}
       key={idx}
       className={clsx(
         "sticky top-0 z-20 border-t border-r border-b border-gray-300 select-none",

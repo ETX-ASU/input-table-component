@@ -89,7 +89,7 @@ export function CellTypeSelector({
   };
 
   return (
-    <>
+    <div id="cell-type-selector">
       <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
           <Button
@@ -202,6 +202,6 @@ export function CellTypeSelector({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

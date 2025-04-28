@@ -52,7 +52,7 @@ export function UndoRedo() {
   }, [handleUndo, handleRedo]);
 
   return (
-    <div className="flex items-center gap-1">
+    <div id="undo-redo" className="flex items-center gap-1">
       <Button
         variant="outline"
         size="icon"

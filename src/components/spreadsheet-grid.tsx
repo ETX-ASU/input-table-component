@@ -394,7 +394,7 @@ export function SpreadsheetGrid() {
     columnWidths.reduce((sum, width) => sum + width, 0) + ROW_HEADER_WIDTH;
 
   return (
-    <>
+    <div id="spreadsheet-grid">
       <div
         ref={spreadsheetRef}
         className="relative overflow-auto"
@@ -461,6 +461,6 @@ export function SpreadsheetGrid() {
           }
         />
       )}
-    </>
+    </div>
   );
 }
