@@ -70,29 +70,40 @@ const handlers = {
   },
   PermissionLevel: {
     capiChange: () => {
-      const { context } = window.simcapi.Transporter.getConfig() || {};
-      const env = process.env.NODE_ENV;
+      const tryGetContext = (delayMs = 100) => {
+        const { context } = window.simcapi.Transporter.getConfig() || {};
+        const env = process.env.NODE_ENV;
 
-      console.log({ context, env });
+        if (!context && env !== "development") {
+          setTimeout(() => tryGetContext(delayMs), delayMs);
+          return;
+        }
 
-      if (env === "development") {
-        return useSpreadsheetStore.setState({
-          permissionLevel: "ld",
-          appMode: "config",
-        });
-      }
+        if (env === "development") {
+          return useSpreadsheetStore.setState({
+            permissionLevel: "ld",
+            appMode: "config",
+            isLoading: false,
+          });
+        }
 
-      if (context === "AUTHOR") {
-        useSpreadsheetStore.setState({
-          permissionLevel: "ld",
-          appMode: "config",
-        });
-      } else {
-        useSpreadsheetStore.setState({
-          permissionLevel: "student",
-          appMode: "preview",
-        });
-      }
+        if (context === "AUTHOR") {
+          useSpreadsheetStore.setState({
+            permissionLevel: "ld",
+            appMode: "config",
+            isLoading: false,
+          });
+        } else {
+          useSpreadsheetStore.setState({
+            permissionLevel: "student",
+            appMode: "preview",
+            isLoading: false,
+          });
+        }
+      };
+
+      // Start the retry process
+      tryGetContext();
     },
   },
   JsonTable: {

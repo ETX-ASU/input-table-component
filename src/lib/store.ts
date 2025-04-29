@@ -39,7 +39,6 @@ interface HistoryEntry {
 
 export interface SpreadsheetState {
   isLoading: boolean;
-  setIsLoading: (isLoading: boolean) => void;
 
   data: CellData[][];
   activeCell: CellCoordinates | null;
@@ -116,8 +115,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
   const initialData = createInitialData(5, 5);
 
   return {
-    isLoading: false,
-    setIsLoading: (isLoading: boolean) => set({ isLoading }),
+    isLoading: true,
 
     data: initialData,
     activeCell: null,
