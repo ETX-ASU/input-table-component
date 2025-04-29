@@ -723,6 +723,15 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       const isDisabled =
         isPreviewMode && (cell.disabled || tableIsDisabledForPreview);
 
+      console.log({
+        enableTable: state.enableTable,
+        permissionLevel: state.permissionLevel,
+        isPreviewMode,
+        cellDisabled: cell.disabled,
+        tableIsDisabledForPreview,
+        isDisabled,
+      });
+
       return !isDisabled;
     },
   };
