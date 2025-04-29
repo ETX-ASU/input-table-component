@@ -149,12 +149,12 @@ const handlers = {
       injectCSS(css);
     },
   },
-  // Disable: {
-  //   capiChange: () => {
-  //     const disable = simModel.get("Disable");
-  //     useSpreadsheetStore.setState((state) => {});
-  //   },
-  // },
+  Enable: {
+    capiChange: () => {
+      const enableTable = simModel.get("Enable");
+      useSpreadsheetStore.setState({ enableTable });
+    },
+  },
 };
 
 export const useSimCapi = () => {

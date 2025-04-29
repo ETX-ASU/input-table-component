@@ -34,6 +34,7 @@ export function SpreadsheetGrid() {
     deleteRow,
     deleteColumn,
     getData,
+    canInteractWithCell,
   } = useSpreadsheetStore();
 
   const spreadsheetRef = useRef<HTMLDivElement>(null);
@@ -45,8 +46,7 @@ export function SpreadsheetGrid() {
   const isPreviewMode = appMode === "preview";
 
   const handleCellClick = (row: number, col: number) => {
-    if (isPreviewMode && getData({ row, col }).disabled) return;
-
+    if (!canInteractWithCell({ row, col })) return;
     setActiveCell(row, col);
   };
 
@@ -54,8 +54,7 @@ export function SpreadsheetGrid() {
     cellKey: string | null,
     coordinates: CellCoordinates,
   ) => {
-    const cell = getData(coordinates);
-    if (isPreviewMode && cell.disabled) return;
+    if (!canInteractWithCell(coordinates)) return;
 
     setOpenSelectCell(cellKey);
   };
@@ -65,7 +64,7 @@ export function SpreadsheetGrid() {
   };
 
   const handleSelectChange = (value: string, row: number, col: number) => {
-    if (isPreviewMode && getData({ row, col }).disabled) return;
+    if (!canInteractWithCell({ row, col })) return;
 
     setActiveCell(row, col);
     updateCellContent(value);
@@ -231,7 +230,7 @@ export function SpreadsheetGrid() {
     // Only update if the cell position has changed
     if (newRow !== row || newCol !== col) {
       // In preview mode, skip disabled cells
-      if (isPreviewMode && getData({ row: newRow, col: newCol }).disabled) {
+      if (!canInteractWithCell({ row: newRow, col: newCol })) {
         let foundNonDisabled = false;
         let attempts = 0;
         const maxAttempts = rowCount * colCount;
@@ -339,10 +338,14 @@ export function SpreadsheetGrid() {
   ) => {
     const isActive =
       activeCell?.row === rowIndex && activeCell?.col === colIndex;
+    const interactable = canInteractWithCell({
+      row: rowIndex,
+      col: colIndex,
+    });
 
     // If cell has a link and is not being edited, show a link display
     if (cell.link && !isActive) {
-      return <LinkCell cell={cell} appMode={appMode} />;
+      return <LinkCell cell={cell} canInteractWithCell={interactable} />;
     }
 
     switch (cell.contentType) {
@@ -350,7 +353,7 @@ export function SpreadsheetGrid() {
         return (
           <InputCell
             inputMode="numeric"
-            appMode={appMode}
+            canInteractWithCell={interactable}
             cell={cell}
             coordinates={{ row: rowIndex, col: colIndex }}
             cellRefs={cellRefs}
@@ -362,7 +365,7 @@ export function SpreadsheetGrid() {
         return (
           <SelectCell
             cell={cell}
-            appMode={appMode}
+            canInteractWithCell={interactable}
             coordinates={{ row: rowIndex, col: colIndex }}
             openSelectCell={openSelectCell}
             onCellClick={handleCellClick}
@@ -379,7 +382,7 @@ export function SpreadsheetGrid() {
         return (
           <InputCell
             inputMode="text"
-            appMode={appMode}
+            canInteractWithCell={interactable}
             cell={cell}
             coordinates={{ row: rowIndex, col: colIndex }}
             cellRefs={cellRefs}

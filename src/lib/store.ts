@@ -53,7 +53,7 @@ export interface SpreadsheetState {
   startHeight: number;
 
   permissionLevel: PermissionLevel;
-  setPermissionLevel: (level: PermissionLevel) => void;
+  enableTable: boolean;
   appMode: AppMode;
   toggleAppMode: () => void;
 
@@ -103,6 +103,7 @@ export interface SpreadsheetState {
   canRedo: () => boolean;
 
   getData: (cell: CellCoordinates) => CellData;
+  canInteractWithCell: (cell: CellCoordinates) => boolean;
 }
 
 const createInitialData = (rows: number, cols: number): CellData[][] => {
@@ -129,9 +130,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     startWidth: 0,
     startHeight: 0,
 
+    enableTable: false,
     permissionLevel: "student",
-    setPermissionLevel: (level: PermissionLevel) =>
-      set({ permissionLevel: level }),
+
     appMode: "config",
     toggleAppMode: () =>
       set((state) => ({
@@ -266,9 +267,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => {
         if (!state.activeCell) return state;
 
-        const cell = state.data[state.activeCell.row][state.activeCell.col];
+        const cell = state.getData(state.activeCell);
 
-        if (state.appMode === "preview" && cell.disabled) {
+        if (!state.canInteractWithCell(state.activeCell)) {
           return state;
         }
 
@@ -710,6 +711,19 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       const result = { isResizingRow: null };
       get().pushToHistory();
       return set(result);
+    },
+
+    canInteractWithCell: (coordinates: CellCoordinates) => {
+      const state = get();
+      const cell = state.getData(coordinates);
+      const isPreviewMode = state.appMode === "preview";
+      const tableIsDisabledForPreview =
+        !state.enableTable && state.permissionLevel === "student";
+
+      const isDisabled =
+        isPreviewMode && (cell.disabled || tableIsDisabledForPreview);
+
+      return !isDisabled;
     },
   };
 });

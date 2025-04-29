@@ -15,6 +15,7 @@ const buildCellBackgroundColor = (
   cell: CellData,
   activeCell: CellCoordinates | null,
   appMode: AppMode,
+  canInteractWithCell: boolean,
 ) => {
   const { row, col } = coordinates;
   const isPreviewMode = appMode === "preview";
@@ -30,7 +31,7 @@ const buildCellBackgroundColor = (
   }
 
   // In preview mode, add a stronger visual for disabled cells
-  if (isPreviewMode && cell.disabled) {
+  if (!canInteractWithCell) {
     return bgColor !== "transparent"
       ? `${bgColor}80`
       : BACKGROUND_COLOR_LIGHT_GRAY;
@@ -54,8 +55,14 @@ const Cell: FC<PropsWithChildren<CellProps>> = ({
   coordinates,
   children,
 }) => {
-  const { activeCell, appMode, columnWidths, rowHeights, getData } =
-    useSpreadsheetStore();
+  const {
+    activeCell,
+    appMode,
+    columnWidths,
+    rowHeights,
+    getData,
+    canInteractWithCell,
+  } = useSpreadsheetStore();
   const { row, col } = coordinates;
   const cell = getData(coordinates);
 
@@ -64,6 +71,7 @@ const Cell: FC<PropsWithChildren<CellProps>> = ({
     cell,
     activeCell,
     appMode,
+    canInteractWithCell(coordinates),
   );
 
   return (
