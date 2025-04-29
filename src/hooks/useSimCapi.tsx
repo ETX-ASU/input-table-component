@@ -73,6 +73,8 @@ const handlers = {
       const { context } = window.simcapi.Transporter.getConfig() || {};
       const env = process.env.NODE_ENV;
 
+      console.log({ context, env });
+
       if (env === "development") {
         return useSpreadsheetStore.setState({
           permissionLevel: "ld",
