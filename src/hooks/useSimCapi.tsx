@@ -38,22 +38,6 @@ const addCapiEventListener = (value: string, handler: VoidFunction) => {
 };
 
 const handlers = {
-  // Mode: {
-  //   stateChange: (mode: "config" | "preview") => {
-  //     if (mode === "config") {
-  //       simModel.set("Mode", "Config");
-  //     } else {
-  //       simModel.set("Mode", "Preview");
-  //     }
-  //   },
-  //   capiChange: () => {
-  //     const mode = simModel.get("Mode");
-  //     const zustandMode = mode === "Config" ? "config" : "preview";
-  //     if (useSpreadsheetStore.getState().appMode !== zustandMode) {
-  //       useSpreadsheetStore.setState({ appMode: zustandMode });
-  //     }
-  //   },
-  // },
   InitialConfig: {
     stateChange: (state: Partial<SpreadsheetState>) => {
       if (state.permissionLevel === "ld") {
@@ -106,15 +90,15 @@ const handlers = {
       tryGetContext();
     },
   },
-  JsonTable: {
+  TableJSON: {
     stateChange: (state: Partial<SpreadsheetState>) => {
-      simModel.set("JsonTable", stringifyState(state));
+      simModel.set("TableJSON", stringifyState(state));
     },
     capiChange: () => {
-      const strJsonTable = simModel.get("JsonTable");
-      const jsonTable = parseState(strJsonTable);
-      if (jsonTable) {
-        useSpreadsheetStore.setState(jsonTable);
+      const strTableJson = simModel.get("TableJSON");
+      const tableJson = parseState(strTableJson);
+      if (tableJson) {
+        useSpreadsheetStore.setState(tableJson);
       }
     },
   },
@@ -205,7 +189,7 @@ export const useSimCapi = () => {
       delete clonedState.isResizingRow;
 
       handlers.InitialConfig.stateChange(clonedState);
-      handlers.JsonTable.stateChange(clonedState);
+      handlers.TableJSON.stateChange(clonedState);
       handlers.IsModified.stateChange(prevData.current, state.data);
       handlers.IsCompleted.stateChange(state);
 
@@ -214,9 +198,8 @@ export const useSimCapi = () => {
 
     const unsubsCapi = (
       [
-        /*"Mode",*/
         "InitialConfig",
-        "JsonTable",
+        "TableJSON",
         "CSS",
         "Title",
         "Summary",
