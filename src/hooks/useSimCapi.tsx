@@ -207,7 +207,7 @@ export const useSimCapi = () => {
         "CSS",
         "Title",
         "Summary",
-        "Enable",
+        "Enabled",
       ] as const
     ).map((key) => addCapiEventListener(key, handlers[key].capiChange));
 
