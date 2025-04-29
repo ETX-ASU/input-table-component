@@ -152,6 +152,7 @@ const handlers = {
   Enable: {
     capiChange: () => {
       const enableTable = simModel.get("Enable");
+      console.log("Enable", enableTable);
       useSpreadsheetStore.setState({ enableTable });
     },
   },

@@ -130,7 +130,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     startWidth: 0,
     startHeight: 0,
 
-    enableTable: false,
+    enableTable: true,
     permissionLevel: "student",
 
     appMode: "config",
