@@ -137,10 +137,10 @@ const handlers = {
       useSpreadsheetStore.setState({ title });
     },
   },
-  Subtitle: {
+  Summary: {
     capiChange: () => {
-      const subtitle = simModel.get("Subtitle");
-      useSpreadsheetStore.setState({ subtitle });
+      const summary = simModel.get("Summary");
+      useSpreadsheetStore.setState({ summary });
     },
   },
   CSS: {
@@ -152,7 +152,6 @@ const handlers = {
   Enable: {
     capiChange: () => {
       const enableTable = simModel.get("Enable");
-      console.log("Enable", enableTable);
       useSpreadsheetStore.setState({ enableTable });
     },
   },
@@ -207,7 +206,8 @@ export const useSimCapi = () => {
         "JsonTable",
         "CSS",
         "Title",
-        "Subtitle",
+        "Summary",
+        "Enable",
       ] as const
     ).map((key) => addCapiEventListener(key, handlers[key].capiChange));
 

@@ -63,9 +63,9 @@ export interface SpreadsheetState {
   lastHistoryId: number;
 
   title: string | null;
-  subtitle: string | null;
+  summary: string | null;
   setTitle: (title: string | null) => void;
-  setSubtitle: (subtitle: string | null) => void;
+  setSummary: (summary: string | null) => void;
 
   setActiveCell: (row: number, col: number) => void;
   updateCellContent: (content: string) => void;
@@ -145,9 +145,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     lastHistoryId: 0,
 
     title: null,
-    subtitle: null,
+    summary: null,
     setTitle: (title: string | null) => set({ title }),
-    setSubtitle: (subtitle: string | null) => set({ subtitle }),
+    setSummary: (summary: string | null) => set({ summary }),
 
     getData: (cell: CellCoordinates) => {
       const { row, col } = cell;
