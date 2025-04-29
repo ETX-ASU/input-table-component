@@ -12,18 +12,65 @@ interface ColorPickerProps {
   label?: string;
 }
 
-// Define our color palette - reorganized by variation
+// Define our color palette using ETX colors
 // Each array represents a variation level (from darkest to lightest)
-// Each item in the array represents a color family (red, orange, yellow, green, blue, purple, neutral)
+// Order: Blue, Orange, Purple, Green, Red, Yellow, Dark Gray, Light Gray
 const colorPalette = [
-  // Darkest variations (row 1)
-  ["#EF5350", "#FFA726", "#FFEE58", "#66BB6A", "#42A5F5", "#AB47BC", "#000000"],
-  // Dark variations (row 2)
-  ["#E57373", "#FFB74D", "#FFF176", "#81C784", "#64B5F6", "#BA68C8", "#9E9E9E"],
-  // Light variations (row 3)
-  ["#EF9A9A", "#FFCC80", "#FFF59D", "#A5D6A7", "#90CAF9", "#CE93D8", "#E0E0E0"],
-  // Lightest variations (row 4)
-  ["#FFCDD2", "#FFE0B2", "#FFF9C4", "#C8E6C9", "#BBDEFB", "#E1BEE7", "#FFFFFF"],
+  // 100% variations (row 1)
+  [
+    "#006586",
+    "#d77009",
+    "#5b2778",
+    "#195e2f",
+    "#bd1f2e",
+    "#fce300",
+    "#333333",
+    "#999999",
+  ],
+  // 80% variations (row 2)
+  [
+    "#3398b9",
+    "#df8d3a",
+    "#7c5293",
+    "#477e59",
+    "#ca4c58",
+    "#fde933",
+    "#484848",
+    "#adadad",
+  ],
+  // 60% variations (row 3)
+  [
+    "#66b2cb",
+    "#e7a96b",
+    "#9d7dae",
+    "#759e82",
+    "#d77982",
+    "#fdee66",
+    "#5c5c5c",
+    "#c2c2c2",
+  ],
+  // 40% variations (row 4)
+  [
+    "#99cbdc",
+    "#efc69d",
+    "#bda9c9",
+    "#a3bfac",
+    "#e5a5ab",
+    "#fef4cc",
+    "#717171",
+    "#d6d6d6",
+  ],
+  // 20% variations (row 5)
+  [
+    "#cce5ee",
+    "#ffe8cc",
+    "#ded4e4",
+    "#d1dfd5",
+    "#f2d2d5",
+    "#fef9cc",
+    "#858585",
+    "#ebebeb",
+  ],
 ];
 
 export function ColorPicker({
@@ -112,7 +159,7 @@ export function ColorPicker({
             </div>
 
             {/* Color grid */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-8 gap-1">
               {colorPalette.map((row, rowIndex) =>
                 row.map((color, colIndex) => (
                   <button
