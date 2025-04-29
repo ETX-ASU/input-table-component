@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { ChevronDown, ExternalLink, Lock } from "lucide-react";
 import { FC, RefObject } from "react";
 import { DEFAULT_ROW_HEIGHT } from "../lib/constants";
-import { AppMode, CellCoordinates, CellData, TextAlign } from "../lib/store";
+import { CellCoordinates, CellData, TextAlign } from "../lib/store";
 import {
   Select,
   SelectContent,
@@ -26,25 +26,25 @@ const buildCommonStyles = (cell: CellData) => ({
   fontFamily: cell.fontFamily,
 });
 
-const buildCommonClasses = (cell: CellData, appMode: AppMode) =>
+const buildCommonClasses = (cell: CellData, canInteractWithCell: boolean) =>
   clsx(
     "h-full w-full bg-transparent px-2 py-1 focus:outline-none",
     buildAlignmentClass(cell.textAlign),
     cell.isBold && "font-bold",
     cell.isItalic && "italic",
     cell.isStrikethrough && "line-through",
-    cell.disabled && appMode === "preview" && "cursor-not-allowed opacity-70",
+    !canInteractWithCell && "cursor-not-allowed opacity-70",
   );
 
 type LinkCellProps = {
   cell: CellData;
-  appMode: AppMode;
+  canInteractWithCell: boolean;
 };
 
-const LinkCell: FC<LinkCellProps> = ({ cell, appMode }) => (
+const LinkCell: FC<LinkCellProps> = ({ cell, canInteractWithCell }) => (
   <div
     className={clsx(
-      buildCommonClasses(cell, appMode),
+      buildCommonClasses(cell, canInteractWithCell),
       "flex items-center gap-1 overflow-hidden text-blue-600 underline",
     )}
     style={{ ...buildCommonStyles(cell), height: DEFAULT_ROW_HEIGHT - 1 }}
@@ -57,7 +57,7 @@ const LinkCell: FC<LinkCellProps> = ({ cell, appMode }) => (
 );
 
 type InputCellProps = {
-  appMode: AppMode;
+  canInteractWithCell: boolean;
   inputMode: "numeric" | "text";
   cell: CellData;
   coordinates: CellCoordinates;
@@ -71,7 +71,7 @@ type InputCellProps = {
 };
 
 const InputCell: FC<InputCellProps> = ({
-  appMode,
+  canInteractWithCell,
   inputMode,
   cell,
   coordinates,
@@ -92,9 +92,9 @@ const InputCell: FC<InputCellProps> = ({
       value={cell.content}
       onChange={handleCellChange}
       onKeyDown={(e) => handleKeyDown(e, row, col)}
-      className={buildCommonClasses(cell, appMode)}
+      className={buildCommonClasses(cell, canInteractWithCell)}
       style={buildCommonStyles(cell)}
-      disabled={cell.disabled && appMode === "preview"}
+      disabled={!canInteractWithCell}
     />
   );
 };
@@ -106,7 +106,7 @@ type SelectCellProps = {
   onCellClick: (row: number, col: number) => void;
   onOpenSelectDropdown: (cellKey: string | null) => void;
   onSelectChange: (value: string, row: number, col: number) => void;
-  appMode: AppMode;
+  canInteractWithCell: boolean;
 };
 
 const SelectCell: FC<SelectCellProps> = ({
@@ -116,18 +116,17 @@ const SelectCell: FC<SelectCellProps> = ({
   onCellClick,
   onOpenSelectDropdown,
   onSelectChange,
-  appMode,
+  canInteractWithCell,
 }) => {
   const { row, col } = coordinates;
   const key = buildCellKey(coordinates);
-  const isPreviewDisabled = appMode === "preview" && cell.disabled;
 
   return (
     <div
       className={clsx(
-        buildCommonClasses(cell, appMode),
+        buildCommonClasses(cell, canInteractWithCell),
         "relative flex h-full items-center",
-        isPreviewDisabled ? "cursor-not-allowed" : "cursor-pointer",
+        !canInteractWithCell ? "cursor-not-allowed" : "cursor-pointer",
       )}
       style={buildCommonStyles(cell)}
       onClick={() => onCellClick(row, col)}
@@ -137,10 +136,10 @@ const SelectCell: FC<SelectCellProps> = ({
         className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-gray-100"
         onClick={() => onOpenSelectDropdown(key)}
       >
-        {isPreviewDisabled ? (
-          <Lock className="h-3 w-3" />
-        ) : (
+        {canInteractWithCell ? (
           <ChevronDown className="h-3 w-3" />
+        ) : (
+          <Lock className="h-3 w-3" />
         )}
       </div>
       {/* Hidden Select component that opens when dropdown icon is clicked */}
@@ -149,7 +148,7 @@ const SelectCell: FC<SelectCellProps> = ({
         onValueChange={(value) => onSelectChange(value, row, col)}
         open={openSelectCell === key}
         onOpenChange={(open) => !open && onOpenSelectDropdown(null)}
-        disabled={cell.disabled && appMode === "preview"}
+        disabled={!canInteractWithCell}
       >
         <SelectTrigger className="sr-only">
           <SelectValue />
