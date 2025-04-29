@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { Palette, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
@@ -16,7 +17,11 @@ interface ColorPickerProps {
 // Each array represents a variation level (from darkest to lightest)
 // Order: Blue, Orange, Purple, Green, Red, Yellow, Dark Gray, Light Gray
 const colorPalette = [
-  // 100% variations (row 1)
+  // 80% Dark variations
+  ["#00516b", "#ac5a07", "#491f60", "#144b26", "#971925", "#cab600", "", ""],
+  // 60% Dark variations
+  ["#003d50", "#814305", "#371748", "#0f381c", "#71131c", "#978800", "", ""],
+  // 100% variations
   [
     "#006586",
     "#d77009",
@@ -24,10 +29,10 @@ const colorPalette = [
     "#195e2f",
     "#bd1f2e",
     "#fce300",
-    "#333333",
-    "#999999",
+    "#5c5c5c",
+    "#c2c2c2",
   ],
-  // 80% variations (row 2)
+  // 80% variations
   [
     "#3398b9",
     "#df8d3a",
@@ -35,10 +40,10 @@ const colorPalette = [
     "#477e59",
     "#ca4c58",
     "#fde933",
-    "#484848",
-    "#adadad",
+    "#717171",
+    "#d6d6d6",
   ],
-  // 60% variations (row 3)
+  // 60% variations
   [
     "#66b2cb",
     "#e7a96b",
@@ -46,10 +51,10 @@ const colorPalette = [
     "#759e82",
     "#d77982",
     "#fdee66",
-    "#5c5c5c",
-    "#c2c2c2",
+    "#858585",
+    "#ebebeb",
   ],
-  // 40% variations (row 4)
+  // 40% variations
   [
     "#99cbdc",
     "#efc69d",
@@ -57,10 +62,10 @@ const colorPalette = [
     "#a3bfac",
     "#e5a5ab",
     "#fef4cc",
-    "#717171",
-    "#d6d6d6",
+    "#999999",
+    "#ffffff",
   ],
-  // 20% variations (row 5)
+  // 20% variations
   [
     "#cce5ee",
     "#ffe8cc",
@@ -68,8 +73,8 @@ const colorPalette = [
     "#d1dfd5",
     "#f2d2d5",
     "#fef9cc",
-    "#858585",
-    "#ebebeb",
+    "#adadad",
+    "#ffffff",
   ],
 ];
 
@@ -164,13 +169,19 @@ export function ColorPicker({
                 row.map((color, colIndex) => (
                   <button
                     key={`${rowIndex}-${colIndex}`}
-                    className="h-8 w-8 cursor-pointer rounded-md border border-gray-200"
-                    style={{ backgroundColor: color }}
+                    className={clsx(
+                      "h-8 w-8 rounded-md",
+                      color && "cursor-pointer border border-gray-200",
+                    )}
+                    style={{ backgroundColor: color || "transparent" }}
                     onClick={() => {
-                      onChange(color);
-                      setIsOpen(false);
+                      if (color) {
+                        onChange(color);
+                        setIsOpen(false);
+                      }
                     }}
-                    aria-label={`Select color ${color}`}
+                    disabled={!color}
+                    aria-label={color ? `Select color ${color}` : undefined}
                   />
                 )),
               )}
