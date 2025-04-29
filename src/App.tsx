@@ -9,8 +9,8 @@ export default function Home() {
   return (
     <main className="container">
       {isLoading ? (
-        <div className="flex items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900" />
+        <div className="mt-20 flex justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
         </div>
       ) : (
         <Spreadsheet />
