@@ -1,6 +1,5 @@
 export const capi = {
   defaults: {
-    // Mode: "Config", // Determines if the component is in set up (config) mode or student mode
     InitialConfig: "", // Captures the current config of the table, including any student input values in cells.
     TableJSON: "", // Current configuration including what a student might change
     IsModifed: false, // Indicates if the student has modified every table cell.
@@ -17,13 +16,6 @@ export const capi = {
   },
 
   exposeWith: {
-    // Mode: {
-    //   type: "enum",
-    //   allowedValues: ["Config", "Preview"],
-    //   alias: "Mode",
-    //   readonly: false,
-    //   writeonly: false,
-    // },
     InitialConfig: {
       type: "string",
       alias: "InitialConfig",
