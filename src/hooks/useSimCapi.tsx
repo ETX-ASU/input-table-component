@@ -149,9 +149,9 @@ const handlers = {
       injectCSS(css);
     },
   },
-  Enable: {
+  Enabled: {
     capiChange: () => {
-      const enableTable = simModel.get("Enable");
+      const enableTable = !!JSON.parse(simModel.get("Enabled"));
       useSpreadsheetStore.setState({ enableTable });
     },
   },
