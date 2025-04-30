@@ -170,7 +170,7 @@ export const useSimCapi = () => {
       const changedCells: CellCoordinates[] = [];
       state.data.forEach((row, rowIndex) => {
         row.forEach((cell, colIndex) => {
-          if (!isEqual(cell, prevData.current[rowIndex][colIndex])) {
+          if (!isEqual(cell, prevData.current?.[rowIndex]?.[colIndex])) {
             changedCells.push({ row: rowIndex, col: colIndex });
           }
         });

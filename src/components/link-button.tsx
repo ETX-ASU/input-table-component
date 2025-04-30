@@ -15,7 +15,7 @@ import { Toggle } from "./ui/toggle";
 
 interface LinkDialogProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: VoidFunction;
   onSave: (url: string | null) => void;
   initialUrl: string | null;
 }
