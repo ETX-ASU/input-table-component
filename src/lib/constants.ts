@@ -16,6 +16,8 @@ export const DEFAULT_FONT_COLOR = gray[100];
 
 export const DEFAULT_ROW_HEIGHT = 28;
 export const DEFAULT_COLUMN_WIDTH = 100;
+export const DEFAULT_COLUMN_COUNT = 5;
+export const DEFAULT_ROW_COUNT = 5;
 
 export const DEFAULT_CONTENT_ALIGN: TextAlign = "left";
 

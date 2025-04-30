@@ -1,7 +1,9 @@
 import { cloneDeep } from "lodash";
 import { create } from "zustand";
 import {
+  DEFAULT_COLUMN_COUNT,
   DEFAULT_COLUMN_WIDTH,
+  DEFAULT_ROW_COUNT,
   DEFAULT_ROW_HEIGHT,
   MAX_HISTORY_LENGTH,
 } from "./constants";
@@ -54,7 +56,7 @@ export interface SpreadsheetState {
   permissionLevel: PermissionLevel;
   enableTable: boolean;
   appMode: AppMode;
-  toggleAppMode: () => void;
+  toggleAppMode: VoidFunction;
 
   undoStack: HistoryEntry[];
   redoStack: HistoryEntry[];
@@ -65,6 +67,8 @@ export interface SpreadsheetState {
   summary: string | null;
   setTitle: (title: string | null) => void;
   setSummary: (summary: string | null) => void;
+
+  resetTable: VoidFunction;
 
   setActiveCell: (row: number, col: number) => void;
   updateCellContent: (content: string) => void;
@@ -78,26 +82,26 @@ export interface SpreadsheetState {
   setContentType: (contentType: CellContentType) => void;
   setSelectOptions: (options: string[]) => void;
   setLink: (url: string | null) => void;
-  toggleCellDisabled: () => void;
-  addRow: () => void;
-  removeRow: () => void;
-  addColumn: () => void;
-  removeColumn: () => void;
+  toggleCellDisabled: VoidFunction;
+  addRow: VoidFunction;
+  removeRow: VoidFunction;
+  addColumn: VoidFunction;
+  removeColumn: VoidFunction;
 
   deleteRow: (rowIndex: number) => void;
   deleteColumn: (colIndex: number) => void;
 
   startResize: (index: number, clientX: number) => void;
   updateResize: (clientX: number) => void;
-  endResize: () => void;
+  endResize: VoidFunction;
 
   startRowResize: (index: number, clientY: number) => void;
   updateRowResize: (clientY: number) => void;
-  endRowResize: () => void;
+  endRowResize: VoidFunction;
 
-  pushToHistory: () => void;
-  undo: () => void;
-  redo: () => void;
+  pushToHistory: VoidFunction;
+  undo: VoidFunction;
+  redo: VoidFunction;
   canUndo: () => boolean;
   canRedo: () => boolean;
 
@@ -112,15 +116,13 @@ const createInitialData = (rows: number, cols: number): CellData[][] => {
 };
 
 const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
-  const initialData = createInitialData(5, 5);
-
   return {
     isLoading: true,
 
-    data: initialData,
+    data: createInitialData(DEFAULT_ROW_COUNT, DEFAULT_COLUMN_COUNT),
     activeCell: null,
-    columnWidths: Array(initialData[0].length).fill(DEFAULT_COLUMN_WIDTH),
-    rowHeights: Array(initialData.length).fill(DEFAULT_ROW_HEIGHT),
+    columnWidths: Array(DEFAULT_COLUMN_COUNT).fill(DEFAULT_COLUMN_WIDTH),
+    rowHeights: Array(DEFAULT_ROW_COUNT).fill(DEFAULT_ROW_HEIGHT),
     isResizing: null,
     isResizingRow: null,
     startX: 0,
@@ -130,7 +132,10 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     enableTable: true,
     permissionLevel: "student",
-
+    title: null,
+    setTitle: (title) => set({ title }),
+    summary: null,
+    setSummary: (summary) => set({ summary }),
     appMode: "config",
     toggleAppMode: () =>
       set((state) => ({
@@ -142,17 +147,34 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     isUndoRedo: false,
     lastHistoryId: 0,
 
-    title: null,
-    summary: null,
-    setTitle: (title: string | null) => set({ title }),
-    setSummary: (summary: string | null) => set({ summary }),
-
-    getData: (cell: CellCoordinates) => {
+    getData: (cell) => {
       const { row, col } = cell;
       return get().data[row][col];
     },
 
-    pushToHistory: () => {
+    resetTable: () => {
+      if (get().appMode === "preview") return;
+
+      const newData = createInitialData(
+        DEFAULT_ROW_COUNT,
+        DEFAULT_COLUMN_COUNT,
+      );
+      const newColumnWidths =
+        Array(DEFAULT_COLUMN_COUNT).fill(DEFAULT_COLUMN_WIDTH);
+      const newRowHeights = Array(DEFAULT_ROW_COUNT).fill(DEFAULT_ROW_HEIGHT);
+
+      // Push to history before resetting
+      get().pushToHistory();
+
+      return set({
+        data: newData,
+        activeCell: null,
+        columnWidths: newColumnWidths,
+        rowHeights: newRowHeights,
+      });
+    },
+
+    pushToHistory: () =>
       set((state) => {
         if (state.isUndoRedo) return state;
 
@@ -173,10 +195,8 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
           redoStack: [],
           lastHistoryId: state.lastHistoryId + 1,
         };
-      });
-    },
+      }),
 
-    // Undo the ast action
     undo: () => {
       const canUndo = get().canUndo();
       if (!canUndo) return;
@@ -498,18 +518,19 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     addRow: () =>
       set((state) => {
         if (state.appMode === "preview") return state;
+        get().pushToHistory();
 
-        const newRow = Array(state.data[0].length)
-          .fill(0)
-          .map(buildDefaultCell);
+        const newData = cloneDeep(state.data);
+        const newRow = newData[0].map(() => buildDefaultCell());
+        newData.push(newRow);
 
-        const newData = [...state.data, newRow];
         const newRowHeights = [...state.rowHeights, DEFAULT_ROW_HEIGHT];
 
         // Push to history immediately
-        const result = { data: newData, rowHeights: newRowHeights };
-        get().pushToHistory();
-        return result;
+        return {
+          data: newData,
+          rowHeights: newRowHeights,
+        };
       }),
 
     removeRow: () =>
@@ -575,6 +596,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         // Push to history immediately
         const result = { data: newData, columnWidths: newColumnWidths };
         get().pushToHistory();
+        console.log("addColumn", result);
         return result;
       }),
 
@@ -711,7 +733,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       return set(result);
     },
 
-    canInteractWithCell: (coordinates: CellCoordinates) => {
+    canInteractWithCell: (coordinates) => {
       const state = get();
       const cell = state.getData(coordinates);
       const isPreviewMode = state.appMode === "preview";

@@ -24,6 +24,7 @@ import { ColorPicker } from "./color-picker";
 import { FontSelector } from "./font-selector";
 import { LinkButton } from "./link-button";
 import { ModeToggle } from "./mode-toggle";
+import { ResetTableButton } from "./reset-table-button";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Toggle } from "./ui/toggle";
@@ -225,6 +226,11 @@ export function SpreadsheetToolbar() {
             <Plus className="mr-1 h-4 w-4" /> Column
           </Button>
         </div>
+
+        {/* Add this after the last Separator */}
+        <Separator orientation="vertical" className="h-8" />
+
+        <ResetTableButton />
       </div>
     </div>
   );
