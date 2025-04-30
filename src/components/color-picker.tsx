@@ -13,72 +13,108 @@ interface ColorPickerProps {
   label?: string;
 }
 
-// Define our color palette using ETX colors
-// Each array represents a variation level (from darkest to lightest)
-// Order: Blue, Orange, Purple, Green, Red, Yellow, Dark Gray, Light Gray
-const colorPalette = [
-  // 80% Dark variations
-  ["#00516b", "#ac5a07", "#491f60", "#144b26", "#971925", "#cab600", "", ""],
-  // 60% Dark variations
-  ["#003d50", "#814305", "#371748", "#0f381c", "#71131c", "#978800", "", ""],
-  // 100% variations
-  [
-    "#006586",
-    "#d77009",
-    "#5b2778",
-    "#195e2f",
-    "#bd1f2e",
-    "#fce300",
-    "#5c5c5c",
-    "#c2c2c2",
-  ],
-  // 80% variations
-  [
-    "#3398b9",
-    "#df8d3a",
-    "#7c5293",
-    "#477e59",
-    "#ca4c58",
-    "#fde933",
-    "#717171",
-    "#d6d6d6",
-  ],
-  // 60% variations
-  [
-    "#66b2cb",
-    "#e7a96b",
-    "#9d7dae",
-    "#759e82",
-    "#d77982",
-    "#fdee66",
-    "#858585",
-    "#ebebeb",
-  ],
-  // 40% variations
-  [
-    "#99cbdc",
-    "#efc69d",
-    "#bda9c9",
-    "#a3bfac",
-    "#e5a5ab",
-    "#fef4cc",
-    "#999999",
-    "#ffffff",
-  ],
-  // 20% variations
-  [
-    "#cce5ee",
-    "#ffe8cc",
-    "#ded4e4",
-    "#d1dfd5",
-    "#f2d2d5",
-    "#fef9cc",
-    "#adadad",
-    "#ffffff",
-  ],
-];
+const blue = {
+  dark80: "#00516B",
+  dark60: "#003D50",
+  100: "#006586",
+  80: "#3398B9",
+  60: "#66B2CB",
+  40: "#99CBDC",
+  20: "#CCE5EE",
+} as const;
 
-export function ColorPicker({
+const orange = {
+  dark80: "#AC5A07",
+  dark60: "#814305",
+  100: "#D77009",
+  80: "#DF8D3A",
+  60: "#E7A96B",
+  40: "#EFC69D",
+  20: "#FDE933",
+} as const;
+
+const purple = {
+  dark80: "#491F60",
+  dark60: "#371748",
+  100: "#5B2778",
+  80: "#7C5293",
+  60: "#9D7DAE",
+  40: "#BDA9C9",
+  20: "#DED4E4",
+} as const;
+
+const green = {
+  dark80: "#144B26",
+  dark60: "#0F381C",
+  100: "#195E2F",
+  80: "#477E59",
+  60: "#759E82",
+  40: "#A3BFAC",
+  20: "#D1DFD5",
+} as const;
+
+const red = {
+  dark80: "#971925",
+  dark60: "#71131C",
+  100: "#BD1F2E",
+  80: "#CA4C58",
+  60: "#D77982",
+  40: "#E5A5AB",
+  20: "#F2D2D5",
+} as const;
+
+const yellow = {
+  dark80: "#CAB600",
+  dark60: "#978800",
+  100: "#FCE300",
+  80: "#FDE933",
+  60: "#FDEE66",
+  40: "#FEF4CC",
+  20: "#FEF9CC",
+} as const;
+
+const gray = {
+  dark80: "#000000",
+  dark60: "#242424",
+  100: "#333333",
+  80: "#484848",
+  60: "#5C5C5C",
+  40: "#999999",
+  20: "#ADADAD",
+} as const;
+
+const lightGray = {
+  dark80: "#FFFFFF",
+  dark60: "#F5F5F5",
+  100: "#C2C2C2",
+  80: "#CCCCCC",
+  60: "#D6D6D6",
+  40: "#E2E2E2",
+  20: "#EBEBEB",
+} as const;
+
+// Define our color palette using ETX colors
+
+const colorPalette = [
+  blue,
+  orange,
+  purple,
+  green,
+  red,
+  yellow,
+  gray,
+  lightGray,
+].map((color) => [
+  color[100],
+  color[80],
+  color[60],
+  color[40],
+  color[20],
+  color.dark60,
+  color.dark80,
+]);
+
+function ColorPicker({
   value,
   onChange,
   disabled = false,
@@ -164,7 +200,7 @@ export function ColorPicker({
             </div>
 
             {/* Color grid */}
-            <div className="grid grid-cols-8 gap-1">
+            <div className="grid grid-cols-7 gap-1">
               {colorPalette.map((row, rowIndex) =>
                 row.map((color, colIndex) => (
                   <button
@@ -211,3 +247,15 @@ export function ColorPicker({
     </div>
   );
 }
+
+export {
+  blue,
+  ColorPicker,
+  gray,
+  green,
+  lightGray,
+  orange,
+  purple,
+  red,
+  yellow,
+};
