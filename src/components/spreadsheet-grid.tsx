@@ -1,5 +1,5 @@
 import { Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ROW_HEADER_WIDTH } from "../lib/constants";
 import useSpreadsheetStore, { CellCoordinates, CellData } from "../lib/store";
 import { Cell } from "./cell";
@@ -9,6 +9,7 @@ import { ColumnHeaders, RowHeader } from "./spreadsheet-headers";
 
 // Context menu types
 type ContextMenuType = "row" | "column" | null;
+type NavigationDirection = "up" | "down" | "left" | "right";
 
 interface ContextMenuState {
   type: ContextMenuType;
@@ -40,8 +41,8 @@ export function SpreadsheetGrid() {
   const spreadsheetRef = useRef<HTMLDivElement>(null);
   const cellRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [openSelectCell, setOpenSelectCell] = useState<string | null>(null);
-
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [isSelectCellActive, setIsSelectCellActive] = useState(false);
 
   const isPreviewMode = appMode === "preview";
 
@@ -114,20 +115,140 @@ export function SpreadsheetGrid() {
     }
   }, [activeCell, getData]);
 
-  const handleKeyDown = (
+  // Navigate to a specific cell, handling disabled cells in preview mode
+  const navigateToCell = useCallback(
+    (direction: NavigationDirection) => {
+      if (!activeCell) return;
+
+      const { row, col } = activeCell;
+      const rowCount = data.length;
+      const colCount = data[0].length;
+
+      let newRow = row;
+      let newCol = col;
+
+      switch (direction) {
+        case "up":
+          newRow = Math.max(0, row - 1);
+          break;
+        case "down":
+          newRow = Math.min(rowCount - 1, row + 1);
+          break;
+        case "left":
+          newCol = Math.max(0, col - 1);
+          break;
+        case "right":
+          newCol = Math.min(colCount - 1, col + 1);
+          break;
+      }
+
+      // Skip disabled cells in preview mode
+      if (
+        isPreviewMode &&
+        newRow >= 0 &&
+        newRow < rowCount &&
+        newCol >= 0 &&
+        newCol < colCount &&
+        data[newRow][newCol].disabled
+      ) {
+        // Try to find the next non-disabled cell in the same direction
+        let attempts = 0;
+        const maxAttempts = rowCount * colCount; // Prevent infinite loops
+
+        while (attempts < maxAttempts) {
+          attempts++;
+
+          // Continue in the same direction
+          switch (direction) {
+            case "up":
+              newRow--;
+              if (newRow < 0) {
+                // Wrap to the previous column
+                newRow = rowCount - 1;
+                newCol--;
+                if (newCol < 0) {
+                  // We've reached the top-left corner
+                  return;
+                }
+              }
+              break;
+            case "down":
+              newRow++;
+              if (newRow >= rowCount) {
+                // Wrap to the next column
+                newRow = 0;
+                newCol++;
+                if (newCol >= colCount) {
+                  // We've reached the bottom-right corner
+                  return;
+                }
+              }
+              break;
+            case "left":
+              newCol--;
+              if (newCol < 0) {
+                // Wrap to the previous row
+                newCol = colCount - 1;
+                newRow--;
+                if (newRow < 0) {
+                  // We've reached the top-left corner
+                  return;
+                }
+              }
+              break;
+            case "right":
+              newCol++;
+              if (newCol >= colCount) {
+                // Wrap to the next row
+                newCol = 0;
+                newRow++;
+                if (newRow >= rowCount) {
+                  // We've reached the bottom-right corner
+                  return;
+                }
+              }
+              break;
+          }
+
+          // Check if we've found a non-disabled cell
+          if (
+            newRow >= 0 &&
+            newRow < rowCount &&
+            newCol >= 0 &&
+            newCol < colCount &&
+            !data[newRow][newCol].disabled
+          ) {
+            break;
+          }
+
+          // If we've made too many attempts, give up to prevent infinite loops
+          if (attempts >= maxAttempts) {
+            return;
+          }
+        }
+      }
+
+      // Only update if the cell position has changed
+      if (newRow !== row || newCol !== col) {
+        setActiveCell(newRow, newCol);
+      }
+    },
+    [activeCell, data, isPreviewMode, setActiveCell],
+  );
+
+  // Handle keyboard events for input cells
+  const handleInputKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
-    row: number,
+    _: number,
     col: number,
   ) => {
-    const rowCount = data.length;
-    const colCount = data[0].length;
     const input = e.currentTarget;
     const { selectionStart, selectionEnd, value } = input;
 
     // For Tab and Enter, always prevent default and handle navigation
     if (["Tab", "Enter"].includes(e.key)) {
       // Allow default behavior for Tab if we're at the edge of the grid
-      if (e.key === "Tab" && col === colCount - 1 && !e.shiftKey) {
+      if (e.key === "Tab" && col === data[0].length - 1 && !e.shiftKey) {
         return;
       }
       if (e.key === "Tab" && col === 0 && e.shiftKey) {
@@ -135,6 +256,14 @@ export function SpreadsheetGrid() {
       }
 
       e.preventDefault();
+
+      if (e.key === "Tab") {
+        navigateToCell(e.shiftKey ? "left" : "right");
+      } else {
+        // Enter
+        navigateToCell(e.shiftKey ? "up" : "down");
+      }
+      return;
     }
 
     // For arrow keys, check if we should navigate within the text or between cells
@@ -153,151 +282,68 @@ export function SpreadsheetGrid() {
       if (e.key === "ArrowUp" || e.key === "ArrowDown") {
         e.preventDefault();
       }
-    }
 
-    let newRow = row;
-    let newCol = col;
+      // Map arrow keys to directions
+      const directionMap: Record<string, NavigationDirection> = {
+        ArrowUp: "up",
+        ArrowDown: "down",
+        ArrowLeft: "left",
+        ArrowRight: "right",
+      };
 
-    switch (e.key) {
-      case "ArrowUp":
-        newRow = Math.max(0, row - 1);
-        break;
-      case "ArrowDown":
-        newRow = Math.min(rowCount - 1, row + 1);
-        break;
-      case "ArrowLeft":
-        // Only navigate to previous cell if at the beginning of text
-        if (selectionStart === 0) {
-          newCol = Math.max(0, col - 1);
-        }
-        break;
-      case "ArrowRight":
-        // Only navigate to next cell if at the end of text
-        if (selectionEnd === value.length) {
-          newCol = Math.min(colCount - 1, col + 1);
-        }
-        break;
-      case "Tab":
-        if (e.shiftKey) {
-          // Shift+Tab: move left
-          if (col > 0) {
-            newCol = col - 1;
-          } else if (row > 0) {
-            // Move to the end of the previous row
-            newRow = row - 1;
-            newCol = colCount - 1;
-          }
-        } else {
-          // Tab: move right
-          if (col < colCount - 1) {
-            newCol = col + 1;
-          } else if (row < rowCount - 1) {
-            // Move to the beginning of the next row
-            newRow = row + 1;
-            newCol = 0;
-          }
-        }
-        break;
-      case "Enter":
-        if (e.shiftKey) {
-          // Shift+Enter: move up
-          if (row > 0) {
-            newRow = row - 1;
-          } else {
-            // If at the top row, wrap to the bottom of the previous column
-            if (col > 0) {
-              newCol = col - 1;
-              newRow = rowCount - 1;
-            }
-          }
-        } else {
-          // Enter: move down
-          if (row < rowCount - 1) {
-            newRow = row + 1;
-          } else {
-            // If at the bottom row, wrap to the top of the next column
-            if (col < colCount - 1) {
-              newCol = col + 1;
-              newRow = 0;
-            }
-          }
-        }
-        break;
-      default:
-        return; // Exit for other keys
-    }
-
-    // Only update if the cell position has changed
-    if (newRow !== row || newCol !== col) {
-      // In preview mode, skip disabled cells
-      if (!canInteractWithCell({ row: newRow, col: newCol })) {
-        let foundNonDisabled = false;
-        let attempts = 0;
-        const maxAttempts = rowCount * colCount;
-
-        const movingDown = newRow > row;
-        const movingUp = newRow < row;
-        const movingRight = newCol > col;
-        const movingLeft = newCol < col;
-
-        // Store original target position
-        const [originalNewRow, originalNewCol] = [newRow, newCol];
-
-        while (!foundNonDisabled && attempts < maxAttempts) {
-          attempts++;
-
-          if (movingDown) {
-            newRow++;
-            if (newRow >= rowCount) {
-              newRow = 0;
-              newCol = (newCol + 1) % colCount;
-            }
-          } else if (movingUp) {
-            newRow--;
-            if (newRow < 0) {
-              newRow = rowCount - 1;
-              newCol = (newCol - 1 + colCount) % colCount;
-            }
-          } else if (movingRight) {
-            newCol++;
-            if (newCol >= colCount) {
-              newCol = 0;
-              newRow = (newRow + 1) % rowCount;
-            }
-          } else if (movingLeft) {
-            newCol--;
-            if (newCol < 0) {
-              newCol = colCount - 1;
-              newRow = (newRow - 1 + rowCount) % rowCount;
-            }
-          }
-
-          if (newRow === row && newCol === col) {
-            return;
-          }
-
-          if (
-            newRow >= 0 &&
-            newRow < rowCount &&
-            newCol >= 0 &&
-            newCol < colCount
-          ) {
-            if (!data[newRow][newCol].disabled) {
-              foundNonDisabled = true;
-            }
-          }
-
-          if (attempts >= maxAttempts) {
-            newRow = originalNewRow;
-            newCol = originalNewCol;
-            return;
-          }
-        }
-      }
-
-      setActiveCell(newRow, newCol);
+      navigateToCell(directionMap[e.key]);
     }
   };
+
+  // Global keyboard event handler
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Only handle navigation if we have an active cell and it's a select cell
+      if (!activeCell || !isSelectCellActive) return;
+
+      // Skip if we're in an input or textarea
+      if (
+        document.activeElement instanceof HTMLInputElement ||
+        document.activeElement instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      // Handle arrow keys for select cells
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        e.preventDefault();
+
+        // Map arrow keys to directions
+        const directionMap: Record<string, NavigationDirection> = {
+          ArrowUp: "up",
+          ArrowDown: "down",
+          ArrowLeft: "left",
+          ArrowRight: "right",
+        };
+
+        console.log(
+          `Global handler: ${e.key} pressed, navigating ${directionMap[e.key]}`,
+        );
+        navigateToCell(directionMap[e.key]);
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleGlobalKeyDown);
+    };
+  }, [activeCell, isSelectCellActive, navigateToCell]);
+
+  // Update isSelectCellActive when activeCell changes
+  useEffect(() => {
+    if (activeCell) {
+      const { row, col } = activeCell;
+      const cell = data[row][col];
+      setIsSelectCellActive(cell.contentType === "select");
+    } else {
+      setIsSelectCellActive(false);
+    }
+  }, [activeCell, data]);
 
   // Handle mouse move during resize
   useEffect(() => {
@@ -358,7 +404,7 @@ export function SpreadsheetGrid() {
             coordinates={{ row: rowIndex, col: colIndex }}
             cellRefs={cellRefs}
             handleCellChange={handleCellChange}
-            handleKeyDown={handleKeyDown}
+            handleKeyDown={handleInputKeyDown}
           />
         );
       case "select":
@@ -387,7 +433,7 @@ export function SpreadsheetGrid() {
             coordinates={{ row: rowIndex, col: colIndex }}
             cellRefs={cellRefs}
             handleCellChange={handleCellChange}
-            handleKeyDown={handleKeyDown}
+            handleKeyDown={handleInputKeyDown}
           />
         );
     }

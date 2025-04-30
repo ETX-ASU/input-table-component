@@ -3,11 +3,11 @@ import { useEffect, useRef, useState } from "react";
 interface ContextMenuProps {
   x: number;
   y: number;
-  onClose: () => void;
+  onClose: VoidFunction;
   options: {
     label: string;
     icon?: React.ReactNode;
-    onClick: () => void;
+    onClick: VoidFunction;
   }[];
 }
 
