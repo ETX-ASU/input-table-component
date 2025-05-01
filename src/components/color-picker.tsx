@@ -74,13 +74,13 @@ const yellow = {
 } as const;
 
 const gray = {
-  dark80: "#000000",
-  dark60: "#242424",
-  100: "#333333",
-  80: "#484848",
-  60: "#5C5C5C",
-  40: "#999999",
-  20: "#ADADAD",
+  100: "#000000",
+  80: "#242424",
+  60: "#333333",
+  40: "#484848",
+  20: "#5C5C5C",
+  dark60: "#999999",
+  dark80: "#ADADAD",
 } as const;
 
 const lightGray = {
@@ -94,7 +94,6 @@ const lightGray = {
 } as const;
 
 // Define our color palette using ETX colors
-
 const colorPalette = [
   blue,
   orange,
