@@ -8,7 +8,7 @@ export const capi = {
     Enabled: true, // Indicated whether the table is enabled or disabled for students to interact with it
     ShowHints: false, // When true, highlights correct cells in green and incorrect cells in red.
     CSVImport: "", // Allows importing table structure and data from a formatted CSV string. (Stretch Goal)
-    Reset: false, // When set to true, resets the table to its default state.
+    // Reset: false, // When set to true, resets the table to its default state.
     Color: "", // Could be hex, color name, etc
     CSS: "",
     Title: "",
@@ -64,12 +64,12 @@ export const capi = {
       readonly: false,
       writeonly: false,
     },
-    Reset: {
-      type: "boolean",
-      alias: "Reset",
-      readonly: false,
-      writeonly: false,
-    },
+    // Reset: {
+    //   type: "boolean",
+    //   alias: "Reset",
+    //   readonly: false,
+    //   writeonly: false,
+    // },
     Color: {
       type: "string",
       alias: "Color",
