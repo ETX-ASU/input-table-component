@@ -1,9 +1,4 @@
 import { FC, PropsWithChildren } from "react";
-import {
-  BACKGROUND_COLOR_LIGHT_BLUE,
-  BACKGROUND_COLOR_LIGHT_GRAY,
-  BACKGROUND_COLOR_SUBTLE_GRAY,
-} from "../lib/constants";
 import useSpreadsheetStore, {
   AppMode,
   CellCoordinates,
@@ -18,31 +13,31 @@ const buildCellBackgroundColor = (
   canInteractWithCell: boolean,
 ) => {
   const { row, col } = coordinates;
-  const isPreviewMode = appMode === "preview";
-
-  const isActive = row === activeCell?.row && col === activeCell?.col;
-  // Base background color
-  const bgColor = cell.backgroundColor || "transparent";
-
-  if (isActive) {
-    return bgColor !== "transparent"
-      ? `${bgColor}dd`
-      : BACKGROUND_COLOR_LIGHT_BLUE;
+  if (activeCell?.row === row && activeCell?.col === col) {
+    return "#e6f0ff"; // Light blue
   }
 
-  // In preview mode, add a stronger visual for disabled cells
-  if (!canInteractWithCell) {
-    return bgColor !== "transparent"
-      ? `${bgColor}80`
-      : BACKGROUND_COLOR_LIGHT_GRAY;
+  // Preview mode handling
+  if (appMode === "preview" || !canInteractWithCell) {
+    if (cell.disabled) {
+      return "transparent"; // Disabled cells in preview mode are transparent
+    } else {
+      return "#f0f8ff"; // Enabled cells in preview mode are light blue
+    }
   }
 
-  // In config mode, add a subtle visual for disabled cells
-  if (!isPreviewMode && cell.disabled) {
-    return bgColor !== "transparent" ? bgColor : BACKGROUND_COLOR_SUBTLE_GRAY;
+  // Config mode handling
+  if (cell.disabled) {
+    // In config mode, add a subtle visual for disabled cells
+    return cell.backgroundColor !== "transparent"
+      ? cell.backgroundColor
+      : "#fafafa"; // Very subtle gray
   }
 
-  return bgColor;
+  // Default case: use the cell's background color
+  return cell.backgroundColor !== "transparent"
+    ? cell.backgroundColor
+    : "transparent";
 };
 
 type CellProps = {
