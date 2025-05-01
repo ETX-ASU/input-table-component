@@ -1,3 +1,4 @@
+import { CellCoordinates } from "../store.ts";
 import { capi } from "./model.ts";
 import "./simcapi.js";
 
@@ -19,4 +20,28 @@ for (const key in capi.exposeWith) {
 // Notify when ready
 simcapi.Transporter.notifyOnReady();
 
-export { simModel };
+const cellModelKey = ({ col, row }: CellCoordinates) =>
+  `Cell.Column.${col}.Row.${row}`;
+
+const dinamicallyAddToSimModel = (
+  props: { name: string; defaultValue: string }[],
+) => {
+  props.forEach(({ name, defaultValue }) => {
+    simModel.set(name, defaultValue);
+    simcapi.CapiAdapter.expose(name, simModel);
+  });
+  simcapi.Transporter.notifyOnReady();
+};
+
+const dinamicallyRemoveFromSimModel = (props: { name: string }[]) => {
+  props.forEach(({ name }) => {
+    simcapi.CapiAdapter.unexpose(name);
+  });
+};
+
+export {
+  cellModelKey,
+  dinamicallyAddToSimModel,
+  dinamicallyRemoveFromSimModel,
+  simModel,
+};

@@ -1,6 +1,11 @@
 import { cloneDeep, isEqual } from "lodash";
 import { useEffect, useRef } from "react";
-import { simModel } from "../lib/simcapi";
+import {
+  cellModelKey,
+  dinamicallyAddToSimModel,
+  dinamicallyRemoveFromSimModel,
+  simModel,
+} from "../lib/simcapi";
 import useSpreadsheetStore, {
   CellCoordinates,
   CellData,
@@ -47,6 +52,7 @@ const handlers = {
     capiChange: () => {
       const strInitialConfig = simModel.get("InitialConfig");
       const initialConfig = parseState(strInitialConfig);
+      simModel.set("TableJSON", strInitialConfig);
       if (initialConfig) {
         useSpreadsheetStore.setState(initialConfig);
       }
@@ -154,30 +160,111 @@ const handlers = {
   },
 };
 
+const handleAddedCells = (addedCells: CellCoordinates[]) => {
+  const { getData, permissionLevel } = useSpreadsheetStore.getState();
+
+  if (permissionLevel === "student") return;
+
+  const toAdd = addedCells
+    .filter((cell) => !simModel.has(cellModelKey(cell)))
+    .map((cell) => ({
+      name: cellModelKey(cell),
+      defaultValue: getData(cell).content,
+    }));
+
+  dinamicallyAddToSimModel(toAdd);
+};
+
+const handleRemovedCells = (removedCells: CellCoordinates[]) => {
+  const { permissionLevel } = useSpreadsheetStore.getState();
+
+  if (permissionLevel === "student") return;
+
+  const toRemove = removedCells
+    .filter((cell) => simModel.has(cellModelKey(cell)))
+    .map((cell) => ({
+      name: cellModelKey(cell),
+    }));
+
+  dinamicallyRemoveFromSimModel(toRemove);
+};
+
+const handleModifiedCells = (modifiedCells: CellCoordinates[]) => {
+  const { getData } = useSpreadsheetStore.getState();
+
+  modifiedCells.forEach((cell) => {
+    simModel.set(cellModelKey(cell), getData(cell).content);
+  });
+};
+
+const setupCells = () => {
+  const { data, permissionLevel, getData } = useSpreadsheetStore.getState();
+
+  if (permissionLevel === "student") return;
+
+  const toAdd = data
+    .flatMap((row, rowIdx) =>
+      row.map((_, colIdx) => ({ row: rowIdx, col: colIdx })),
+    )
+    .filter((cell) => !simModel.has(cellModelKey(cell)))
+    .map((coordinates) => ({
+      name: cellModelKey(coordinates),
+      defaultValue: getData(coordinates).content,
+    }));
+
+  dinamicallyAddToSimModel(toAdd);
+};
+
 export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
   useOnce(handlers.PermissionLevel.capiChange);
+  useOnce(setupCells);
 
   useEffect(() => {
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
 
-      const changedKeys = Object.keys(state).filter((k) => {
+      const modifiedKeys = Object.keys(state).filter((k) => {
         const key = k as keyof SpreadsheetState;
         return !isEqual(state[key], prevState[key]);
       });
 
-      const changedCells: CellCoordinates[] = [];
+      const addedCells: CellCoordinates[] = [];
+      const removedCells: CellCoordinates[] = [];
+      const modifiedCells: CellCoordinates[] = [];
+
+      // First check for removed cells by comparing previous state dimensions
+      prevData.current?.forEach((row, rowIndex) => {
+        row.forEach((_, colIndex) => {
+          if (
+            !state.data[rowIndex] ||
+            state.data[rowIndex][colIndex] === undefined
+          ) {
+            removedCells.push({ row: rowIndex, col: colIndex });
+          }
+        });
+      });
+
+      // Then check for added and modified cells
       state.data.forEach((row, rowIndex) => {
         row.forEach((cell, colIndex) => {
-          if (!isEqual(cell, prevData.current?.[rowIndex]?.[colIndex])) {
-            changedCells.push({ row: rowIndex, col: colIndex });
+          if (
+            !prevData.current?.[rowIndex] ||
+            prevData.current?.[rowIndex][colIndex] === undefined
+          ) {
+            addedCells.push({ row: rowIndex, col: colIndex });
+          } else if (!isEqual(cell, prevData.current?.[rowIndex][colIndex])) {
+            modifiedCells.push({ row: rowIndex, col: colIndex });
           }
         });
       });
 
       // Avoid unnecessary updates
-      if (!isEqual(changedKeys, ["activeCell"]) && !changedCells.length) return;
+      if (
+        !isEqual(modifiedKeys, ["activeCell"]) &&
+        ![...addedCells, ...removedCells, ...modifiedCells].length
+      )
+        return;
 
       const clonedState: Partial<SpreadsheetState> = cloneDeep(state);
       delete clonedState.activeCell;
@@ -192,6 +279,10 @@ export const useSimCapi = () => {
       handlers.TableJSON.stateChange(clonedState);
       handlers.IsModified.stateChange(prevData.current, state.data);
       handlers.IsCompleted.stateChange(state);
+
+      handleAddedCells(addedCells);
+      handleRemovedCells(removedCells);
+      handleModifiedCells(modifiedCells);
 
       prevData.current = cloneDeep(clonedState.data!);
     });

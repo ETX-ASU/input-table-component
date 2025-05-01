@@ -596,7 +596,6 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         // Push to history immediately
         const result = { data: newData, columnWidths: newColumnWidths };
         get().pushToHistory();
-        console.log("addColumn", result);
         return result;
       }),
 
