@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import {
   cellModelKey,
   dinamicallyAddToSimModel,
+  dinamicallyRemoveFromSimModel,
   simModel,
 } from "../lib/simcapi";
 import useSpreadsheetStore, {
@@ -36,7 +37,6 @@ const parseState = (str: string) => {
 
 const addCapiEventListener = (value: string, handler: VoidFunction) => {
   simModel.on("change:" + value, () => {
-    console.log("change", value);
     handler();
   });
   return () => {
@@ -169,42 +169,52 @@ const handlers = {
   },
 };
 
-// const handleAddedCells = (addedCells: CellCoordinates[]) => {
-//   const { getData, permissionLevel } = useSpreadsheetStore.getState();
+const handleAddedCells = (addedCells: CellCoordinates[]): VoidFunction[] => {
+  const { getData, permissionLevel } = useSpreadsheetStore.getState();
 
-//   if (permissionLevel === "student") return;
+  if (permissionLevel === "student") return [];
 
-//   const toAdd = addedCells
-//     .filter((cell) => !simModel.has(cellModelKey(cell)))
-//     .map((cell) => ({
-//       name: cellModelKey(cell),
-//       defaultValue: getData(cell).content,
-//     }));
+  const toAdd = addedCells
+    .filter((coordinates) => !simModel.has(cellModelKey(coordinates)))
+    .map((coordinates) => ({
+      name: cellModelKey(coordinates),
+      defaultValue: getData(coordinates).content,
+      coordinates,
+    }));
 
-//   dinamicallyAddToSimModel(toAdd);
-// };
+  dinamicallyAddToSimModel(toAdd);
+  return toAdd.map((cell) =>
+    addCapiEventListener(cell.name, () => {
+      handleModifiedCells([cell.coordinates]);
+    }),
+  );
+};
 
-// const handleRemovedCells = (removedCells: CellCoordinates[]) => {
-//   const { permissionLevel } = useSpreadsheetStore.getState();
+const handleRemovedCells = (removedCells: CellCoordinates[]) => {
+  const { permissionLevel } = useSpreadsheetStore.getState();
 
-//   if (permissionLevel === "student") return;
+  if (permissionLevel === "student") return;
 
-//   const toRemove = removedCells
-//     .filter((cell) => simModel.has(cellModelKey(cell)))
-//     .map((cell) => ({
-//       name: cellModelKey(cell),
-//     }));
+  const toRemove = removedCells
+    .filter((cell) => simModel.has(cellModelKey(cell)))
+    .map((cell) => ({
+      name: cellModelKey(cell),
+    }));
 
-//   dinamicallyRemoveFromSimModel(toRemove);
-// };
+  dinamicallyRemoveFromSimModel(toRemove);
+};
 
-// const handleModifiedCells = (modifiedCells: CellCoordinates[]) => {
-//   const { getData } = useSpreadsheetStore.getState();
+const handleModifiedCells = (modifiedCells: CellCoordinates[]) => {
+  const { getData } = useSpreadsheetStore.getState();
 
-//   modifiedCells.forEach((cell) => {
-//     simModel.set(cellModelKey(cell), getData(cell).content);
-//   });
-// };
+  modifiedCells.forEach((cell) => {
+    const key = cellModelKey(cell);
+    const value = getData(cell).content;
+    const prevValue = simModel.get(key);
+
+    if (!isEqual(prevValue, value)) simModel.set(key, value);
+  });
+};
 
 const setupCells = () => {
   const { data, permissionLevel, getData } = useSpreadsheetStore.getState();
@@ -234,6 +244,7 @@ export const useSimCapi = () => {
   }, [isLoading]);
 
   useEffect(() => {
+    let unsubAddedCells: VoidFunction[] = [];
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
 
@@ -293,9 +304,9 @@ export const useSimCapi = () => {
       handlers.IsModified.stateChange(prevData.current, state.data);
       handlers.IsCompleted.stateChange(state);
 
-      // handleAddedCells(addedCells);
-      // handleRemovedCells(removedCells);
-      // handleModifiedCells(modifiedCells);
+      unsubAddedCells = handleAddedCells(addedCells);
+      handleRemovedCells(removedCells);
+      handleModifiedCells(modifiedCells);
 
       prevData.current = cloneDeep(clonedState.data!);
     });
@@ -314,6 +325,7 @@ export const useSimCapi = () => {
     return () => {
       unsubState();
       unsubsCapi.forEach((unsub) => unsub());
+      unsubAddedCells.forEach((unsub) => unsub());
     };
   }, []);
 };

@@ -30,7 +30,6 @@ const dinamicallyAddToSimModel = (
     simModel.set(name, defaultValue);
     simcapi.CapiAdapter.expose(name, simModel);
   });
-  simcapi.Transporter.notifyOnReady();
 };
 
 const dinamicallyRemoveFromSimModel = (props: { name: string }[]) => {
