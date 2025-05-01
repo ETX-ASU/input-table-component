@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { cloneDeep, isEqual } from "lodash";
 import { useEffect, useRef } from "react";
 import {
@@ -175,8 +176,6 @@ const handleAddedCells = (addedCells: CellCoordinates[]) => {
       defaultValue: getData(cell).content,
     }));
 
-  console.log("handleadd", { toAdd });
-
   dinamicallyAddToSimModel(toAdd);
 };
 
@@ -190,8 +189,6 @@ const handleRemovedCells = (removedCells: CellCoordinates[]) => {
     .map((cell) => ({
       name: cellModelKey(cell),
     }));
-
-  console.log({ toRemove });
 
   dinamicallyRemoveFromSimModel(toRemove);
 };
@@ -294,9 +291,9 @@ export const useSimCapi = () => {
       handlers.IsModified.stateChange(prevData.current, state.data);
       handlers.IsCompleted.stateChange(state);
 
-      handleAddedCells(addedCells);
-      handleRemovedCells(removedCells);
-      handleModifiedCells(modifiedCells);
+      // handleAddedCells(addedCells);
+      // handleRemovedCells(removedCells);
+      // handleModifiedCells(modifiedCells);
 
       prevData.current = cloneDeep(clonedState.data!);
     });
