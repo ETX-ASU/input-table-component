@@ -321,9 +321,6 @@ export function SpreadsheetGrid() {
           ArrowRight: "right",
         };
 
-        console.log(
-          `Global handler: ${e.key} pressed, navigating ${directionMap[e.key]}`,
-        );
         navigateToCell(directionMap[e.key]);
       }
     };

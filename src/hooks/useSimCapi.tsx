@@ -172,6 +172,8 @@ const handleAddedCells = (addedCells: CellCoordinates[]) => {
       defaultValue: getData(cell).content,
     }));
 
+  console.log("handleadd", { toAdd });
+
   dinamicallyAddToSimModel(toAdd);
 };
 
@@ -185,6 +187,8 @@ const handleRemovedCells = (removedCells: CellCoordinates[]) => {
     .map((cell) => ({
       name: cellModelKey(cell),
     }));
+
+  console.log({ toRemove });
 
   dinamicallyRemoveFromSimModel(toRemove);
 };
@@ -212,6 +216,7 @@ const setupCells = () => {
       defaultValue: getData(coordinates).content,
     }));
 
+  console.log({ toAdd, data });
   dinamicallyAddToSimModel(toAdd);
 };
 
@@ -258,6 +263,8 @@ export const useSimCapi = () => {
           }
         });
       });
+
+      console.log({ addedCells, removedCells, modifiedCells });
 
       // Avoid unnecessary updates
       if (
