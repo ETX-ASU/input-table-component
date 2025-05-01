@@ -222,8 +222,12 @@ const setupCells = () => {
 
 export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
+  const { isLoading } = useSpreadsheetStore.getState();
   useOnce(handlers.PermissionLevel.capiChange);
-  useOnce(setupCells);
+
+  useEffect(() => {
+    if (!isLoading) setupCells();
+  }, [isLoading]);
 
   useEffect(() => {
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
