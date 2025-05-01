@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { cloneDeep, isEqual } from "lodash";
 import { useEffect, useRef } from "react";
 import {
   cellModelKey,
   dinamicallyAddToSimModel,
-  dinamicallyRemoveFromSimModel,
   simModel,
 } from "../lib/simcapi";
 import useSpreadsheetStore, {
@@ -164,42 +162,42 @@ const handlers = {
   },
 };
 
-const handleAddedCells = (addedCells: CellCoordinates[]) => {
-  const { getData, permissionLevel } = useSpreadsheetStore.getState();
+// const handleAddedCells = (addedCells: CellCoordinates[]) => {
+//   const { getData, permissionLevel } = useSpreadsheetStore.getState();
 
-  if (permissionLevel === "student") return;
+//   if (permissionLevel === "student") return;
 
-  const toAdd = addedCells
-    .filter((cell) => !simModel.has(cellModelKey(cell)))
-    .map((cell) => ({
-      name: cellModelKey(cell),
-      defaultValue: getData(cell).content,
-    }));
+//   const toAdd = addedCells
+//     .filter((cell) => !simModel.has(cellModelKey(cell)))
+//     .map((cell) => ({
+//       name: cellModelKey(cell),
+//       defaultValue: getData(cell).content,
+//     }));
 
-  dinamicallyAddToSimModel(toAdd);
-};
+//   dinamicallyAddToSimModel(toAdd);
+// };
 
-const handleRemovedCells = (removedCells: CellCoordinates[]) => {
-  const { permissionLevel } = useSpreadsheetStore.getState();
+// const handleRemovedCells = (removedCells: CellCoordinates[]) => {
+//   const { permissionLevel } = useSpreadsheetStore.getState();
 
-  if (permissionLevel === "student") return;
+//   if (permissionLevel === "student") return;
 
-  const toRemove = removedCells
-    .filter((cell) => simModel.has(cellModelKey(cell)))
-    .map((cell) => ({
-      name: cellModelKey(cell),
-    }));
+//   const toRemove = removedCells
+//     .filter((cell) => simModel.has(cellModelKey(cell)))
+//     .map((cell) => ({
+//       name: cellModelKey(cell),
+//     }));
 
-  dinamicallyRemoveFromSimModel(toRemove);
-};
+//   dinamicallyRemoveFromSimModel(toRemove);
+// };
 
-const handleModifiedCells = (modifiedCells: CellCoordinates[]) => {
-  const { getData } = useSpreadsheetStore.getState();
+// const handleModifiedCells = (modifiedCells: CellCoordinates[]) => {
+//   const { getData } = useSpreadsheetStore.getState();
 
-  modifiedCells.forEach((cell) => {
-    simModel.set(cellModelKey(cell), getData(cell).content);
-  });
-};
+//   modifiedCells.forEach((cell) => {
+//     simModel.set(cellModelKey(cell), getData(cell).content);
+//   });
+// };
 
 const setupCells = () => {
   const { data, permissionLevel, getData } = useSpreadsheetStore.getState();
