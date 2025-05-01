@@ -33,7 +33,7 @@ const buildCommonClasses = (cell: CellData, canInteractWithCell: boolean) =>
     cell.isBold && "font-bold",
     cell.isItalic && "italic",
     cell.isStrikethrough && "line-through",
-    !canInteractWithCell && "cursor-not-allowed opacity-70",
+    !canInteractWithCell && "cursor-not-allowed",
   );
 
 type LinkCellProps = {
