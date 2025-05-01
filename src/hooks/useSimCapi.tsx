@@ -55,7 +55,7 @@ const handlers = {
     capiChange: () => {
       const strInitialConfig = simModel.get("InitialConfig");
       const initialConfig = parseState(strInitialConfig);
-      simModel.set("TableJSON", strInitialConfig);
+      // simModel.set("TableJSON", strInitialConfig);
       if (initialConfig) {
         useSpreadsheetStore.setState(initialConfig);
       }
