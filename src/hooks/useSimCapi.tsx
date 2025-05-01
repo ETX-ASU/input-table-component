@@ -54,8 +54,11 @@ const handlers = {
     capiChange: () => {
       const strInitialConfig = simModel.get("InitialConfig");
       const initialConfig = parseState(strInitialConfig);
-      // simModel.set("TableJSON", strInitialConfig);
+      const curr = useSpreadsheetStore.getState();
+
       if (initialConfig) {
+        if (isEqual(curr, initialConfig)) return;
+        console.log("updating initialconfig", initialConfig, curr);
         useSpreadsheetStore.setState(initialConfig);
       }
     },
@@ -105,7 +108,11 @@ const handlers = {
     capiChange: () => {
       const strTableJson = simModel.get("TableJSON");
       const tableJson = parseState(strTableJson);
+      const curr = useSpreadsheetStore.getState();
+
       if (tableJson) {
+        if (isEqual(curr, tableJson)) return;
+        console.log("updating tablejson", tableJson, curr);
         useSpreadsheetStore.setState(tableJson);
       }
     },
@@ -214,7 +221,6 @@ const setupCells = () => {
       defaultValue: getData(coordinates).content,
     }));
 
-  console.log({ toAdd, data });
   dinamicallyAddToSimModel(toAdd);
 };
 
@@ -265,8 +271,6 @@ export const useSimCapi = () => {
           }
         });
       });
-
-      console.log({ addedCells, removedCells, modifiedCells });
 
       // Avoid unnecessary updates
       if (
