@@ -186,7 +186,17 @@ const handleAddedCells = (addedCells: CellCoordinates[]): VoidFunction[] => {
   dinamicallyAddToSimModel(toAdd);
   return toAdd.map((cell) =>
     addCapiEventListener(cell.name, () => {
-      handleModifiedCells([cell.coordinates]);
+      const { data } = useSpreadsheetStore.getState();
+      const { row, col } = cell.coordinates;
+
+      const newValue = simModel.get(cell.name);
+      const prevValue = data[row][col].content;
+
+      if (isEqual(prevValue, newValue)) return;
+
+      const newData = cloneDeep(data);
+      newData[row][col].content = newValue;
+      useSpreadsheetStore.setState({ data: newData });
     }),
   );
 };
