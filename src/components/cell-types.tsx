@@ -162,7 +162,7 @@ const SelectCell: FC<SelectCellProps> = ({
       </div>
       {/* Hidden Select component that opens when dropdown icon is clicked */}
       <Select
-        // value={cell.content}
+        value={cell.content}
         onValueChange={(value) => onSelectChange(value, row, col)}
         open={openSelectCell === key}
         onOpenChange={(open) => !open && onOpenSelectDropdown(null)}

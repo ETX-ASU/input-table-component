@@ -21,7 +21,7 @@ for (const key in capi.exposeWith) {
 simcapi.Transporter.notifyOnReady();
 
 const cellModelKey = ({ col, row }: CellCoordinates) =>
-  `Cell.Column.${col}.Row.${row}`;
+  `Cell.Column${col}.Row${row}`;
 
 const dinamicallyAddToSimModel = (
   props: { name: string; defaultValue: string }[],
