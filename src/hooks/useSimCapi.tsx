@@ -202,7 +202,7 @@ const dynamicCellHandlers = {
       .flatMap((row, rowIdx) =>
         row.map((_, colIdx) => ({ row: rowIdx, col: colIdx })),
       )
-      .filter((cell) => !simModel.has(cellModelKey(cell)))
+      // .filter((cell) => !simModel.has(cellModelKey(cell)))
       .map((coordinates) => ({
         name: cellModelKey(coordinates),
         defaultValue: getData(coordinates).content,
