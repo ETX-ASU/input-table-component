@@ -202,7 +202,6 @@ const dynamicCellHandlers = {
       .flatMap((row, rowIdx) =>
         row.map((_, colIdx) => ({ row: rowIdx, col: colIdx })),
       )
-      // .filter((cell) => !simModel.has(cellModelKey(cell)))
       .map((coordinates) => ({
         name: cellModelKey(coordinates),
         defaultValue: getData(coordinates).content,
@@ -250,9 +249,7 @@ const dynamicCellHandlers = {
 
     const toRemove = cellsToRemove
       .filter((cell) => simModel.has(cellModelKey(cell)))
-      .map((cell) => ({
-        name: cellModelKey(cell),
-      }));
+      .map(cellModelKey);
 
     dinamicallyRemoveFromSimModel(toRemove);
   },

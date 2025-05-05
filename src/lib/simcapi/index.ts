@@ -32,10 +32,8 @@ const dinamicallyAddToSimModel = (
   });
 };
 
-const dinamicallyRemoveFromSimModel = (props: { name: string }[]) => {
-  props.forEach(({ name }) => {
-    simcapi.CapiAdapter.unexpose(name);
-  });
+const dinamicallyRemoveFromSimModel = (toRemove: string[]) => {
+  toRemove.forEach((name) => simcapi.CapiAdapter.unexpose(name, simModel));
 };
 
 export {
