@@ -2,7 +2,11 @@ import clsx from "clsx";
 import { ChevronDown, ExternalLink, Lock } from "lucide-react";
 import { FC, RefObject } from "react";
 import { DEFAULT_ROW_HEIGHT } from "../lib/constants";
-import { CellCoordinates, CellData, TextAlign } from "../lib/store";
+import useSpreadsheetStore, {
+  CellCoordinates,
+  CellData,
+  TextAlign,
+} from "../lib/store";
 import {
   Select,
   SelectContent,
@@ -38,26 +42,28 @@ const buildCommonClasses = (cell: CellData, canInteractWithCell: boolean) =>
 
 type LinkCellProps = {
   cell: CellData;
-  canInteractWithCell: boolean;
+  coordinates: CellCoordinates;
 };
 
-const LinkCell: FC<LinkCellProps> = ({ cell, canInteractWithCell }) => (
-  <div
-    className={clsx(
-      buildCommonClasses(cell, canInteractWithCell),
-      "flex items-center gap-1 overflow-hidden text-blue-600 underline",
-    )}
-    style={{ ...buildCommonStyles(cell), height: DEFAULT_ROW_HEIGHT - 1 }}
-  >
-    <span className="flex-1 truncate">{cell.content}</span>
-    <a href={cell.link!} target="_blank" rel="noopener noreferrer">
-      <ExternalLink className="h-3 w-3" />
-    </a>
-  </div>
-);
+const LinkCell: FC<LinkCellProps> = ({ cell, coordinates }) => {
+  const { canInteractWithCell } = useSpreadsheetStore();
+  return (
+    <div
+      className={clsx(
+        buildCommonClasses(cell, canInteractWithCell(coordinates)),
+        "flex items-center gap-1 overflow-hidden text-blue-600 underline",
+      )}
+      style={{ ...buildCommonStyles(cell), height: DEFAULT_ROW_HEIGHT - 1 }}
+    >
+      <span className="flex-1 truncate">{cell.content}</span>
+      <a href={cell.link!} target="_blank" rel="noopener noreferrer">
+        <ExternalLink className="h-3 w-3" />
+      </a>
+    </div>
+  );
+};
 
 type InputCellProps = {
-  canInteractWithCell: boolean;
   inputMode: "numeric" | "text";
   cell: CellData;
   coordinates: CellCoordinates;
@@ -71,7 +77,6 @@ type InputCellProps = {
 };
 
 const InputCell: FC<InputCellProps> = ({
-  canInteractWithCell,
   inputMode,
   cell,
   coordinates,
@@ -81,6 +86,14 @@ const InputCell: FC<InputCellProps> = ({
 }) => {
   const { row, col } = coordinates;
   const key = buildCellKey(coordinates);
+  const { canInteractWithCell, appMode } = useSpreadsheetStore();
+
+  const placeholder =
+    appMode === "preview" && canInteractWithCell(coordinates)
+      ? inputMode === "numeric"
+        ? "Enter a number..."
+        : "Enter answer..."
+      : "";
 
   return (
     <input
@@ -88,13 +101,17 @@ const InputCell: FC<InputCellProps> = ({
         cellRefs.current[key] = el;
       }}
       type="text"
+      placeholder={placeholder}
       inputMode={inputMode}
       value={cell.content}
       onChange={handleCellChange}
       onKeyDown={(e) => handleKeyDown(e, row, col)}
-      className={buildCommonClasses(cell, canInteractWithCell)}
+      className={clsx(
+        buildCommonClasses(cell, canInteractWithCell(coordinates)),
+        "placeholder:text-xs placeholder:italic",
+      )}
       style={buildCommonStyles(cell)}
-      disabled={!canInteractWithCell}
+      disabled={!canInteractWithCell(coordinates)}
     />
   );
 };
@@ -106,7 +123,6 @@ type SelectCellProps = {
   onCellClick: (row: number, col: number) => void;
   onOpenSelectDropdown: (cellKey: string | null) => void;
   onSelectChange: (value: string, row: number, col: number) => void;
-  canInteractWithCell: boolean;
 };
 
 const SelectCell: FC<SelectCellProps> = ({
@@ -116,17 +132,19 @@ const SelectCell: FC<SelectCellProps> = ({
   onCellClick,
   onOpenSelectDropdown,
   onSelectChange,
-  canInteractWithCell,
 }) => {
   const { row, col } = coordinates;
   const key = buildCellKey(coordinates);
+  const { canInteractWithCell } = useSpreadsheetStore();
 
   return (
     <div
       className={clsx(
-        buildCommonClasses(cell, canInteractWithCell),
+        buildCommonClasses(cell, canInteractWithCell(coordinates)),
         "relative flex h-full items-center",
-        !canInteractWithCell ? "cursor-not-allowed" : "cursor-pointer",
+        !canInteractWithCell(coordinates)
+          ? "cursor-not-allowed"
+          : "cursor-pointer",
       )}
       style={buildCommonStyles(cell)}
       onClick={() => onCellClick(row, col)}
@@ -136,7 +154,7 @@ const SelectCell: FC<SelectCellProps> = ({
         className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-gray-100"
         onClick={() => onOpenSelectDropdown(key)}
       >
-        {canInteractWithCell ? (
+        {canInteractWithCell(coordinates) ? (
           <ChevronDown className="h-3 w-3" />
         ) : (
           <Lock className="h-3 w-3" />
@@ -144,11 +162,11 @@ const SelectCell: FC<SelectCellProps> = ({
       </div>
       {/* Hidden Select component that opens when dropdown icon is clicked */}
       <Select
-        value={cell.content}
+        // value={cell.content}
         onValueChange={(value) => onSelectChange(value, row, col)}
         open={openSelectCell === key}
         onOpenChange={(open) => !open && onOpenSelectDropdown(null)}
-        disabled={!canInteractWithCell}
+        disabled={!canInteractWithCell(coordinates)}
       >
         <SelectTrigger className="sr-only">
           <SelectValue />
