@@ -45,6 +45,28 @@ const addCapiEventListener = (value: string, handler: VoidFunction) => {
   };
 };
 
+const addDynamicCellsEventListener = (
+  cells: { name: string; coordinates: CellCoordinates }[],
+): VoidFunction[] =>
+  cells.map((cell) =>
+    addCapiEventListener(cell.name, () => {
+      const { data } = useSpreadsheetStore.getState();
+      const { row, col } = cell.coordinates;
+
+      if (!simModel.has(cell.name)) return;
+      if (data?.[row]?.[col] === undefined) return;
+
+      const newValue = simModel.get(cell.name);
+      const prevValue = data[row][col].content;
+
+      if (isEqual(prevValue, newValue)) return;
+
+      const newData = cloneDeep(data);
+      newData[row][col].content = newValue;
+      useSpreadsheetStore.setState({ data: newData });
+    }),
+  );
+
 const handlers = {
   InitialConfig: {
     stateChange: (state: Partial<SpreadsheetState>) => {
@@ -170,80 +192,81 @@ const handlers = {
   },
 };
 
-const handleAddedCells = (addedCells: CellCoordinates[]): VoidFunction[] => {
-  const { getData, permissionLevel } = useSpreadsheetStore.getState();
+const dynamicCellHandlers = {
+  setup: (): VoidFunction[] => {
+    const { data, permissionLevel, getData } = useSpreadsheetStore.getState();
 
-  if (permissionLevel === "student") return [];
+    if (permissionLevel === "student") return [];
 
-  const toAdd = addedCells
-    .filter((coordinates) => !simModel.has(cellModelKey(coordinates)))
-    .map((coordinates) => ({
-      name: cellModelKey(coordinates),
-      defaultValue: getData(coordinates).content,
-      coordinates,
-    }));
+    const toAdd = data
+      .flatMap((row, rowIdx) =>
+        row.map((_, colIdx) => ({ row: rowIdx, col: colIdx })),
+      )
+      .filter((cell) => !simModel.has(cellModelKey(cell)))
+      .map((coordinates) => ({
+        name: cellModelKey(coordinates),
+        defaultValue: getData(coordinates).content,
+        coordinates,
+      }));
 
-  dinamicallyAddToSimModel(toAdd);
-  return [];
-  // return toAdd.map((cell) =>
-  //   addCapiEventListener(cell.name, () => {
-  //     const { data } = useSpreadsheetStore.getState();
-  //     const { row, col } = cell.coordinates;
+    dinamicallyAddToSimModel(toAdd);
+    return addDynamicCellsEventListener(toAdd);
+  },
+  addedCells: (cellsToAdd: CellCoordinates[]): VoidFunction[] => {
+    const { getData, permissionLevel } = useSpreadsheetStore.getState();
 
-  //     const newValue = simModel.get(cell.name);
-  //     const prevValue = data[row][col].content;
+    if (permissionLevel === "student") return [];
 
-  //     if (isEqual(prevValue, newValue)) return;
+    const toAdd = cellsToAdd
+      .filter((coordinates) => !simModel.has(cellModelKey(coordinates)))
+      .map((coordinates) => ({
+        name: cellModelKey(coordinates),
+        defaultValue: getData(coordinates).content,
+        coordinates,
+      }));
 
-  //     const newData = cloneDeep(data);
-  //     newData[row][col].content = newValue;
-  //     useSpreadsheetStore.setState({ data: newData });
-  //   }),
-  // );
-};
+    dinamicallyAddToSimModel(toAdd);
 
-const handleRemovedCells = (removedCells: CellCoordinates[]) => {
-  const { permissionLevel } = useSpreadsheetStore.getState();
+    return toAdd.map((cell) =>
+      addCapiEventListener(cell.name, () => {
+        const { data } = useSpreadsheetStore.getState();
+        const { row, col } = cell.coordinates;
 
-  if (permissionLevel === "student") return;
+        const newValue = simModel.get(cell.name);
+        const prevValue = data[row][col].content;
 
-  const toRemove = removedCells
-    .filter((cell) => simModel.has(cellModelKey(cell)))
-    .map((cell) => ({
-      name: cellModelKey(cell),
-    }));
+        if (isEqual(prevValue, newValue)) return;
 
-  dinamicallyRemoveFromSimModel(toRemove);
-};
+        const newData = cloneDeep(data);
+        newData[row][col].content = newValue;
+        useSpreadsheetStore.setState({ data: newData });
+      }),
+    );
+  },
+  removedCells: (cellsToRemove: CellCoordinates[]) => {
+    const { permissionLevel } = useSpreadsheetStore.getState();
 
-const handleModifiedCells = (modifiedCells: CellCoordinates[]) => {
-  const { getData } = useSpreadsheetStore.getState();
+    if (permissionLevel === "student") return;
 
-  modifiedCells.forEach((cell) => {
-    const key = cellModelKey(cell);
-    const value = getData(cell).content;
-    const prevValue = simModel.get(key);
+    const toRemove = cellsToRemove
+      .filter((cell) => simModel.has(cellModelKey(cell)))
+      .map((cell) => ({
+        name: cellModelKey(cell),
+      }));
 
-    if (!isEqual(prevValue, value)) simModel.set(key, value);
-  });
-};
+    dinamicallyRemoveFromSimModel(toRemove);
+  },
+  stateChange: (modifiedCells: CellCoordinates[]) => {
+    const { getData } = useSpreadsheetStore.getState();
 
-const setupCells = () => {
-  const { data, permissionLevel, getData } = useSpreadsheetStore.getState();
+    modifiedCells.forEach((cell) => {
+      const key = cellModelKey(cell);
+      const value = getData(cell).content;
+      const prevValue = simModel.get(key);
 
-  if (permissionLevel === "student") return;
-
-  const toAdd = data
-    .flatMap((row, rowIdx) =>
-      row.map((_, colIdx) => ({ row: rowIdx, col: colIdx })),
-    )
-    .filter((cell) => !simModel.has(cellModelKey(cell)))
-    .map((coordinates) => ({
-      name: cellModelKey(coordinates),
-      defaultValue: getData(coordinates).content,
-    }));
-
-  dinamicallyAddToSimModel(toAdd);
+      if (!isEqual(prevValue, value)) simModel.set(key, value);
+    });
+  },
 };
 
 export const useSimCapi = () => {
@@ -252,7 +275,14 @@ export const useSimCapi = () => {
   useOnce(handlers.PermissionLevel.capiChange);
 
   useEffect(() => {
-    if (!isLoading) setupCells();
+    let unsub: VoidFunction[] = [];
+    if (!isLoading) {
+      unsub = dynamicCellHandlers.setup();
+    }
+
+    return () => {
+      unsub.forEach((unsub) => unsub());
+    };
   }, [isLoading]);
 
   useEffect(() => {
@@ -316,18 +346,12 @@ export const useSimCapi = () => {
       handlers.IsModified.stateChange(prevData.current, state.data);
       handlers.IsCompleted.stateChange(state);
 
-      unsubAddedCells = handleAddedCells(addedCells);
-      handleRemovedCells(removedCells);
-      handleModifiedCells(modifiedCells);
+      unsubAddedCells = dynamicCellHandlers.addedCells(addedCells);
+      dynamicCellHandlers.removedCells(removedCells);
+      dynamicCellHandlers.stateChange(modifiedCells);
 
       prevData.current = cloneDeep(clonedState.data!);
     });
-
-    addCapiEventListener("Cell.Column1.Row1", () =>
-      console.log(
-        "------------------------Changed Cell.Column1.Row1------------------------",
-      ),
-    );
 
     const unsubsCapi = (
       [
