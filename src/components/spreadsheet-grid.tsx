@@ -381,14 +381,11 @@ export function SpreadsheetGrid() {
   ) => {
     const isActive =
       activeCell?.row === rowIndex && activeCell?.col === colIndex;
-    const interactable = canInteractWithCell({
-      row: rowIndex,
-      col: colIndex,
-    });
+    const coordinates: CellCoordinates = { row: rowIndex, col: colIndex };
 
     // If cell has a link and is not being edited, show a link display
     if (cell.link && !isActive) {
-      return <LinkCell cell={cell} canInteractWithCell={interactable} />;
+      return <LinkCell cell={cell} coordinates={coordinates} />;
     }
 
     switch (cell.contentType) {
@@ -396,9 +393,8 @@ export function SpreadsheetGrid() {
         return (
           <InputCell
             inputMode="numeric"
-            canInteractWithCell={interactable}
             cell={cell}
-            coordinates={{ row: rowIndex, col: colIndex }}
+            coordinates={coordinates}
             cellRefs={cellRefs}
             handleCellChange={handleCellChange}
             handleKeyDown={handleInputKeyDown}
@@ -408,8 +404,7 @@ export function SpreadsheetGrid() {
         return (
           <SelectCell
             cell={cell}
-            canInteractWithCell={interactable}
-            coordinates={{ row: rowIndex, col: colIndex }}
+            coordinates={coordinates}
             openSelectCell={openSelectCell}
             onCellClick={handleCellClick}
             onOpenSelectDropdown={(cellKey) =>
@@ -425,9 +420,8 @@ export function SpreadsheetGrid() {
         return (
           <InputCell
             inputMode="text"
-            canInteractWithCell={interactable}
             cell={cell}
-            coordinates={{ row: rowIndex, col: colIndex }}
+            coordinates={coordinates}
             cellRefs={cellRefs}
             handleCellChange={handleCellChange}
             handleKeyDown={handleInputKeyDown}
@@ -452,20 +446,26 @@ export function SpreadsheetGrid() {
             style={{ width: totalWidth }}
           >
             <thead>
-              <tr>
-                {/* Top-left corner cell */}
-                <th className="sticky top-0 left-0 z-30 w-10 border border-gray-300 bg-gray-100" />
+              {appMode === "config" && (
+                <>
+                  <tr>
+                    {/* Top-left corner cell */}
+                    <th className="sticky top-0 left-0 z-30 w-10 border border-gray-300 bg-gray-100" />
 
-                <ColumnHeaders onContextMenu={handleColumnContextMenu} />
-              </tr>
+                    <ColumnHeaders onContextMenu={handleColumnContextMenu} />
+                  </tr>
+                </>
+              )}
             </thead>
             <tbody>
               {data.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  <RowHeader
-                    rowIndex={rowIndex}
-                    onContextMenu={handleRowContextMenu}
-                  />
+                  {appMode === "config" && (
+                    <RowHeader
+                      rowIndex={rowIndex}
+                      onContextMenu={handleRowContextMenu}
+                    />
+                  )}
                   {row.map((cell, colIndex) => (
                     <Cell
                       key={colIndex}
