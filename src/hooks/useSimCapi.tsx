@@ -1,4 +1,4 @@
-import { cloneDeep, isEqual, merge, omit } from "lodash";
+import { cloneDeep, isEqual, omit } from "lodash";
 import { MutableRefObject, useEffect, useRef } from "react";
 import {
   cellModelKey,
@@ -87,17 +87,17 @@ const handlers = {
   },
   [CapiFields.InitialConfig]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
-      const currentCapiInitialConfig = simModel.get(CapiFields.InitialConfig);
-      const { data: prevData } = parseState(currentCapiInitialConfig) || {};
-
-      if (getCapiContext() === "AUTHOR") {
-        const nextState = merge(cloneDeep(state), {
-          data: prevData,
-        });
-        simModel.set(CapiFields.InitialConfig, stringifyState(nextState));
-      } else {
-        simModel.set(CapiFields.InitialConfig, stringifyState(state));
-      }
+      // const currentCapiInitialConfig = simModel.get(CapiFields.InitialConfig);
+      // const { data: prevData } = parseState(currentCapiInitialConfig) || {};
+      simModel.set(CapiFields.InitialConfig, stringifyState(state));
+      // if (getCapiContext() === "AUTHOR") {
+      //   const nextState = merge(cloneDeep(state), {
+      //     data: prevData,
+      //   });
+      //   simModel.set(CapiFields.InitialConfig, stringifyState(nextState));
+      // } else {
+      //   simModel.set(CapiFields.InitialConfig, stringifyState(state));
+      // }
     },
     capiChange:
       ({ dataRef }: { dataRef: MutableRefObject<CellData[][] | null> }) =>
@@ -353,6 +353,7 @@ export const useSimCapi = () => {
     let unsubAddedCells: VoidFunction[] = [];
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
+      console.log("state", state);
 
       const modifiedKeys = Object.keys(state).filter((k) => {
         const key = k as keyof SpreadsheetState;

@@ -7,6 +7,7 @@ import {
   DEFAULT_ROW_HEIGHT,
   MAX_HISTORY_LENGTH,
 } from "./constants";
+import { capi, CapiFields } from "./simcapi/model";
 import { buildDefaultCell } from "./utils";
 
 export type TextAlign = "left" | "center" | "right";
@@ -137,15 +138,15 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     startWidth: 0,
     startHeight: 0,
 
-    showCorrectAnswers: false,
-    enableTable: true,
-    showHints: true,
+    showCorrectAnswers: capi.defaults[CapiFields.IsComplete],
+    enableTable: capi.defaults[CapiFields.Enabled],
+    showHints: capi.defaults[CapiFields.ShowHints],
     permissionLevel: "student",
     title: null,
     setTitle: (title) => set({ title }),
     summary: null,
     setSummary: (summary) => set({ summary }),
-    appMode: "config",
+    appMode: capi.defaults[CapiFields.Mode],
     toggleAppMode: () =>
       set((state) => ({
         appMode: state.appMode === "config" ? "preview" : "config",
