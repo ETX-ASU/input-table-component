@@ -12,6 +12,16 @@ export enum CapiFields {
   Summary = "Summary",
 }
 
+enum CapiTypes {
+  ARRAY = 3,
+  ARRAY_POINT = 7,
+  BOOLEAN = 4,
+  ENUM = 5,
+  MATH_EXPR = 6,
+  NUMBER = 1,
+  STRING = 2, // TODO: Make sure that's what it is.
+}
+
 export const capi = {
   defaults: {
     [CapiFields.Mode]: "preview",
@@ -29,58 +39,68 @@ export const capi = {
 
   exposeWith: {
     [CapiFields.Mode]: {
-      type: 5, // "Enum"
+      type: CapiTypes.ENUM,
       allowedValues: ["preview", "config"],
       alias: CapiFields.Mode,
       readonly: false,
       writeonly: false,
     },
     [CapiFields.InitialConfig]: {
+      type: CapiTypes.STRING,
       alias: CapiFields.InitialConfig,
       readonly: false,
       writeonly: false,
     },
     [CapiFields.TableJSON]: {
+      type: CapiTypes.STRING,
       alias: CapiFields.TableJSON,
       readonly: false,
       writeonly: false,
     },
     [CapiFields.IsModified]: {
+      type: CapiTypes.BOOLEAN,
       alias: CapiFields.IsModified,
       readonly: true,
       writeonly: false,
     },
     [CapiFields.IsComplete]: {
+      type: CapiTypes.BOOLEAN,
       alias: CapiFields.IsComplete,
       readonly: true,
       writeonly: false,
     },
     [CapiFields.IsCorrect]: {
+      type: CapiTypes.BOOLEAN,
       alias: CapiFields.IsCorrect,
       readonly: false,
       writeonly: false,
     },
     [CapiFields.Enabled]: {
+      type: CapiTypes.BOOLEAN,
       alias: CapiFields.Enabled,
       readonly: false,
       writeonly: false,
     },
     [CapiFields.ShowHints]: {
+      type: CapiTypes.BOOLEAN,
       alias: CapiFields.ShowHints,
       readonly: false,
       writeonly: false,
     },
     [CapiFields.CSS]: {
+      type: CapiTypes.STRING,
       alias: CapiFields.CSS,
       readonly: false,
       writeonly: false,
     },
     [CapiFields.Title]: {
+      type: CapiTypes.STRING,
       alias: CapiFields.Title,
       readonly: false,
       writeonly: false,
     },
     [CapiFields.Summary]: {
+      type: CapiTypes.STRING,
       alias: CapiFields.Summary,
       readonly: false,
       writeonly: false,
