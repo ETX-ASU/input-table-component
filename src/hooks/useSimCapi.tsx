@@ -153,6 +153,7 @@ const handlers = {
         }
       }
 
+      console.log("isModified", isModified);
       if (isModified) simModel.set("IsModified", true);
     },
   },
@@ -163,6 +164,8 @@ const handlers = {
           .filter((cell) => !cell.disabled)
           .every((cell) => cell.content.trim() !== ""),
       );
+
+      console.log("isComplete", isComplete);
       if (isComplete) simModel.set("IsComplete", true);
     },
     capiChange: () => () => {
@@ -177,13 +180,11 @@ const handlers = {
       const isCorrect = data
         .flatMap((row) => row)
         .filter(
-          (cell) =>
-            !cell.disabled &&
-            cell.contentType !== "not-editable" &&
-            cell.correctAnswer,
+          (cell) => cell.contentType !== "not-editable" && cell.correctAnswer,
         )
         .every((cell) => cell.content === cell.correctAnswer);
 
+      console.log("isCorrect", isCorrect);
       if (isCorrect !== currIsCorrect) simModel.set("IsCorrect", isCorrect);
     },
   },

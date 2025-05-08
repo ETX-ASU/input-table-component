@@ -1,5 +1,6 @@
 export const capi = {
   defaults: {
+    Mode: "preview",
     InitialConfig: "", // Captures the current config of the table, including any student input values in cells.
     TableJSON: "", // Current configuration including what a student might change
     IsModifed: false, // Indicates if the student has modified any table cell.
@@ -13,62 +14,59 @@ export const capi = {
   },
 
   exposeWith: {
+    Mode: {
+      type: 5, // "Enum"
+      allowedValues: ["preview", "config"],
+      alias: "Mode",
+      readonly: false,
+      writeonly: false,
+    },
     InitialConfig: {
-      type: "string",
       alias: "InitialConfig",
       readonly: false,
       writeonly: false,
     },
     TableJSON: {
-      type: "string",
       alias: "TableJSON",
       readonly: false,
       writeonly: false,
     },
     IsModifed: {
-      type: "boolean",
       alias: "IsModifed",
       readonly: true,
       writeonly: false,
     },
     IsComplete: {
-      type: "boolean",
       alias: "IsComplete",
       readonly: true,
       writeonly: false,
     },
     IsCorrect: {
-      type: "boolean",
       alias: "IsCorrect",
       readonly: false,
       writeonly: false,
     },
     Enabled: {
-      type: "boolean",
       alias: "Enabled",
       readonly: false,
       writeonly: false,
     },
     ShowHints: {
-      type: "boolean",
       alias: "ShowHints",
       readonly: false,
       writeonly: false,
     },
     CSS: {
-      type: "string",
       alias: "CSS",
       readonly: false,
       writeonly: false,
     },
     Title: {
-      type: "string",
       alias: "Title",
       readonly: false,
       writeonly: false,
     },
     Summary: {
-      type: "string",
       alias: "Summary",
       readonly: false,
       writeonly: false,
