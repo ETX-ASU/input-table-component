@@ -44,6 +44,7 @@ const parseState = (str: string) => {
 
 const addCapiEventListener = (value: string, handler: VoidFunction) => {
   simModel.on("change:" + value, () => {
+    console.log("change:" + value);
     handler();
   });
   return () => {

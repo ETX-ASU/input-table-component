@@ -1,3 +1,5 @@
+import { AppMode } from "../store";
+
 export enum CapiFields {
   Mode = "Mode",
   InitialConfig = "InitialConfig",
@@ -24,17 +26,17 @@ enum CapiTypes {
 
 export const capi = {
   defaults: {
-    [CapiFields.Mode]: "preview" as const,
-    [CapiFields.InitialConfig]: "" as const, // Captures the current config of the table, including any student input values in cells.
-    [CapiFields.TableJSON]: "" as const, // Current configuration including what a student might change
-    [CapiFields.IsModified]: false as const, // Indicates if the student has modified any table cell.
-    [CapiFields.IsComplete]: false as const, // Indicates if the student has modified every table cell.
-    [CapiFields.IsCorrect]: false as const, // If the LD sets this to true, then the correct answers should be shown
-    [CapiFields.Enabled]: true as const, // Indicated whether the table is enabled or disabled for students to interact with it
-    [CapiFields.ShowHints]: false as const, // When true, highlights correct cells in green and incorrect cells in red.
-    [CapiFields.CSS]: "" as const,
-    [CapiFields.Title]: "" as const,
-    [CapiFields.Summary]: "" as const,
+    [CapiFields.Mode]: "config" as AppMode,
+    [CapiFields.InitialConfig]: "", // Captures the current config of the table, including any student input values in cells.
+    [CapiFields.TableJSON]: "", // Current configuration including what a student might change
+    [CapiFields.IsModified]: false, // Indicates if the student has modified any table cell.
+    [CapiFields.IsComplete]: false, // Indicates if the student has modified every table cell.
+    [CapiFields.IsCorrect]: false, // If the LD sets this to true, then the correct answers should be shown
+    [CapiFields.Enabled]: true, // Indicated whether the table is enabled or disabled for students to interact with it
+    [CapiFields.ShowHints]: false, // When true, highlights correct cells in green and incorrect cells in red.
+    [CapiFields.CSS]: "",
+    [CapiFields.Title]: "",
+    [CapiFields.Summary]: "",
   },
 
   exposeWith: {
