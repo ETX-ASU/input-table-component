@@ -109,8 +109,6 @@ const handlers = {
           return;
         }
 
-        const mode = simModel.get("Mode");
-
         if (env === "development") {
           return useSpreadsheetStore.setState({
             permissionLevel: "ld",
@@ -119,26 +117,28 @@ const handlers = {
           });
         }
 
-        if (context === "AUTHOR") {
-          if (mode === "preview") {
-            // If you are an author and the mode is preview, is because you're testing the component
-            // So we set the permission level to student
-            useSpreadsheetStore.setState({
-              permissionLevel: "student",
-              appMode: "preview",
-              isLoading: false,
-            });
-          } else {
-            useSpreadsheetStore.setState({
-              permissionLevel: "ld",
-              appMode: "config",
-              isLoading: false,
-            });
-          }
-        } else {
+        if (context !== "AUTHOR") {
+          return useSpreadsheetStore.setState({
+            permissionLevel: "student",
+            appMode: "preview",
+            isLoading: false,
+          });
+        }
+
+        const mode = simModel.get("Mode");
+        if (mode === "preview") {
+          console.log("mode", mode);
+          // If you are an author and the mode is preview, is because you're testing the component
+          // So we set the permission level to student
           useSpreadsheetStore.setState({
             permissionLevel: "student",
             appMode: "preview",
+            isLoading: false,
+          });
+        } else {
+          useSpreadsheetStore.setState({
+            permissionLevel: "ld",
+            appMode: "config",
             isLoading: false,
           });
         }
