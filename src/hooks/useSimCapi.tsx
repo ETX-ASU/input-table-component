@@ -38,7 +38,6 @@ const parseState = (str: string) => {
 
 const addCapiEventListener = (value: string, handler: VoidFunction) => {
   simModel.on("change:" + value, () => {
-    console.log("change:" + value);
     handler();
   });
   return () => {
@@ -71,7 +70,7 @@ const addDynamicCellsEventListener = (
 const handlers = {
   [CapiFields.Mode]: {
     capiChange: () => () => {
-      const mode = simModel.get("Mode");
+      const mode = simModel.get(CapiFields.Mode);
       if (["preview", "config"].includes(mode)) {
         useSpreadsheetStore.setState({
           appMode: mode,
@@ -83,13 +82,13 @@ const handlers = {
   [CapiFields.InitialConfig]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
       if (state.permissionLevel === "ld") {
-        simModel.set("InitialConfig", stringifyState(state));
+        simModel.set(CapiFields.InitialConfig, stringifyState(state));
       }
     },
     capiChange:
       ({ dataRef }: { dataRef: MutableRefObject<CellData[][] | null> }) =>
       () => {
-        const strInitialConfig = simModel.get("InitialConfig");
+        const strInitialConfig = simModel.get(CapiFields.InitialConfig);
         const initialConfig = parseState(strInitialConfig);
         const curr = useSpreadsheetStore.getState();
 
@@ -127,7 +126,7 @@ const handlers = {
           });
         }
 
-        const mode = simModel.get("Mode");
+        const mode = simModel.get(CapiFields.Mode);
         if (mode === "preview") {
           // If you are an author and the mode is preview, is because you're testing the component
           // So we set the permission level to student
@@ -151,10 +150,10 @@ const handlers = {
   },
   [CapiFields.TableJSON]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
-      simModel.set("TableJSON", stringifyState(state));
+      simModel.set(CapiFields.TableJSON, stringifyState(state));
     },
     capiChange: () => () => {
-      const strTableJson = simModel.get("TableJSON");
+      const strTableJson = simModel.get(CapiFields.TableJSON);
       const tableJson = parseState(strTableJson);
       const curr = useSpreadsheetStore.getState();
 
@@ -178,7 +177,7 @@ const handlers = {
       }
 
       console.log("isModified", isModified);
-      if (isModified) simModel.set("IsModified", true);
+      simModel.set(CapiFields.IsComplete, isModified);
     },
   },
   [CapiFields.IsComplete]: {
@@ -190,16 +189,16 @@ const handlers = {
       );
 
       console.log("isComplete", isComplete);
-      if (isComplete) simModel.set("IsComplete", true);
+      if (isComplete) simModel.set(CapiFields.IsComplete, true);
     },
     capiChange: () => () => {
-      const isComplete = !!JSON.parse(simModel.get("IsComplete"));
+      const isComplete = simModel.get(CapiFields.IsComplete);
       useSpreadsheetStore.setState({ showCorrectAnswers: isComplete });
     },
   },
   [CapiFields.IsCorrect]: {
     stateChange: (data: CellData[][]) => {
-      const currIsCorrect = simModel.get("IsCorrect");
+      const currIsCorrect = simModel.get(CapiFields.IsCorrect);
 
       const isCorrect = data
         .flatMap((row) => row)
@@ -209,37 +208,37 @@ const handlers = {
         .every((cell) => cell.content === cell.correctAnswer);
 
       console.log("isCorrect", isCorrect);
-      if (isCorrect !== currIsCorrect) simModel.set("IsCorrect", isCorrect);
+      if (isCorrect !== currIsCorrect)
+        simModel.set(CapiFields.IsCorrect, isCorrect);
     },
   },
   [CapiFields.ShowHints]: {
     capiChange: () => () => {
-      const showHints = !!JSON.parse(simModel.get("ShowHints"));
+      const showHints = simModel.get(CapiFields.ShowHints);
       useSpreadsheetStore.setState({ showHints });
     },
   },
   [CapiFields.Title]: {
     capiChange: () => () => {
-      const title = simModel.get("Title");
+      const title = simModel.get(CapiFields.Title);
       useSpreadsheetStore.setState({ title });
     },
   },
   [CapiFields.Summary]: {
     capiChange: () => () => {
-      const summary = simModel.get("Summary");
+      const summary = simModel.get(CapiFields.Summary);
       useSpreadsheetStore.setState({ summary });
     },
   },
   [CapiFields.CSS]: {
     capiChange: () => () => {
-      const css = simModel.get("CSS");
+      const css = simModel.get(CapiFields.CSS);
       injectCSS(css);
     },
   },
   [CapiFields.Enabled]: {
     capiChange: () => () => {
-      console.log(simModel.get("Enabled"), JSON.parse(simModel.get("Enabled")));
-      const enableTable = !!JSON.parse(simModel.get("Enabled"));
+      const enableTable = simModel.get(CapiFields.Enabled);
       useSpreadsheetStore.setState({ enableTable });
     },
   },
