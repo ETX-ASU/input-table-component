@@ -353,6 +353,7 @@ export const useSimCapi = () => {
   useEffect(() => {
     let unsubAddedCells: VoidFunction[] = [];
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
+      console.log("prev");
       if (isEqual(prevState, state)) return;
       console.log("state", state);
 
