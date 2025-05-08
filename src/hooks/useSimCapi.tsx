@@ -67,6 +67,17 @@ const addDynamicCellsEventListener = (
   );
 
 const handlers = {
+  Mode: {
+    capiChange: () => () => {
+      const mode = simModel.get("Mode");
+      if (["preview", "config"].includes(mode)) {
+        useSpreadsheetStore.setState({
+          appMode: mode,
+          permissionLevel: mode === "preview" ? "student" : "ld",
+        });
+      }
+    },
+  },
   InitialConfig: {
     stateChange: (state: Partial<SpreadsheetState>) => {
       if (state.permissionLevel === "ld") {
@@ -395,6 +406,7 @@ export const useSimCapi = () => {
 
     const unsubsCapi = (
       [
+        "Mode",
         "InitialConfig",
         "TableJSON",
         "CSS",
