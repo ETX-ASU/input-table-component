@@ -7,9 +7,6 @@ export const capi = {
     IsCorrect: false, // If the LD sets this to true, then the correct answers should be shown
     Enabled: true, // Indicated whether the table is enabled or disabled for students to interact with it
     ShowHints: false, // When true, highlights correct cells in green and incorrect cells in red.
-    CSVImport: "", // Allows importing table structure and data from a formatted CSV string. (Stretch Goal)
-    // Reset: false, // When set to true, resets the table to its default state.
-    Color: "", // Could be hex, color name, etc
     CSS: "",
     Title: "",
     Summary: "",
@@ -55,24 +52,6 @@ export const capi = {
     ShowHints: {
       type: "boolean",
       alias: "ShowHints",
-      readonly: false,
-      writeonly: false,
-    },
-    CSVImport: {
-      type: "string",
-      alias: "CSVImport",
-      readonly: false,
-      writeonly: false,
-    },
-    // Reset: {
-    //   type: "boolean",
-    //   alias: "Reset",
-    //   readonly: false,
-    //   writeonly: false,
-    // },
-    Color: {
-      type: "string",
-      alias: "Color",
       readonly: false,
       writeonly: false,
     },

@@ -27,7 +27,6 @@ export function SpreadsheetGrid() {
     isResizingRow,
     appMode,
     setActiveCell,
-    updateCellContent,
     updateResize,
     endResize,
     updateRowResize,
@@ -40,7 +39,6 @@ export function SpreadsheetGrid() {
 
   const spreadsheetRef = useRef<HTMLDivElement>(null);
   const cellRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  const [openSelectCell, setOpenSelectCell] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [isSelectCellActive, setIsSelectCellActive] = useState(false);
 
@@ -49,26 +47,6 @@ export function SpreadsheetGrid() {
   const handleCellClick = (row: number, col: number) => {
     if (!canInteractWithCell({ row, col })) return;
     setActiveCell(row, col);
-  };
-
-  const handleOpenSelectDropdown = (
-    cellKey: string | null,
-    coordinates: CellCoordinates,
-  ) => {
-    if (!canInteractWithCell(coordinates)) return;
-
-    setOpenSelectCell(cellKey);
-  };
-
-  const handleCellChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateCellContent(e.target.value);
-  };
-
-  const handleSelectChange = (value: string, row: number, col: number) => {
-    if (!canInteractWithCell({ row, col })) return;
-
-    setActiveCell(row, col);
-    updateCellContent(value);
   };
 
   const handleRowContextMenu = (e: React.MouseEvent, rowIndex: number) => {
@@ -389,41 +367,38 @@ export function SpreadsheetGrid() {
     }
 
     switch (cell.contentType) {
+      case "not-editable":
+        return (
+          <InputCell
+            inputMode="text"
+            coordinates={coordinates}
+            ref={(el) => {
+              cellRefs.current[`${rowIndex}-${colIndex}`] = el;
+            }}
+            handleKeyDown={handleInputKeyDown}
+          />
+        );
       case "number":
         return (
           <InputCell
             inputMode="numeric"
-            cell={cell}
             coordinates={coordinates}
-            cellRefs={cellRefs}
-            handleCellChange={handleCellChange}
+            ref={(el) => {
+              cellRefs.current[`${rowIndex}-${colIndex}`] = el;
+            }}
             handleKeyDown={handleInputKeyDown}
           />
         );
       case "select":
-        return (
-          <SelectCell
-            cell={cell}
-            coordinates={coordinates}
-            openSelectCell={openSelectCell}
-            onCellClick={handleCellClick}
-            onOpenSelectDropdown={(cellKey) =>
-              handleOpenSelectDropdown(cellKey, {
-                row: rowIndex,
-                col: colIndex,
-              })
-            }
-            onSelectChange={handleSelectChange}
-          />
-        );
+        return <SelectCell coordinates={coordinates} />;
       default: // text
         return (
           <InputCell
             inputMode="text"
-            cell={cell}
             coordinates={coordinates}
-            cellRefs={cellRefs}
-            handleCellChange={handleCellChange}
+            ref={(el) => {
+              cellRefs.current[`${rowIndex}-${colIndex}`] = el;
+            }}
             handleKeyDown={handleInputKeyDown}
           />
         );
@@ -437,7 +412,7 @@ export function SpreadsheetGrid() {
     <div id="spreadsheet-grid">
       <div
         ref={spreadsheetRef}
-        className="relative overflow-auto"
+        className="relative overflow-auto pb-2"
         style={{ maxWidth: "100%", maxHeight: "500px" }}
       >
         <div className="relative">

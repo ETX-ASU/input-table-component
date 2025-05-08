@@ -4,19 +4,13 @@ import useSpreadsheetStore, {
   CellCoordinates,
   CellData,
 } from "../lib/store";
+import { colorPalette } from "./color-picker";
 
 const buildCellBackgroundColor = (
-  coordinates: CellCoordinates,
   cell: CellData,
-  activeCell: CellCoordinates | null,
   appMode: AppMode,
   canInteractWithCell: boolean,
 ) => {
-  const { row, col } = coordinates;
-  if (activeCell?.row === row && activeCell?.col === col) {
-    return "#e6f0ff"; // Light blue
-  }
-
   // Preview mode handling
   if (appMode === "preview" || !canInteractWithCell) {
     if (cell.disabled) {
@@ -28,10 +22,7 @@ const buildCellBackgroundColor = (
 
   // Config mode handling
   if (cell.disabled) {
-    // In config mode, add a subtle visual for disabled cells
-    return cell.backgroundColor !== "transparent"
-      ? cell.backgroundColor
-      : "#fafafa"; // Very subtle gray
+    return "transparent";
   }
 
   // Default case: use the cell's background color
@@ -62,12 +53,12 @@ const Cell: FC<PropsWithChildren<CellProps>> = ({
   const cell = getData(coordinates);
 
   const bgColor = buildCellBackgroundColor(
-    coordinates,
     cell,
-    activeCell,
     appMode,
     canInteractWithCell(coordinates),
   );
+
+  const isActiveCell = activeCell?.row === row && activeCell?.col === col;
 
   return (
     <td
@@ -79,8 +70,11 @@ const Cell: FC<PropsWithChildren<CellProps>> = ({
         height: rowHeights[row],
         borderWidth: cell.borderWidth,
         borderStyle: "solid",
-        borderColor: cell.borderColor,
+        borderColor: isActiveCell ? colorPalette.blue[80] : cell.borderColor,
         backgroundColor: bgColor,
+        outline: isActiveCell
+          ? `${cell.borderWidth + 1}px solid ${colorPalette.blue[80]}`
+          : "none",
       }}
     >
       {children}

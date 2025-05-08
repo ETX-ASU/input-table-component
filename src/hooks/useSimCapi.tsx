@@ -1,5 +1,5 @@
-import { cloneDeep, isEqual } from "lodash";
-import { useEffect, useRef } from "react";
+import { cloneDeep, isEqual, omit } from "lodash";
+import { MutableRefObject, useEffect, useRef } from "react";
 import {
   cellModelKey,
   dinamicallyAddToSimModel,
@@ -37,7 +37,6 @@ const parseState = (str: string) => {
 
 const addCapiEventListener = (value: string, handler: VoidFunction) => {
   simModel.on("change:" + value, () => {
-    console.log("change", value);
     handler();
   });
   return () => {
@@ -74,20 +73,22 @@ const handlers = {
         simModel.set("InitialConfig", stringifyState(state));
       }
     },
-    capiChange: () => {
-      const strInitialConfig = simModel.get("InitialConfig");
-      const initialConfig = parseState(strInitialConfig);
-      const curr = useSpreadsheetStore.getState();
+    capiChange:
+      ({ dataRef }: { dataRef: MutableRefObject<CellData[][] | null> }) =>
+      () => {
+        const strInitialConfig = simModel.get("InitialConfig");
+        const initialConfig = parseState(strInitialConfig);
+        const curr = useSpreadsheetStore.getState();
 
-      if (initialConfig) {
-        if (isEqual(curr, initialConfig)) return;
-        console.log("updating initialconfig", initialConfig, curr);
-        useSpreadsheetStore.setState(initialConfig);
-      }
-    },
+        if (initialConfig) {
+          if (isEqual(curr, initialConfig)) return;
+          dataRef.current = initialConfig.data || null;
+          useSpreadsheetStore.setState(initialConfig);
+        }
+      },
   },
   PermissionLevel: {
-    capiChange: () => {
+    capiChange: () => () => {
       const tryGetContext = (delayMs = 100) => {
         const { context } = window.simcapi.Transporter.getConfig() || {};
         const env = process.env.NODE_ENV;
@@ -128,14 +129,13 @@ const handlers = {
     stateChange: (state: Partial<SpreadsheetState>) => {
       simModel.set("TableJSON", stringifyState(state));
     },
-    capiChange: () => {
+    capiChange: () => () => {
       const strTableJson = simModel.get("TableJSON");
       const tableJson = parseState(strTableJson);
       const curr = useSpreadsheetStore.getState();
 
       if (tableJson) {
         if (isEqual(curr, tableJson)) return;
-        console.log("updating tablejson", tableJson, curr);
         useSpreadsheetStore.setState(tableJson);
       }
     },
@@ -166,26 +166,49 @@ const handlers = {
       if (isCompleted) simModel.set("IsCompleted", true);
     },
   },
+  IsCorrect: {
+    stateChange: (data: CellData[][]) => {
+      const currIsCorrect = simModel.get("IsCorrect");
+
+      const isCorrect = data
+        .flatMap((row) => row)
+        .filter(
+          (cell) =>
+            !cell.disabled &&
+            cell.contentType !== "not-editable" &&
+            cell.correctAnswer,
+        )
+        .every((cell) => cell.content === cell.correctAnswer);
+
+      if (isCorrect !== currIsCorrect) simModel.set("IsCorrect", isCorrect);
+    },
+  },
+  ShowHints: {
+    capiChange: () => () => {
+      const showHints = !!JSON.parse(simModel.get("ShowHints"));
+      useSpreadsheetStore.setState({ showHints });
+    },
+  },
   Title: {
-    capiChange: () => {
+    capiChange: () => () => {
       const title = simModel.get("Title");
       useSpreadsheetStore.setState({ title });
     },
   },
   Summary: {
-    capiChange: () => {
+    capiChange: () => () => {
       const summary = simModel.get("Summary");
       useSpreadsheetStore.setState({ summary });
     },
   },
   CSS: {
-    capiChange: () => {
+    capiChange: () => () => {
       const css = simModel.get("CSS");
       injectCSS(css);
     },
   },
   Enabled: {
-    capiChange: () => {
+    capiChange: () => () => {
       const enableTable = !!JSON.parse(simModel.get("Enabled"));
       useSpreadsheetStore.setState({ enableTable });
     },
@@ -267,9 +290,10 @@ const dynamicCellHandlers = {
 };
 
 export const useSimCapi = () => {
+  const initialData = useRef<CellData[][] | null>(null); // Only used to calculate isModified
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
   const { isLoading } = useSpreadsheetStore.getState();
-  useOnce(handlers.PermissionLevel.capiChange);
+  useOnce(handlers.PermissionLevel.capiChange());
 
   useEffect(() => {
     let unsub: VoidFunction[] = [];
@@ -329,19 +353,33 @@ export const useSimCapi = () => {
       )
         return;
 
-      const clonedState: Partial<SpreadsheetState> = cloneDeep(state);
-      delete clonedState.activeCell;
-      delete clonedState.undoStack;
-      delete clonedState.lastHistoryId;
-      delete clonedState.isLoading;
-      delete clonedState.isResizing;
-      delete clonedState.isUndoRedo;
-      delete clonedState.isResizingRow;
+      const clonedState: Partial<SpreadsheetState> = omit(cloneDeep(state), [
+        "activeCell",
+        "undoStack",
+        "lastHistoryId",
+        "isLoading",
+        "isResizing",
+        "isUndoRedo",
+        "isResizingRow",
+        "isSelectOptionsDialogOpen",
+      ]);
+
+      clonedState.data?.forEach((rowArr, ridx) => {
+        rowArr.forEach((cell, cidx) => {
+          if (cell.contentType !== "not-editable") {
+            clonedState.data![ridx][cidx].content = "";
+          }
+        });
+      });
 
       handlers.InitialConfig.stateChange(clonedState);
       handlers.TableJSON.stateChange(clonedState);
-      handlers.IsModified.stateChange(prevData.current, state.data);
-      handlers.IsCompleted.stateChange(state);
+
+      if (state.permissionLevel === "student" && state.appMode === "preview") {
+        handlers.IsCorrect.stateChange(state.data);
+        handlers.IsModified.stateChange(prevData.current, state.data);
+        handlers.IsCompleted.stateChange(state);
+      }
 
       unsubAddedCells = dynamicCellHandlers.addedCells(addedCells);
       dynamicCellHandlers.removedCells(removedCells);
@@ -358,8 +396,14 @@ export const useSimCapi = () => {
         "Title",
         "Summary",
         "Enabled",
+        "ShowHints",
       ] as const
-    ).map((key) => addCapiEventListener(key, handlers[key].capiChange));
+    ).map((key) =>
+      addCapiEventListener(
+        key,
+        handlers[key].capiChange({ dataRef: initialData }),
+      ),
+    );
 
     return () => {
       unsubState();

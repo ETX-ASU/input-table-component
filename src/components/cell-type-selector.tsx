@@ -1,7 +1,14 @@
-import { Check, ChevronDown, Hash, ListFilter, TextIcon } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Hash,
+  ListFilter,
+  Lock,
+  TextIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
-import { CellContentType } from "../lib/store";
+import useSpreadsheetStore, { CellContentType } from "../lib/store";
 import { Command, CommandGroup, CommandItem, CommandList } from "./ui/command";
 import {
   Dialog,
@@ -13,6 +20,7 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 interface CellTypeSelectorProps {
   value: CellContentType;
@@ -20,9 +28,12 @@ interface CellTypeSelectorProps {
   selectOptions: string[];
   onSelectOptionsChange: (options: string[]) => void;
   disabled?: boolean;
+  correctAnswer: string | null;
+  onCorrectAnswerChange: (correctAnswer: string) => void;
 }
 
 const cellTypeOptions = [
+  { value: "not-editable", label: "Not Editable", icon: Lock },
   { value: "text", label: "Text", icon: TextIcon },
   { value: "number", label: "Number", icon: Hash },
   { value: "select", label: "Select", icon: ListFilter },
@@ -34,11 +45,20 @@ export function CellTypeSelector({
   selectOptions,
   onSelectOptionsChange,
   disabled = false,
+  correctAnswer,
+  onCorrectAnswerChange,
 }: CellTypeSelectorProps) {
   const [open, setOpen] = useState(false);
-  const [showSelectDialog, setShowSelectDialog] = useState(false);
+  const { setIsSelectOptionsDialogOpen, isSelectOptionsDialogOpen } =
+    useSpreadsheetStore();
   const [optionsInput, setOptionsInput] = useState("");
   const [tempOptions, setTempOptions] = useState<string[]>([]);
+  const [selectedCorrectAnswer, setSelectedCorrectAnswer] =
+    useState(correctAnswer);
+
+  useEffect(() => {
+    setSelectedCorrectAnswer(correctAnswer);
+  }, [correctAnswer]);
 
   useEffect(() => {
     setTempOptions([...selectOptions]);
@@ -53,7 +73,7 @@ export function CellTypeSelector({
 
     // If changing to select type, open the options dialog
     if (type === "select") {
-      setShowSelectDialog(true);
+      setIsSelectOptionsDialogOpen(true);
     }
   };
 
@@ -64,13 +84,24 @@ export function CellTypeSelector({
     }
   };
 
+  const handleCorrectAnswerChange = (value: string) => {
+    setSelectedCorrectAnswer(value);
+  };
+
   const handleRemoveOption = (option: string) => {
     setTempOptions(tempOptions.filter((o) => o !== option));
+
+    if (option === selectedCorrectAnswer) {
+      setSelectedCorrectAnswer(null);
+    }
   };
 
   const handleSaveOptions = () => {
+    if (!selectedCorrectAnswer || !tempOptions.length) return;
+
+    onCorrectAnswerChange(selectedCorrectAnswer);
     onSelectOptionsChange(tempOptions);
-    setShowSelectDialog(false);
+    setIsSelectOptionsDialogOpen(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -83,8 +114,10 @@ export function CellTypeSelector({
   // Handle dialog close
   const handleDialogOpenChange = (open: boolean) => {
     if (!open) {
-      onChange("text");
-      setShowSelectDialog(false);
+      if (!tempOptions.length) onChange("not-editable");
+      setTempOptions([]);
+      setSelectedCorrectAnswer(null);
+      setIsSelectOptionsDialogOpen(false);
     }
   };
 
@@ -105,7 +138,7 @@ export function CellTypeSelector({
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[140px] p-0" style={{ zIndex: 9999 }}>
+        <PopoverContent className="w-[200px] p-0" style={{ zIndex: 9999 }}>
           <Command>
             <CommandList>
               <CommandGroup>
@@ -133,7 +166,10 @@ export function CellTypeSelector({
       </Popover>
 
       {/* Dialog for configuring select options */}
-      <Dialog open={showSelectDialog} onOpenChange={handleDialogOpenChange}>
+      <Dialog
+        open={isSelectOptionsDialogOpen}
+        onOpenChange={handleDialogOpenChange}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Configure Select Options</DialogTitle>
@@ -163,23 +199,40 @@ export function CellTypeSelector({
                 </div>
               ) : (
                 <div className="max-h-[200px] divide-y overflow-y-auto rounded-md border">
-                  {tempOptions.map((option, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-2"
-                    >
-                      <span className="text-sm">{option}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveOption(option)}
-                        className="h-8 w-8 p-0"
-                        disabled={tempOptions.length <= 1}
+                  <RadioGroup
+                    value={selectedCorrectAnswer}
+                    onValueChange={handleCorrectAnswerChange}
+                    className="w-full"
+                  >
+                    {tempOptions.map((option, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2"
                       >
-                        &times;
-                      </Button>
-                    </div>
-                  ))}
+                        <div className="flex flex-1 items-center gap-2">
+                          <RadioGroupItem
+                            value={option}
+                            id={`option-${index}`}
+                          />
+                          <Label
+                            htmlFor={`option-${index}`}
+                            className="flex-1 cursor-pointer text-sm"
+                          >
+                            {option}
+                          </Label>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveOption(option)}
+                          className="h-8 w-8 p-0"
+                          disabled={tempOptions.length <= 1}
+                        >
+                          &times;
+                        </Button>
+                      </div>
+                    ))}
+                  </RadioGroup>
                 </div>
               )}
             </div>
@@ -188,13 +241,13 @@ export function CellTypeSelector({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setShowSelectDialog(false)}
+              onClick={() => setIsSelectOptionsDialogOpen(false)}
             >
               Cancel
             </Button>
             <Button
               type="button"
-              disabled={tempOptions.length === 0}
+              disabled={tempOptions.length === 0 || !selectedCorrectAnswer}
               onClick={handleSaveOptions}
             >
               Save Options

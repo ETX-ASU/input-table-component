@@ -10,7 +10,7 @@ import {
 import { buildDefaultCell } from "./utils";
 
 export type TextAlign = "left" | "center" | "right";
-export type CellContentType = "text" | "number" | "select";
+export type CellContentType = "text" | "number" | "select" | "not-editable";
 export type CellCoordinates = { row: number; col: number };
 export type AppMode = "config" | "preview";
 export type PermissionLevel = "student" | "ld";
@@ -30,6 +30,7 @@ export interface CellData {
   selectOptions: string[];
   link: string | null;
   disabled: boolean;
+  correctAnswer: string | null;
 }
 
 interface HistoryEntry {
@@ -53,6 +54,7 @@ export interface SpreadsheetState {
   startWidth: number;
   startHeight: number;
 
+  showHints: boolean;
   permissionLevel: PermissionLevel;
   enableTable: boolean;
   appMode: AppMode;
@@ -62,6 +64,9 @@ export interface SpreadsheetState {
   redoStack: HistoryEntry[];
   isUndoRedo: boolean;
   lastHistoryId: number;
+
+  isSelectOptionsDialogOpen: boolean;
+  setIsSelectOptionsDialogOpen: (isOpen: boolean) => void;
 
   title: string | null;
   summary: string | null;
@@ -82,7 +87,6 @@ export interface SpreadsheetState {
   setContentType: (contentType: CellContentType) => void;
   setSelectOptions: (options: string[]) => void;
   setLink: (url: string | null) => void;
-  toggleCellDisabled: VoidFunction;
   addRow: VoidFunction;
   removeRow: VoidFunction;
   addColumn: VoidFunction;
@@ -104,6 +108,8 @@ export interface SpreadsheetState {
   redo: VoidFunction;
   canUndo: () => boolean;
   canRedo: () => boolean;
+
+  updateCorrectAnswer: (correctAnswer: string) => void;
 
   getData: (cell: CellCoordinates) => CellData;
   canInteractWithCell: (cell: CellCoordinates) => boolean;
@@ -131,6 +137,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     startHeight: 0,
 
     enableTable: true,
+    showHints: true,
     permissionLevel: "student",
     title: null,
     setTitle: (title) => set({ title }),
@@ -140,12 +147,47 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     toggleAppMode: () =>
       set((state) => ({
         appMode: state.appMode === "config" ? "preview" : "config",
+        activeCell: null,
       })),
 
     undoStack: [],
     redoStack: [],
     isUndoRedo: false,
     lastHistoryId: 0,
+
+    isSelectOptionsDialogOpen: false,
+    setIsSelectOptionsDialogOpen: (isOpen: boolean) =>
+      set({ isSelectOptionsDialogOpen: isOpen }),
+
+    updateCorrectAnswer: (correctAnswer) =>
+      set((state) => {
+        if (!state.activeCell || state.appMode === "preview") return state;
+
+        const newData = cloneDeep(state.data);
+        const cell = state.getData(state.activeCell);
+
+        // Validate answer based on content type
+        let validatedAnswer: string | null = correctAnswer;
+        if (cell.contentType === "number") {
+          if (correctAnswer === "" || !isNaN(Number(correctAnswer))) {
+            validatedAnswer = correctAnswer;
+          } else {
+            // If invalid number, keep the previous content
+            validatedAnswer = cell.correctAnswer;
+          }
+        }
+
+        if (correctAnswer === cell.correctAnswer) return state;
+
+        newData[state.activeCell.row][state.activeCell.col] = {
+          ...cell,
+          correctAnswer: validatedAnswer,
+        };
+
+        const result = { data: newData };
+        get().pushToHistory();
+        return result;
+      }),
 
     getData: (cell) => {
       const { row, col } = cell;
@@ -318,23 +360,6 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return result;
       }),
 
-    toggleCellDisabled: () =>
-      set((state) => {
-        if (!state.activeCell || state.appMode === "preview") return state;
-
-        const newData = [...state.data];
-        const currentCell = newData[state.activeCell.row][state.activeCell.col];
-        newData[state.activeCell.row][state.activeCell.col] = {
-          ...currentCell,
-          disabled: !currentCell.disabled,
-        };
-
-        // Push to history immediately
-        const result = { data: newData };
-        get().pushToHistory();
-        return result;
-      }),
-
     toggleFormat: (format) =>
       set((state) => {
         if (!state.activeCell || state.appMode === "preview") return state;
@@ -451,21 +476,18 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     setContentType: (contentType) =>
       set((state) => {
         if (!state.activeCell || state.appMode === "preview") return state;
+        if (state.getData(state.activeCell).contentType === contentType)
+          return state;
 
         const newData = [...state.data];
-        const cell = newData[state.activeCell.row][state.activeCell.col];
-
-        // Clear content if changing to a different type
-        let content = cell.content;
-        if (contentType === "number" && cell.contentType !== "number") {
-          // If switching to number, ensure content is valid or clear it
-          content = content === "" || !isNaN(Number(content)) ? content : "";
-        }
+        const cell = state.getData(state.activeCell);
 
         newData[state.activeCell.row][state.activeCell.col] = {
           ...cell,
           contentType,
-          content,
+          content: "",
+          correctAnswer: null,
+          disabled: contentType === "not-editable",
         };
 
         // Push to history immediately
@@ -481,16 +503,10 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         const newData = [...state.data];
         const cell = newData[state.activeCell.row][state.activeCell.col];
 
-        // Clear content if the current value is not in the new options
-        let content = cell.content;
-        if (cell.contentType === "select" && !options.includes(content)) {
-          content = options.length > 0 ? options[0] : "";
-        }
-
         newData[state.activeCell.row][state.activeCell.col] = {
           ...cell,
           selectOptions: options,
-          content,
+          content: "",
         };
 
         // Push to history immediately

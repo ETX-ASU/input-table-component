@@ -19,10 +19,11 @@ const buildDefaultCell = (): CellData => ({
   borderColor: DEFAULT_BORDER_COLOR,
   backgroundColor: DEFAULT_BACKGROUND_COLOR,
   fontFamily: DEFAULT_FONT_FAMILY,
-  contentType: "text",
+  contentType: "not-editable",
   selectOptions: [],
   link: null,
-  disabled: false,
+  disabled: true,
+  correctAnswer: null,
 });
 
 const injectCSS = (cssString: string, styleId = "dynamic-style") => {

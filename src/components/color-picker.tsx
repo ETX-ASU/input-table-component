@@ -93,8 +93,19 @@ const lightGray = {
   20: "#EBEBEB",
 } as const;
 
+const colorPalette = {
+  blue,
+  orange,
+  purple,
+  green,
+  red,
+  yellow,
+  gray,
+  lightGray,
+} as const;
+
 // Define our color palette using ETX colors
-const colorPalette = [
+const colorPaletteMatrix = [
   blue,
   orange,
   purple,
@@ -200,7 +211,7 @@ function ColorPicker({
 
             {/* Color grid */}
             <div className="grid grid-cols-7 gap-1">
-              {colorPalette.map((row, rowIndex) =>
+              {colorPaletteMatrix.map((row, rowIndex) =>
                 row.map((color, colIndex) => (
                   <button
                     key={`${rowIndex}-${colIndex}`}
@@ -247,14 +258,4 @@ function ColorPicker({
   );
 }
 
-export {
-  blue,
-  ColorPicker,
-  gray,
-  green,
-  lightGray,
-  orange,
-  purple,
-  red,
-  yellow,
-};
+export { colorPalette, ColorPicker };
