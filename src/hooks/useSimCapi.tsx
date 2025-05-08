@@ -1,4 +1,4 @@
-import { cloneDeep, isEqual, omit } from "lodash";
+import { cloneDeep, isEqual, merge, omit } from "lodash";
 import { MutableRefObject, useEffect, useRef } from "react";
 import {
   cellModelKey,
@@ -23,6 +23,12 @@ const stringifyState = (state: Partial<SpreadsheetState>) => {
     strInitialConfig = "";
   }
   return strInitialConfig;
+};
+
+const getCapiContext = () => {
+  const { context } = window.simcapi.Transporter.getConfig() || {};
+
+  return context;
 };
 
 const parseState = (str: string) => {
@@ -81,7 +87,15 @@ const handlers = {
   },
   [CapiFields.InitialConfig]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
-      if (state.permissionLevel === "ld") {
+      const currentCapiInitialConfig = simModel.get(CapiFields.InitialConfig);
+      const { data: prevData } = parseState(currentCapiInitialConfig) || {};
+
+      if (getCapiContext() === "AUTHOR") {
+        const nextState = merge(cloneDeep(state), {
+          data: prevData,
+        });
+        simModel.set(CapiFields.InitialConfig, stringifyState(nextState));
+      } else {
         simModel.set(CapiFields.InitialConfig, stringifyState(state));
       }
     },
@@ -102,7 +116,7 @@ const handlers = {
   PermissionLevel: {
     capiChange: () => () => {
       const tryGetContext = (delayMs = 100) => {
-        const { context } = window.simcapi.Transporter.getConfig() || {};
+        const context = getCapiContext();
         const env = process.env.NODE_ENV;
 
         if (!context && env !== "development") {
