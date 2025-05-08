@@ -1,73 +1,87 @@
+export enum CapiFields {
+  Mode = "Mode",
+  InitialConfig = "InitialConfig",
+  TableJSON = "TableJSON",
+  IsModified = "IsModified",
+  IsComplete = "IsComplete",
+  IsCorrect = "IsCorrect",
+  Enabled = "Enabled",
+  ShowHints = "ShowHints",
+  CSS = "CSS",
+  Title = "Title",
+  Summary = "Summary",
+}
+
 export const capi = {
   defaults: {
-    Mode: "preview",
-    InitialConfig: "", // Captures the current config of the table, including any student input values in cells.
-    TableJSON: "", // Current configuration including what a student might change
-    IsModifed: false, // Indicates if the student has modified any table cell.
-    IsComplete: false, // Indicates if the student has modified every table cell.
-    IsCorrect: false, // If the LD sets this to true, then the correct answers should be shown
-    Enabled: true, // Indicated whether the table is enabled or disabled for students to interact with it
-    ShowHints: false, // When true, highlights correct cells in green and incorrect cells in red.
-    CSS: "",
-    Title: "",
-    Summary: "",
+    [CapiFields.Mode]: "preview",
+    [CapiFields.InitialConfig]: "", // Captures the current config of the table, including any student input values in cells.
+    [CapiFields.TableJSON]: "", // Current configuration including what a student might change
+    [CapiFields.IsModified]: false, // Indicates if the student has modified any table cell.
+    [CapiFields.IsComplete]: false, // Indicates if the student has modified every table cell.
+    [CapiFields.IsCorrect]: false, // If the LD sets this to true, then the correct answers should be shown
+    [CapiFields.Enabled]: true, // Indicated whether the table is enabled or disabled for students to interact with it
+    [CapiFields.ShowHints]: false, // When true, highlights correct cells in green and incorrect cells in red.
+    [CapiFields.CSS]: "",
+    [CapiFields.Title]: "",
+    [CapiFields.Summary]: "",
   },
 
   exposeWith: {
-    Mode: {
+    [CapiFields.Mode]: {
       type: 5, // "Enum"
       allowedValues: ["preview", "config"],
-      alias: "Mode",
+      alias: CapiFields.Mode,
       readonly: false,
       writeonly: false,
     },
-    InitialConfig: {
-      alias: "InitialConfig",
+    [CapiFields.InitialConfig]: {
+      alias: CapiFields.InitialConfig,
       readonly: false,
       writeonly: false,
     },
-    TableJSON: {
-      alias: "TableJSON",
+    [CapiFields.TableJSON]: {
+      alias: CapiFields.TableJSON,
       readonly: false,
       writeonly: false,
     },
-    IsModifed: {
-      alias: "IsModifed",
+    [CapiFields.IsModified]: {
+      alias: CapiFields.IsModified,
       readonly: true,
       writeonly: false,
     },
-    IsComplete: {
-      alias: "IsComplete",
+    [CapiFields.IsComplete]: {
+      alias: CapiFields.IsComplete,
       readonly: true,
       writeonly: false,
     },
-    IsCorrect: {
-      alias: "IsCorrect",
+    [CapiFields.IsCorrect]: {
+      alias: CapiFields.IsCorrect,
       readonly: false,
       writeonly: false,
     },
-    Enabled: {
-      alias: "Enabled",
+    [CapiFields.Enabled]: {
+      alias: CapiFields.Enabled,
       readonly: false,
       writeonly: false,
     },
-    ShowHints: {
-      alias: "ShowHints",
+    [CapiFields.ShowHints]: {
+      alias: CapiFields.ShowHints,
       readonly: false,
       writeonly: false,
     },
-    CSS: {
-      alias: "CSS",
+    [CapiFields.CSS]: {
+      alias: CapiFields.CSS,
       readonly: false,
       writeonly: false,
     },
-    Title: {
-      alias: "Title",
+    [CapiFields.Title]: {
+      alias: CapiFields.Title,
       readonly: false,
       writeonly: false,
     },
-    Summary: {
-      alias: "Summary",
+    [CapiFields.Summary]: {
+      alias: CapiFields.Summary,
       readonly: false,
       writeonly: false,
     },

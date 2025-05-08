@@ -6,6 +6,7 @@ import {
   dinamicallyRemoveFromSimModel,
   simModel,
 } from "../lib/simcapi";
+import { CapiFields } from "../lib/simcapi/model";
 import useSpreadsheetStore, {
   CellCoordinates,
   CellData,
@@ -37,6 +38,7 @@ const parseState = (str: string) => {
 
 const addCapiEventListener = (value: string, handler: VoidFunction) => {
   simModel.on("change:" + value, () => {
+    console.log("change:" + value);
     handler();
   });
   return () => {
@@ -67,7 +69,7 @@ const addDynamicCellsEventListener = (
   );
 
 const handlers = {
-  Mode: {
+  [CapiFields.Mode]: {
     capiChange: () => () => {
       const mode = simModel.get("Mode");
       if (["preview", "config"].includes(mode)) {
@@ -78,7 +80,7 @@ const handlers = {
       }
     },
   },
-  InitialConfig: {
+  [CapiFields.InitialConfig]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
       if (state.permissionLevel === "ld") {
         simModel.set("InitialConfig", stringifyState(state));
@@ -147,7 +149,7 @@ const handlers = {
       tryGetContext();
     },
   },
-  TableJSON: {
+  [CapiFields.TableJSON]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
       simModel.set("TableJSON", stringifyState(state));
     },
@@ -162,7 +164,7 @@ const handlers = {
       }
     },
   },
-  IsModified: {
+  [CapiFields.IsModified]: {
     stateChange: (prevCells: CellData[][], newCells: CellData[][]) => {
       let isModified = false;
       for (let i = 0; i < prevCells.length; i++) {
@@ -179,7 +181,7 @@ const handlers = {
       if (isModified) simModel.set("IsModified", true);
     },
   },
-  IsComplete: {
+  [CapiFields.IsComplete]: {
     stateChange: (state: SpreadsheetState) => {
       const isComplete = state.data.every((row) =>
         row
@@ -195,7 +197,7 @@ const handlers = {
       useSpreadsheetStore.setState({ showCorrectAnswers: isComplete });
     },
   },
-  IsCorrect: {
+  [CapiFields.IsCorrect]: {
     stateChange: (data: CellData[][]) => {
       const currIsCorrect = simModel.get("IsCorrect");
 
@@ -210,31 +212,31 @@ const handlers = {
       if (isCorrect !== currIsCorrect) simModel.set("IsCorrect", isCorrect);
     },
   },
-  ShowHints: {
+  [CapiFields.ShowHints]: {
     capiChange: () => () => {
       const showHints = !!JSON.parse(simModel.get("ShowHints"));
       useSpreadsheetStore.setState({ showHints });
     },
   },
-  Title: {
+  [CapiFields.Title]: {
     capiChange: () => () => {
       const title = simModel.get("Title");
       useSpreadsheetStore.setState({ title });
     },
   },
-  Summary: {
+  [CapiFields.Summary]: {
     capiChange: () => () => {
       const summary = simModel.get("Summary");
       useSpreadsheetStore.setState({ summary });
     },
   },
-  CSS: {
+  [CapiFields.CSS]: {
     capiChange: () => () => {
       const css = simModel.get("CSS");
       injectCSS(css);
     },
   },
-  Enabled: {
+  [CapiFields.Enabled]: {
     capiChange: () => () => {
       console.log(simModel.get("Enabled"), JSON.parse(simModel.get("Enabled")));
       const enableTable = !!JSON.parse(simModel.get("Enabled"));
@@ -418,15 +420,15 @@ export const useSimCapi = () => {
 
     const unsubsCapi = (
       [
-        "Mode",
-        "InitialConfig",
-        "TableJSON",
-        "CSS",
-        "Title",
-        "Summary",
-        "Enabled",
-        "ShowHints",
-        "IsComplete",
+        CapiFields.Mode,
+        CapiFields.InitialConfig,
+        CapiFields.TableJSON,
+        CapiFields.CSS,
+        CapiFields.Title,
+        CapiFields.Summary,
+        CapiFields.Enabled,
+        CapiFields.ShowHints,
+        CapiFields.IsComplete,
       ] as const
     ).map((key) =>
       addCapiEventListener(
