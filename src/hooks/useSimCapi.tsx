@@ -127,7 +127,6 @@ const handlers = {
 
         const mode = simModel.get("Mode");
         if (mode === "preview") {
-          console.log("mode", mode);
           // If you are an author and the mode is preview, is because you're testing the component
           // So we set the permission level to student
           useSpreadsheetStore.setState({
@@ -237,6 +236,7 @@ const handlers = {
   },
   Enabled: {
     capiChange: () => () => {
+      console.log(simModel.get("Enabled"), JSON.parse(simModel.get("Enabled")));
       const enableTable = !!JSON.parse(simModel.get("Enabled"));
       useSpreadsheetStore.setState({ enableTable });
     },
