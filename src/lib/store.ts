@@ -55,6 +55,7 @@ export interface SpreadsheetState {
   startHeight: number;
 
   showHints: boolean;
+  showCorrectAnswers: boolean;
   permissionLevel: PermissionLevel;
   enableTable: boolean;
   appMode: AppMode;
@@ -136,6 +137,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     startWidth: 0,
     startHeight: 0,
 
+    showCorrectAnswers: false,
     enableTable: true,
     showHints: true,
     permissionLevel: "student",
@@ -750,13 +752,14 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     canInteractWithCell: (coordinates) => {
       const state = get();
+      if (state.appMode === "config" && state.permissionLevel === "ld")
+        return true;
+
       const cell = state.getData(coordinates);
-      const isPreviewMode = state.appMode === "preview";
-      const tableIsDisabledForPreview =
+      const tableIsDisabledForStudents =
         !state.enableTable && state.permissionLevel === "student";
 
-      const isDisabled =
-        isPreviewMode && (cell.disabled || tableIsDisabledForPreview);
+      const isDisabled = cell.disabled || tableIsDisabledForStudents;
 
       return !isDisabled;
     },

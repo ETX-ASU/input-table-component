@@ -156,7 +156,7 @@ const handlers = {
       if (isModified) simModel.set("IsModified", true);
     },
   },
-  IsCompleted: {
+  IsComplete: {
     stateChange: (state: SpreadsheetState) => {
       const isCompleted = state.data.every((row) =>
         row
@@ -164,6 +164,10 @@ const handlers = {
           .every((cell) => cell.content.trim() !== ""),
       );
       if (isCompleted) simModel.set("IsCompleted", true);
+    },
+    capiChange: () => () => {
+      const isComplete = !!JSON.parse(simModel.get("IsComplete"));
+      useSpreadsheetStore.setState({ showCorrectAnswers: isComplete });
     },
   },
   IsCorrect: {
@@ -378,7 +382,7 @@ export const useSimCapi = () => {
       if (state.permissionLevel === "student" && state.appMode === "preview") {
         handlers.IsCorrect.stateChange(state.data);
         handlers.IsModified.stateChange(prevData.current, state.data);
-        handlers.IsCompleted.stateChange(state);
+        handlers.IsComplete.stateChange(state);
       }
 
       unsubAddedCells = dynamicCellHandlers.addedCells(addedCells);
@@ -397,6 +401,7 @@ export const useSimCapi = () => {
         "Summary",
         "Enabled",
         "ShowHints",
+        "IsComplete",
       ] as const
     ).map((key) =>
       addCapiEventListener(

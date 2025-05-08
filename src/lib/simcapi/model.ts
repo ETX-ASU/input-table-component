@@ -2,8 +2,8 @@ export const capi = {
   defaults: {
     InitialConfig: "", // Captures the current config of the table, including any student input values in cells.
     TableJSON: "", // Current configuration including what a student might change
-    IsModifed: false, // Indicates if the student has modified every table cell.
-    IsComplete: false, // If the LD sets this to true, then the correct answers should be shown
+    IsModifed: false, // Indicates if the student has modified any table cell.
+    IsComplete: false, // Indicates if the student has modified every table cell.
     IsCorrect: false, // If the LD sets this to true, then the correct answers should be shown
     Enabled: true, // Indicated whether the table is enabled or disabled for students to interact with it
     ShowHints: false, // When true, highlights correct cells in green and incorrect cells in red.
