@@ -158,12 +158,12 @@ const handlers = {
   },
   IsComplete: {
     stateChange: (state: SpreadsheetState) => {
-      const isCompleted = state.data.every((row) =>
+      const isComplete = state.data.every((row) =>
         row
           .filter((cell) => !cell.disabled)
           .every((cell) => cell.content.trim() !== ""),
       );
-      if (isCompleted) simModel.set("IsCompleted", true);
+      if (isComplete) simModel.set("IsComplete", true);
     },
     capiChange: () => () => {
       const isComplete = !!JSON.parse(simModel.get("IsComplete"));
