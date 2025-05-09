@@ -195,17 +195,12 @@ const handlers = {
   },
   [CapiFields.IsComplete]: {
     stateChange: (state: SpreadsheetState) => {
-      console.log(
-        state.data
-          .flatMap((row) => row)
-          .map((cell) => ({ content: cell.content, disabled: cell.disabled })),
-      );
+      const isComplete = state.data
+        .flatMap((row) => row)
+        .filter((cell) => cell.contentType !== "not-editable")
+        .every((cell) => cell.content.trim() !== "");
 
-      const isComplete = state.data.every((row) =>
-        row
-          .filter((cell) => !cell.disabled)
-          .every((cell) => cell.content.trim() !== ""),
-      );
+      console.log(isComplete);
 
       simModel.set(CapiFields.IsComplete, isComplete);
     },
