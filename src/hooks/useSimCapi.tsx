@@ -194,16 +194,16 @@ const handlers = {
     },
   },
   [CapiFields.IsComplete]: {
-    stateChange: (state: SpreadsheetState) => {
-      const isComplete = state.data
-        .flatMap((row) => row)
-        .filter((cell) => cell.contentType !== "not-editable")
-        .every((cell) => cell.content.trim() !== "");
+    // stateChange: (state: SpreadsheetState) => {
+    //   const isComplete = state.data
+    //     .flatMap((row) => row)
+    //     .filter((cell) => cell.contentType !== "not-editable")
+    //     .every((cell) => cell.content.trim() !== "");
 
-      console.log("statechange", isComplete);
+    //   console.log("statechange", isComplete);
 
-      simModel.set(CapiFields.IsComplete, isComplete);
-    },
+    //   simModel.set(CapiFields.IsComplete, isComplete);
+    // },
     capiChange: () => () => {
       const isComplete = simModel.get(CapiFields.IsComplete);
       console.log("capiChange", isComplete);
@@ -425,7 +425,7 @@ export const useSimCapi = () => {
       if (state.permissionLevel === "student" && state.appMode === "preview") {
         handlers.IsCorrect.stateChange(state.data);
         handlers.IsModified.stateChange(prevData.current, state.data);
-        handlers.IsComplete.stateChange(state);
+        // handlers.IsComplete.stateChange(state);
       }
 
       unsubAddedCells = dynamicCellHandlers.addedCells(addedCells);
