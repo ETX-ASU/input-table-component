@@ -44,7 +44,6 @@ const parseState = (str: string) => {
 
 const addCapiEventListener = (value: string, handler: VoidFunction) => {
   simModel.on("change:" + value, () => {
-    console.log("change:" + value);
     handler();
   });
   return () => {
@@ -88,7 +87,6 @@ const handlers = {
   },
   [CapiFields.InitialConfig]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
-      console.log("InitialConfig stateChange", state.enableTable);
       // const currentCapiInitialConfig = simModel.get(CapiFields.InitialConfig);
       // const { data: prevData } = parseState(currentCapiInitialConfig) || {};
       simModel.set(CapiFields.InitialConfig, stringifyState(state));
@@ -166,7 +164,6 @@ const handlers = {
   },
   [CapiFields.TableJSON]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
-      console.log("TableJSON stateChange", state.enableTable);
       simModel.set(CapiFields.TableJSON, stringifyState(state));
     },
     capiChange: () => () => {
@@ -193,7 +190,6 @@ const handlers = {
         }
       }
 
-      console.log("isModified", isModified);
       simModel.set(CapiFields.IsComplete, isModified);
     },
   },
@@ -205,7 +201,6 @@ const handlers = {
           .every((cell) => cell.content.trim() !== ""),
       );
 
-      console.log("isComplete", isComplete);
       if (isComplete) simModel.set(CapiFields.IsComplete, true);
     },
     capiChange: () => () => {
@@ -224,7 +219,6 @@ const handlers = {
         )
         .every((cell) => cell.content === cell.correctAnswer);
 
-      console.log("isCorrect", isCorrect);
       if (isCorrect !== currIsCorrect)
         simModel.set(CapiFields.IsCorrect, isCorrect);
     },
@@ -407,10 +401,20 @@ export const useSimCapi = () => {
         isEmpty,
       );
 
+      console.log(
+        "noCellsChanged",
+        noCellsChanged,
+        addedCells,
+        removedCells,
+        modifiedCells,
+      );
+
       const statesAreTheSame = isEqual(
         omit(state, keysToOmit),
         omit(prevState, keysToOmit),
       );
+
+      console.log("statesAreTheSame", statesAreTheSame);
 
       if (noCellsChanged && statesAreTheSame) return;
 
