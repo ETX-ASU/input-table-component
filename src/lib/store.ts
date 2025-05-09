@@ -753,14 +753,16 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     canInteractWithCell: (coordinates) => {
       const state = get();
+      const cell = state.getData(coordinates);
+
       if (state.appMode === "config" && state.permissionLevel === "ld")
         return true;
 
-      const cell = state.getData(coordinates);
       const tableIsDisabledForStudents =
         !state.enableTable && state.permissionLevel === "student";
 
-      const isDisabled = cell.disabled || tableIsDisabledForStudents;
+      const isDisabled =
+        cell.disabled || tableIsDisabledForStudents || state.showCorrectAnswers;
 
       return !isDisabled;
     },

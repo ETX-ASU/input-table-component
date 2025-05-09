@@ -349,11 +349,6 @@ export const useSimCapi = () => {
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
 
-      // const modifiedKeys = Object.keys(state).filter((k) => {
-      //   const key = k as keyof SpreadsheetState;
-      //   return !isEqual(state[key], prevState[key]);
-      // });
-
       const addedCells: CellCoordinates[] = [];
       const removedCells: CellCoordinates[] = [];
       const modifiedCells: CellCoordinates[] = [];
@@ -424,7 +419,7 @@ export const useSimCapi = () => {
       if (state.permissionLevel === "student" && state.appMode === "preview") {
         handlers.IsCorrect.stateChange(state.data);
         handlers.IsModified.stateChange(prevData.current, state.data);
-        // handlers.IsComplete.stateChange(state);
+        handlers.IsComplete.stateChange(state);
       }
 
       unsubAddedCells = dynamicCellHandlers.addedCells(addedCells);

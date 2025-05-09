@@ -177,10 +177,12 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
     const cell = getData(coordinates);
     const { row, col } = coordinates;
     const showCorrectness =
-      showCorrectAnswers || (showHints && cell.contentType !== "not-editable");
+      cell.contentType !== "not-editable" && (showHints || showCorrectAnswers);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      updateCellContent(e.target.value);
+      if (canInteractWithCell(coordinates)) {
+        updateCellContent(e.target.value);
+      }
     };
 
     const placeholder = canInteractWithCell(coordinates)
