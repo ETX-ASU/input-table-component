@@ -357,10 +357,10 @@ export const useSimCapi = () => {
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
 
-      const modifiedKeys = Object.keys(state).filter((k) => {
-        const key = k as keyof SpreadsheetState;
-        return !isEqual(state[key], prevState[key]);
-      });
+      // const modifiedKeys = Object.keys(state).filter((k) => {
+      //   const key = k as keyof SpreadsheetState;
+      //   return !isEqual(state[key], prevState[key]);
+      // });
 
       const addedCells: CellCoordinates[] = [];
       const removedCells: CellCoordinates[] = [];
@@ -403,15 +403,16 @@ export const useSimCapi = () => {
         "isSelectOptionsDialogOpen",
       ] as const;
 
-      // Avoid unnecessary updates
-      if (
-        !(
-          !isEqual(modifiedKeys, ["activeCell"]) ||
-          [addedCells, removedCells, modifiedCells].every(isEmpty) ||
-          !isEqual(omit(state, keysToOmit), omit(prevState, keysToOmit))
-        )
-      )
-        return;
+      const noCellsChanged = [addedCells, removedCells, modifiedCells].every(
+        isEmpty,
+      );
+
+      const statesAreTheSame = isEqual(
+        omit(state, keysToOmit),
+        omit(prevState, keysToOmit),
+      );
+
+      if (noCellsChanged && statesAreTheSame) return;
 
       const clonedState: Partial<SpreadsheetState> = omit(
         cloneDeep(state),
