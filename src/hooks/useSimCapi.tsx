@@ -201,7 +201,7 @@ const handlers = {
           .every((cell) => cell.content.trim() !== ""),
       );
 
-      if (isComplete) simModel.set(CapiFields.IsComplete, true);
+      simModel.set(CapiFields.IsComplete, isComplete);
     },
     capiChange: () => () => {
       const isComplete = simModel.get(CapiFields.IsComplete);
@@ -210,8 +210,6 @@ const handlers = {
   },
   [CapiFields.IsCorrect]: {
     stateChange: (data: CellData[][]) => {
-      const currIsCorrect = simModel.get(CapiFields.IsCorrect);
-
       const isCorrect = data
         .flatMap((row) => row)
         .filter(
@@ -219,8 +217,7 @@ const handlers = {
         )
         .every((cell) => cell.content === cell.correctAnswer);
 
-      if (isCorrect !== currIsCorrect)
-        simModel.set(CapiFields.IsCorrect, isCorrect);
+      simModel.set(CapiFields.IsCorrect, isCorrect);
     },
   },
   [CapiFields.ShowHints]: {
