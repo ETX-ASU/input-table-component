@@ -43,9 +43,7 @@ const parseState = (str: string) => {
 };
 
 const addCapiEventListener = (value: string, handler: VoidFunction) => {
-  simModel.on("change:" + value, () => {
-    handler();
-  });
+  simModel.on("change:" + value, handler);
   return () => {
     simModel.off("change:" + value, handler);
   };
@@ -190,6 +188,7 @@ const handlers = {
         }
       }
 
+      console.log("isModified", isModified);
       simModel.set(CapiFields.IsModified, isModified);
     },
   },
@@ -200,13 +199,8 @@ const handlers = {
         .filter((cell) => cell.contentType !== "not-editable")
         .every((cell) => cell.content.trim() !== "");
 
+      console.log("isComplete", isComplete);
       simModel.set(CapiFields.IsComplete, isComplete);
-    },
-  },
-  [CapiFields.ShowCorrectAnswers]: {
-    capiChange: () => () => {
-      const showCorrectAnswers = simModel.get(CapiFields.ShowCorrectAnswers);
-      useSpreadsheetStore.setState({ showCorrectAnswers });
     },
   },
   [CapiFields.IsCorrect]: {
@@ -218,7 +212,14 @@ const handlers = {
         )
         .every((cell) => cell.content === cell.correctAnswer);
 
+      console.log("isCorrect", isCorrect);
       simModel.set(CapiFields.IsCorrect, isCorrect);
+    },
+  },
+  [CapiFields.ShowCorrectAnswers]: {
+    capiChange: () => () => {
+      const showCorrectAnswers = simModel.get(CapiFields.ShowCorrectAnswers);
+      useSpreadsheetStore.setState({ showCorrectAnswers });
     },
   },
   [CapiFields.ShowHints]: {
