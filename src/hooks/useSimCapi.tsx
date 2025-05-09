@@ -356,12 +356,11 @@ export const useSimCapi = () => {
     let unsubAddedCells: VoidFunction[] = [];
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
-      console.log("state", state);
 
-      const modifiedKeys = Object.keys(state).filter((k) => {
-        const key = k as keyof SpreadsheetState;
-        return !isEqual(state[key], prevState[key]);
-      });
+      // const modifiedKeys = Object.keys(state).filter((k) => {
+      //   const key = k as keyof SpreadsheetState;
+      //   return !isEqual(state[key], prevState[key]);
+      // });
 
       const addedCells: CellCoordinates[] = [];
       const removedCells: CellCoordinates[] = [];
@@ -392,14 +391,6 @@ export const useSimCapi = () => {
           }
         });
       });
-
-      console.log({ modifiedKeys, addedCells, removedCells, modifiedCells });
-      // Avoid unnecessary updates
-      if (
-        !isEqual(modifiedKeys, ["activeCell"]) &&
-        ![...addedCells, ...removedCells, ...modifiedCells].length
-      )
-        return;
 
       const clonedState: Partial<SpreadsheetState> = omit(cloneDeep(state), [
         "activeCell",
