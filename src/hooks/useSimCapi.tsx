@@ -401,23 +401,16 @@ export const useSimCapi = () => {
         isEmpty,
       );
 
-      console.log(
-        "noCellsChanged",
-        noCellsChanged,
-        addedCells,
-        removedCells,
-        modifiedCells,
-      );
-
       const statesAreTheSame = isEqual(
-        omit(state, keysToOmit),
-        omit(prevState, keysToOmit),
+        cloneDeep(omit(state, keysToOmit)),
+        cloneDeep(omit(prevState, keysToOmit)),
       );
 
-      console.log("statesAreTheSame", statesAreTheSame);
+      console.log(state, prevState);
 
       if (noCellsChanged && statesAreTheSame) return;
 
+      console.log("updating");
       const clonedState: Partial<SpreadsheetState> = omit(
         cloneDeep(state),
         keysToOmit,
