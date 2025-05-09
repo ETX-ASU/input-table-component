@@ -88,6 +88,7 @@ const handlers = {
   },
   [CapiFields.InitialConfig]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
+      console.log("InitialConfig stateChange", state.enableTable);
       // const currentCapiInitialConfig = simModel.get(CapiFields.InitialConfig);
       // const { data: prevData } = parseState(currentCapiInitialConfig) || {};
       simModel.set(CapiFields.InitialConfig, stringifyState(state));
@@ -165,6 +166,7 @@ const handlers = {
   },
   [CapiFields.TableJSON]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
+      console.log("TableJSON stateChange", state.enableTable);
       simModel.set(CapiFields.TableJSON, stringifyState(state));
     },
     capiChange: () => () => {
@@ -353,7 +355,6 @@ export const useSimCapi = () => {
   useEffect(() => {
     let unsubAddedCells: VoidFunction[] = [];
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
-      console.log("prev");
       if (isEqual(prevState, state)) return;
       console.log("state", state);
 
