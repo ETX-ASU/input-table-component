@@ -198,7 +198,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
     return (
       <CorrectnessIndicatorWrapper
         showIndicator={showCorrectness}
-        isCorrect={cell.correctAnswer === cell.content}
+        isCorrect={showCorrectAnswers || cell.correctAnswer === cell.content}
       >
         <input
           ref={ref}
@@ -290,7 +290,7 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
     >
       <CorrectnessIndicatorWrapper
         showIndicator={showCorrectness}
-        isCorrect={cell.correctAnswer === cell.content}
+        isCorrect={showCorrectAnswers || cell.correctAnswer === cell.content}
         className="flex-1"
       >
         <div
@@ -299,7 +299,9 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
             !cell.content && "text-xs text-gray-400",
           )}
         >
-          {cell.content || "Choose..."}
+          {showCorrectAnswers
+            ? cell.correctAnswer
+            : cell.content || "Choose..."}
         </div>
       </CorrectnessIndicatorWrapper>
       <div
