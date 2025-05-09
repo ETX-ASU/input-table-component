@@ -9,6 +9,7 @@ export enum CapiFields {
   IsCorrect = "IsCorrect",
   Enabled = "Enabled",
   ShowHints = "ShowHints",
+  ShowCorrectAnswers = "ShowCorrectAnswers",
   CSS = "CSS",
   Title = "Title",
   Summary = "Summary",
@@ -34,6 +35,7 @@ export const capi = {
     [CapiFields.IsCorrect]: false, // If the LD sets this to true, then the correct answers should be shown
     [CapiFields.Enabled]: true, // Indicated whether the table is enabled or disabled for students to interact with it
     [CapiFields.ShowHints]: false, // When true, highlights correct cells in green and incorrect cells in red.
+    [CapiFields.ShowCorrectAnswers]: false, // When true, shows the correct answers for the table.
     [CapiFields.CSS]: "",
     [CapiFields.Title]: "",
     [CapiFields.Summary]: "",
@@ -74,7 +76,7 @@ export const capi = {
     [CapiFields.IsCorrect]: {
       type: CapiTypes.BOOLEAN,
       alias: CapiFields.IsCorrect,
-      readonly: false,
+      readonly: true,
       writeonly: false,
     },
     [CapiFields.Enabled]: {
@@ -86,6 +88,12 @@ export const capi = {
     [CapiFields.ShowHints]: {
       type: CapiTypes.BOOLEAN,
       alias: CapiFields.ShowHints,
+      readonly: false,
+      writeonly: false,
+    },
+    [CapiFields.ShowCorrectAnswers]: {
+      type: CapiTypes.BOOLEAN,
+      alias: CapiFields.ShowCorrectAnswers,
       readonly: false,
       writeonly: false,
     },

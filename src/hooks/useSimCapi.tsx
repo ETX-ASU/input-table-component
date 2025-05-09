@@ -190,24 +190,23 @@ const handlers = {
         }
       }
 
-      simModel.set(CapiFields.IsComplete, isModified);
+      simModel.set(CapiFields.IsModified, isModified);
     },
   },
   [CapiFields.IsComplete]: {
-    // stateChange: (state: SpreadsheetState) => {
-    //   const isComplete = state.data
-    //     .flatMap((row) => row)
-    //     .filter((cell) => cell.contentType !== "not-editable")
-    //     .every((cell) => cell.content.trim() !== "");
+    stateChange: (state: SpreadsheetState) => {
+      const isComplete = state.data
+        .flatMap((row) => row)
+        .filter((cell) => cell.contentType !== "not-editable")
+        .every((cell) => cell.content.trim() !== "");
 
-    //   console.log("statechange", isComplete);
-
-    //   simModel.set(CapiFields.IsComplete, isComplete);
-    // },
+      simModel.set(CapiFields.IsComplete, isComplete);
+    },
+  },
+  [CapiFields.ShowCorrectAnswers]: {
     capiChange: () => () => {
-      const isComplete = simModel.get(CapiFields.IsComplete);
-      console.log("capiChange", isComplete);
-      useSpreadsheetStore.setState({ showCorrectAnswers: isComplete });
+      const showCorrectAnswers = simModel.get(CapiFields.ShowCorrectAnswers);
+      useSpreadsheetStore.setState({ showCorrectAnswers });
     },
   },
   [CapiFields.IsCorrect]: {
@@ -445,7 +444,7 @@ export const useSimCapi = () => {
         CapiFields.Summary,
         CapiFields.Enabled,
         CapiFields.ShowHints,
-        CapiFields.IsComplete,
+        CapiFields.ShowCorrectAnswers,
       ] as const
     ).map((key) =>
       addCapiEventListener(
