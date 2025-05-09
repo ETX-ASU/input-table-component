@@ -393,6 +393,7 @@ export const useSimCapi = () => {
         });
       });
 
+      console.log({ modifiedKeys, addedCells, removedCells, modifiedCells });
       // Avoid unnecessary updates
       if (
         !isEqual(modifiedKeys, ["activeCell"]) &&
