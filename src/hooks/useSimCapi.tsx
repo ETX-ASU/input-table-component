@@ -195,6 +195,12 @@ const handlers = {
   },
   [CapiFields.IsComplete]: {
     stateChange: (state: SpreadsheetState) => {
+      console.log(
+        state.data
+          .flatMap((row) => row)
+          .map((cell) => ({ content: cell.content, disabled: cell.disabled })),
+      );
+
       const isComplete = state.data.every((row) =>
         row
           .filter((cell) => !cell.disabled)
@@ -403,24 +409,8 @@ export const useSimCapi = () => {
         cloneDeep(omit(prevState, keysToOmit)),
       );
 
-      Object.keys(state).forEach((key) => {
-        if (
-          !isEqual(
-            state[key as keyof SpreadsheetState],
-            prevState[key as keyof SpreadsheetState],
-          )
-        ) {
-          console.log(
-            key,
-            state[key as keyof SpreadsheetState],
-            prevState[key as keyof SpreadsheetState],
-          );
-        }
-      });
-
       if (noCellsChanged && statesAreTheSame) return;
 
-      console.log("updating");
       const clonedState: Partial<SpreadsheetState> = omit(
         cloneDeep(state),
         keysToOmit,
