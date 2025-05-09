@@ -200,12 +200,13 @@ const handlers = {
         .filter((cell) => cell.contentType !== "not-editable")
         .every((cell) => cell.content.trim() !== "");
 
-      console.log(isComplete);
+      console.log("statechange", isComplete);
 
       simModel.set(CapiFields.IsComplete, isComplete);
     },
     capiChange: () => () => {
       const isComplete = simModel.get(CapiFields.IsComplete);
+      console.log("capiChange", isComplete);
       useSpreadsheetStore.setState({ showCorrectAnswers: isComplete });
     },
   },
@@ -393,6 +394,7 @@ export const useSimCapi = () => {
         "isUndoRedo",
         "isResizingRow",
         "isSelectOptionsDialogOpen",
+        "showCorrectAnswers",
       ] as const;
 
       const noCellsChanged = [addedCells, removedCells, modifiedCells].every(
