@@ -405,9 +405,11 @@ export const useSimCapi = () => {
 
       // Avoid unnecessary updates
       if (
-        !isEqual(modifiedKeys, ["activeCell"]) ||
-        [addedCells, removedCells, modifiedCells].every(isEmpty) ||
-        isEqual(omit(state, keysToOmit), omit(prevState, keysToOmit))
+        !(
+          !isEqual(modifiedKeys, ["activeCell"]) ||
+          [addedCells, removedCells, modifiedCells].every(isEmpty) ||
+          !isEqual(omit(state, keysToOmit), omit(prevState, keysToOmit))
+        )
       )
         return;
 
