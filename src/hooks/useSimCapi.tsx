@@ -177,16 +177,9 @@ const handlers = {
   },
   [CapiFields.IsModified]: {
     stateChange: (prevCells: CellData[][], newCells: CellData[][]) => {
-      let isModified = false;
-      for (let i = 0; i < prevCells.length; i++) {
-        if (isModified) break;
-        for (let j = 0; j < prevCells[i].length; j++) {
-          if (!isEqual(prevCells[i][j], newCells[i][j])) {
-            isModified = true;
-            break;
-          }
-        }
-      }
+      const isModified = prevCells
+        .flatMap((row) => row)
+        .some((cell, index) => !isEqual(cell, newCells[index]));
 
       console.log("isModified", isModified);
       simModel.set(CapiFields.IsModified, isModified);
@@ -419,7 +412,7 @@ export const useSimCapi = () => {
 
       if (state.permissionLevel === "student" && state.appMode === "preview") {
         handlers.IsCorrect.stateChange(state.data);
-        handlers.IsModified.stateChange(prevData.current, state.data);
+        handlers.IsModified.stateChange(initialData.current || [], state.data);
         handlers.IsComplete.stateChange(state);
       }
 
