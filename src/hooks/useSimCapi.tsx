@@ -401,15 +401,14 @@ export const useSimCapi = () => {
       );
 
       const statesAreTheSame = isEqual(
-        cloneDeep(omit(state, keysToOmit)),
-        cloneDeep(omit(prevState, keysToOmit)),
+        omit(state, [...keysToOmit, "showCorrectAnswers"]),
+        omit(prevState, [...keysToOmit, "showCorrectAnswers"]),
       );
 
       if (noCellsChanged && statesAreTheSame) return;
 
       const clonedState: Partial<SpreadsheetState> = omit(cloneDeep(state), [
         ...keysToOmit,
-        "showCorrectAnswers",
       ]);
 
       clonedState.data?.forEach((rowArr, ridx) => {
