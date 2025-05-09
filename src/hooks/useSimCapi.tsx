@@ -406,7 +406,20 @@ export const useSimCapi = () => {
         cloneDeep(omit(prevState, keysToOmit)),
       );
 
-      console.log(state, prevState);
+      Object.keys(state).forEach((key) => {
+        if (
+          !isEqual(
+            state[key as keyof SpreadsheetState],
+            prevState[key as keyof SpreadsheetState],
+          )
+        ) {
+          console.log(
+            key,
+            state[key as keyof SpreadsheetState],
+            prevState[key as keyof SpreadsheetState],
+          );
+        }
+      });
 
       if (noCellsChanged && statesAreTheSame) return;
 
