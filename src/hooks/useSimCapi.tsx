@@ -1,4 +1,4 @@
-import { cloneDeep, isEqual, omit } from "lodash";
+import { cloneDeep, isEmpty, isEqual, omit } from "lodash";
 import { MutableRefObject, useEffect, useRef } from "react";
 import {
   cellModelKey,
@@ -357,10 +357,10 @@ export const useSimCapi = () => {
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
 
-      // const modifiedKeys = Object.keys(state).filter((k) => {
-      //   const key = k as keyof SpreadsheetState;
-      //   return !isEqual(state[key], prevState[key]);
-      // });
+      const modifiedKeys = Object.keys(state).filter((k) => {
+        const key = k as keyof SpreadsheetState;
+        return !isEqual(state[key], prevState[key]);
+      });
 
       const addedCells: CellCoordinates[] = [];
       const removedCells: CellCoordinates[] = [];
@@ -392,7 +392,7 @@ export const useSimCapi = () => {
         });
       });
 
-      const clonedState: Partial<SpreadsheetState> = omit(cloneDeep(state), [
+      const keysToOmit = [
         "activeCell",
         "undoStack",
         "lastHistoryId",
@@ -401,7 +401,20 @@ export const useSimCapi = () => {
         "isUndoRedo",
         "isResizingRow",
         "isSelectOptionsDialogOpen",
-      ]);
+      ] as const;
+
+      // Avoid unnecessary updates
+      if (
+        !isEqual(modifiedKeys, ["activeCell"]) ||
+        [addedCells, removedCells, modifiedCells].every(isEmpty) ||
+        isEqual(omit(state, keysToOmit), omit(prevState, keysToOmit))
+      )
+        return;
+
+      const clonedState: Partial<SpreadsheetState> = omit(
+        cloneDeep(state),
+        keysToOmit,
+      );
 
       clonedState.data?.forEach((rowArr, ridx) => {
         rowArr.forEach((cell, cidx) => {
