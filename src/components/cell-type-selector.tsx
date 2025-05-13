@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Check, Hash, ListFilter, Lock, TextIcon } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
 import useSpreadsheetStore, { CellContentType } from "../lib/store";
@@ -29,9 +29,21 @@ interface CellTypeSelectorProps {
 
 const cellTypeOptions = [
   { value: "not-editable", label: "Not Editable", icon: Lock },
-  { value: "text", label: "Text input", icon: TextIcon },
-  { value: "number", label: "Number input", icon: Hash },
-  { value: "select", label: "Select input", icon: ListFilter },
+  {
+    value: "text",
+    label: "Text input",
+    icon: () => <Icon name="input-text" />,
+  },
+  {
+    value: "number",
+    label: "Number input",
+    icon: () => <Icon name="input-number" />,
+  },
+  {
+    value: "select",
+    label: "Select input",
+    icon: () => <Icon name="input-dropdown" />,
+  },
 ];
 
 export function CellTypeSelector({
@@ -148,7 +160,7 @@ export function CellTypeSelector({
                     }
                   >
                     <div className="flex items-center gap-2">
-                      {type.icon && <type.icon className="h-4 w-4" />}
+                      {type.icon && <type.icon />}
                       <span>{type.label}</span>
                     </div>
                     {value === type.value && (

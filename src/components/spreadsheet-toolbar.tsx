@@ -1,9 +1,14 @@
 import clsx from "clsx";
 import { useState } from "react";
 import { useResponsiveToolbar } from "../hooks/use-responsive-toolbar";
-import { DEFAULT_FONT_COLOR } from "../lib/constants";
+import {
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_BORDER_COLOR,
+  DEFAULT_FONT_COLOR,
+} from "../lib/constants";
 import useSpreadsheetStore, { TextAlign } from "../lib/store";
 import { buildDefaultCell } from "../lib/utils";
+import { BorderWidthSelector } from "./border-width-selector";
 import { CellTypeSelector } from "./cell-type-selector";
 import { ColorPicker } from "./color-picker";
 import { FontSelector } from "./font-selector";
@@ -161,8 +166,70 @@ const AlignToggleButton = ({ align }: { align: TextAlign }) => {
       disabled={actionsDisabled}
       id={`toggle-align-${align}`}
     >
-      <Icon name={`align-${align}`} />
+      <Icon name={`align-${align}`} className="h-4 w-4" />
     </Toggle>
+  );
+};
+
+const CellBackgroundPickerButton = () => {
+  const { activeCell, appMode, setBackgroundColor, getData } =
+    useSpreadsheetStore();
+  const actionsDisabled = !activeCell || appMode === "preview";
+  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  return (
+    <ColorPicker
+      id="text-color"
+      value={cell.backgroundColor}
+      onChange={setBackgroundColor}
+      disabled={actionsDisabled}
+      defaultColor={DEFAULT_BACKGROUND_COLOR}
+      label="Background Color"
+      icon={
+        <Icon
+          name="cell-background-color"
+          color={cell.backgroundColor || DEFAULT_BACKGROUND_COLOR}
+          className="h-5 w-5"
+        />
+      }
+    />
+  );
+};
+
+const CellBorderColorButton = () => {
+  const { activeCell, appMode, setBorderColor, getData } =
+    useSpreadsheetStore();
+  const actionsDisabled = !activeCell || appMode === "preview";
+  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  return (
+    <ColorPicker
+      id="border-color"
+      value={cell.borderColor}
+      onChange={setBorderColor}
+      disabled={actionsDisabled}
+      defaultColor={DEFAULT_BORDER_COLOR}
+      label="Border Color"
+      icon={
+        <Icon
+          name="cell-border-color"
+          color={cell.borderColor || DEFAULT_BORDER_COLOR}
+          className="h-5 w-5"
+        />
+      }
+    />
+  );
+};
+
+const CellBorderWidthButton = () => {
+  const { activeCell, appMode, setBorderWidth, getData } =
+    useSpreadsheetStore();
+  const actionsDisabled = !activeCell || appMode === "preview";
+  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  return (
+    <BorderWidthSelector
+      value={cell.borderWidth}
+      onChange={setBorderWidth}
+      disabled={actionsDisabled}
+    />
   );
 };
 
@@ -182,25 +249,6 @@ const LinkButtonButton = ({ isHidden }: { isHidden?: boolean }) => {
 };
 
 export function SpreadsheetToolbar() {
-  // const {
-  //   appMode,
-  //   activeCell,
-  //   toggleFormat,
-  //   setAlignment,
-  //   setTextColor,
-  //   setBorderWidth,
-  //   setBorderColor,
-  //   setBackgroundColor,
-  //   setFontFamily,
-  //   setContentType,
-  //   setSelectOptions,
-  //   setLink,
-  //   addRow,
-  //   addColumn,
-  //   getData,
-  //   updateCorrectAnswer,
-  // } = useSpreadsheetStore();
-
   const { toolbarRef, hiddenItems } = useResponsiveToolbar();
   const [showMoreOptions, setShowMoreOptions] = useState(false);
 
@@ -264,6 +312,19 @@ export function SpreadsheetToolbar() {
             <AlignToggleButton align="center" />
             <AlignToggleButton align="right" />
           </div>
+
+          <div
+            id="cell-styles"
+            className={clsx(
+              hiddenItems.has("cell-styles") && "invisible",
+              "flex shrink-0 gap-1",
+            )}
+          >
+            <VerticalSeparator />
+            <CellBackgroundPickerButton />
+            <CellBorderColorButton />
+            <CellBorderWidthButton />
+          </div>
         </div>
         <div className="flex flex-1 items-center">
           {hiddenItems.size > 0 && (
@@ -281,32 +342,42 @@ export function SpreadsheetToolbar() {
       {showMoreOptions && (
         <div className="flex justify-end">
           <div className="flex flex-wrap justify-end gap-1">
-            {hiddenItems.has("add-column-row") && (
+            {Array.from(hiddenItems).map((item, index) => (
               <>
-                <AddColumnButton />
-                <AddRowButton />
+                {index > 0 && <VerticalSeparator />}
+                {item === "add-column-row" && (
+                  <>
+                    <AddColumnButton />
+                    <AddRowButton />
+                  </>
+                )}
+                {item === "cell-type-selector" && <CellTypeSelectorButton />}
+                {item === "font-selector" && <FontSelectorButton />}
+                {item === "text-format" && (
+                  <div className="flex shrink-0 gap-1">
+                    <TextFormatButton format="isBold" />
+                    <TextFormatButton format="isItalic" />
+                    <TextFormatButton format="isStrikethrough" />
+                  </div>
+                )}
+                {item === "text-color" && <TextColorPickerButton />}
+                {item === "link-button" && <LinkButtonButton />}
+                {item === "toggle-align" && (
+                  <div className="flex shrink-0 gap-1">
+                    <AlignToggleButton align="left" />
+                    <AlignToggleButton align="center" />
+                    <AlignToggleButton align="right" />
+                  </div>
+                )}
+                {item === "cell-styles" && (
+                  <div className="flex shrink-0 gap-1">
+                    <CellBackgroundPickerButton />
+                    <CellBorderColorButton />
+                    <CellBorderWidthButton />
+                  </div>
+                )}
               </>
-            )}
-            {hiddenItems.has("cell-type-selector") && (
-              <CellTypeSelectorButton />
-            )}
-            {hiddenItems.has("font-selector") && <FontSelectorButton />}
-            {hiddenItems.has("text-format") && (
-              <div className="flex shrink-0 gap-1">
-                <TextFormatButton format="isBold" />
-                <TextFormatButton format="isItalic" />
-                <TextFormatButton format="isStrikethrough" />
-              </div>
-            )}
-            {hiddenItems.has("text-color") && <TextColorPickerButton />}
-            {hiddenItems.has("link-button") && <LinkButtonButton />}
-            {hiddenItems.has("toggle-align") && (
-              <div className="flex shrink-0 gap-1">
-                <AlignToggleButton align="left" />
-                <AlignToggleButton align="center" />
-                <AlignToggleButton align="right" />
-              </div>
-            )}
+            ))}
           </div>
           <div className="w-10" />
         </div>

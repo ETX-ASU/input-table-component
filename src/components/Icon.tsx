@@ -7,11 +7,17 @@ import AlignCenterIcon from "../assets/svgs/align-center.svg?react";
 import AlignLeftIcon from "../assets/svgs/align-left.svg?react";
 import AlignRightIcon from "../assets/svgs/align-right.svg?react";
 import BoldIcon from "../assets/svgs/bold.svg?react";
+import CellBackgroundColorIcon from "../assets/svgs/cell-background-color.svg?react";
+import CellBorderColorIcon from "../assets/svgs/cell-border-color.svg?react";
+import CellBorderWidthIcon from "../assets/svgs/cell-border-width.svg?react";
 import CellTypeIcon from "../assets/svgs/cell-type.svg?react";
 import ChevronDownIcon from "../assets/svgs/chevron-down.svg?react";
 import DeleteColumnIcon from "../assets/svgs/delete-column.svg?react";
 import DeleteRowIcon from "../assets/svgs/delete-row.svg?react";
 import FontColorIcon from "../assets/svgs/font-color.svg?react";
+import InputDropdownIcon from "../assets/svgs/input-dropdown.svg?react";
+import InputNumberIcon from "../assets/svgs/input-number.svg?react";
+import InputTextIcon from "../assets/svgs/input-text.svg?react";
 import ItalicIcon from "../assets/svgs/italic.svg?react";
 import LinkIcon from "../assets/svgs/link.svg?react";
 import MoreOptionsIcon from "../assets/svgs/more-options.svg?react";
@@ -38,6 +44,12 @@ const icons = {
   "delete-column": DeleteColumnIcon,
   "delete-row": DeleteRowIcon,
   "chevron-down": ChevronDownIcon,
+  "cell-background-color": CellBackgroundColorIcon,
+  "cell-border-color": CellBorderColorIcon,
+  "cell-border-width": CellBorderWidthIcon,
+  "input-dropdown": InputDropdownIcon,
+  "input-number": InputNumberIcon,
+  "input-text": InputTextIcon,
 } as const;
 
 type IconName = keyof typeof icons;

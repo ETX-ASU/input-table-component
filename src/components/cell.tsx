@@ -2,27 +2,6 @@ import { FC, PropsWithChildren } from "react";
 import useSpreadsheetStore, { CellCoordinates } from "../lib/store";
 import { colorPalette } from "./color-picker";
 
-// const buildCellBackgroundColor = (
-//   cell: CellData,
-//   appMode: AppMode,
-//   canInteractWithCell: boolean,
-// ) => {
-//   // Preview mode handling
-//   if (appMode === "preview" || !canInteractWithCell) {
-//     return "transparent";
-//   }
-
-//   // Config mode handling
-//   if (cell.disabled) {
-//     return "transparent";
-//   }
-
-//   // Default case: use the cell's background color
-//   return cell.backgroundColor !== "transparent"
-//     ? cell.backgroundColor
-//     : "transparent";
-// };
-
 type CellProps = {
   onCellClick: (rowIndex: number, colIndex: number) => void;
   coordinates: CellCoordinates;
