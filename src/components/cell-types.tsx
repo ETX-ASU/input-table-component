@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import { CircleAlert, CircleCheck, ExternalLink, Lock } from "lucide-react";
 import { FC, forwardRef, ReactNode, useState } from "react";
-import { DEFAULT_ROW_HEIGHT } from "../lib/constants";
 import useSpreadsheetStore, {
   CellCoordinates,
   CellData,
@@ -92,7 +91,7 @@ const LinkCell: FC<LinkCellProps> = ({ cell, coordinates }) => {
         buildCommonClasses(cell, canInteractWithCell(coordinates)),
         "flex items-center gap-1 overflow-hidden text-blue-600 underline",
       )}
-      style={{ ...buildCommonStyles(cell), height: DEFAULT_ROW_HEIGHT - 1 }}
+      style={{ ...buildCommonStyles(cell) }}
     >
       <span className="flex-1 truncate">{cell.content}</span>
       <a href={cell.link!} target="_blank" rel="noopener noreferrer">

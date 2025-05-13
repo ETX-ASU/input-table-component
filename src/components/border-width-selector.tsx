@@ -12,7 +12,7 @@ interface BorderWidthSelectorProps {
 
 // Border width options
 const borderWidthOptions = [
-  { value: 0, label: "none" },
+  { value: 0.5, label: "None" },
   { value: 1, label: "1px" },
   { value: 2, label: "2px" },
   { value: 3, label: "3px" },
@@ -65,12 +65,14 @@ export function BorderWidthSelector({
               >
                 <div className="flex w-full items-center">
                   {/* Horizontal line representation */}
-                  <div className="mr-2 flex h-6 w-10 items-center justify-center">
-                    <div
-                      className="w-full bg-black"
-                      style={{ height: option.value }}
-                    />
-                  </div>
+                  {option.label !== "none" && (
+                    <div className="mr-2 flex h-6 w-10 items-center justify-center">
+                      <div
+                        className="w-full bg-black"
+                        style={{ height: option.value }}
+                      />
+                    </div>
+                  )}
                   {option.label}
                 </div>
               </Button>
