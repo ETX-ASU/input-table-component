@@ -235,8 +235,9 @@ const CellBorderWidthButton = () => {
 
 const LinkButtonButton = ({ isHidden }: { isHidden?: boolean }) => {
   const { activeCell, appMode, setLink, getData } = useSpreadsheetStore();
-  const actionsDisabled = !activeCell || appMode === "preview";
   const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  const actionsDisabled =
+    !activeCell || appMode === "preview" || cell.contentType !== "not-editable";
 
   return (
     <LinkButton

@@ -82,7 +82,28 @@ type LinkCellProps = {
   coordinates: CellCoordinates;
 };
 
-const LinkCell: FC<LinkCellProps> = ({ cell, coordinates }) => {
+const PreviewLinkCell: FC<LinkCellProps> = ({ cell, coordinates }) => {
+  const { canInteractWithCell } = useSpreadsheetStore();
+
+  return (
+    <a
+      href={cell.link!}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={clsx(
+        buildCommonClasses(cell, canInteractWithCell(coordinates)),
+        "flex items-center gap-1 overflow-hidden text-blue-600 underline",
+      )}
+      style={{ ...buildCommonStyles(cell), cursor: "pointer" }}
+    >
+      <span className="flex-1 truncate">{cell.content}</span>
+
+      <ExternalLink className="h-3 w-3" />
+    </a>
+  );
+};
+
+const ConfigLinkCell: FC<LinkCellProps> = ({ cell, coordinates }) => {
   const { canInteractWithCell } = useSpreadsheetStore();
 
   return (
@@ -99,6 +120,15 @@ const LinkCell: FC<LinkCellProps> = ({ cell, coordinates }) => {
       </a>
     </div>
   );
+};
+
+const LinkCell: FC<LinkCellProps> = ({ cell, coordinates }) => {
+  const { appMode } = useSpreadsheetStore();
+
+  const LinkCellComponent =
+    appMode === "config" ? ConfigLinkCell : PreviewLinkCell;
+
+  return <LinkCellComponent cell={cell} coordinates={coordinates} />;
 };
 
 type InputCellProps = {
@@ -273,16 +303,11 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
     updateCellContent(value);
   };
 
-  const handleOpenSelectDropdown = () => {
-    if (!canInteractWithCell(coordinates)) return;
-
-    setOpen(true);
-  };
-
   const handleCellClick = () => {
     if (!canInteractWithCell(coordinates)) return;
 
     setActiveCell(row, col);
+    setOpen(true);
   };
 
   return (
@@ -290,7 +315,9 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
       className={clsx(
         buildCommonClasses(cell, canInteractWithCell(coordinates)),
         "relative flex h-full items-center gap-2 border border-light-gray-80 px-1",
-        !canInteractWithCell(coordinates) && "cursor-not-allowed",
+        !canInteractWithCell(coordinates)
+          ? "cursor-not-allowed"
+          : "cursor-pointer",
       )}
       style={buildCommonStyles(cell)}
       onClick={handleCellClick}
@@ -314,10 +341,7 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
             : cell.content || "Choose a correct answer"}
         </div>
       </CorrectnessIndicatorWrapper>
-      <div
-        className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-light-gray-20"
-        onClick={handleOpenSelectDropdown}
-      >
+      <div className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-light-gray-20">
         {canInteractWithCell(coordinates) ? (
           <Icon name="chevron-down" className="h-3 w-3 cursor-pointer" />
         ) : (

@@ -1,7 +1,8 @@
-import clsx from "clsx";
+import { Check } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { Icon } from "./Icon";
+import { Command, CommandGroup, CommandItem, CommandList } from "./ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface BorderWidthSelectorProps {
@@ -40,7 +41,7 @@ export function BorderWidthSelector({
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-40 p-2"
+          className="w-[200px] p-0"
           style={{ zIndex: 9999 }}
           align="start"
           side="top"
@@ -48,36 +49,37 @@ export function BorderWidthSelector({
           avoidCollisions={true}
           collisionPadding={20}
         >
-          <div className="space-y-1">
-            <div className="mb-1 text-sm font-medium">Border Width</div>
-            {borderWidthOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant="ghost"
-                className={clsx(
-                  "h-8 w-full justify-start text-sm",
-                  option.value === value && "bg-light-gray-100",
-                )}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-              >
-                <div className="flex w-full items-center">
-                  {/* Horizontal line representation */}
-                  {option.label !== "none" && (
-                    <div className="mr-2 flex h-6 w-10 items-center justify-center">
-                      <div
-                        className="w-full bg-black"
-                        style={{ height: option.value }}
-                      />
+          <Command>
+            <CommandList>
+              <CommandGroup>
+                {borderWidthOptions.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.label}
+                    onSelect={() => {
+                      onChange(option.value);
+                      setIsOpen(false);
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      {option.label !== "None" && (
+                        <div className="flex h-6 w-10 items-center justify-center">
+                          <div
+                            className="w-full bg-black"
+                            style={{ height: option.value }}
+                          />
+                        </div>
+                      )}
+                      <span>{option.label}</span>
                     </div>
-                  )}
-                  {option.label}
-                </div>
-              </Button>
-            ))}
-          </div>
+                    {value === option.value && (
+                      <Check className="ml-auto h-4 w-4" />
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
         </PopoverContent>
       </Popover>
     </div>
