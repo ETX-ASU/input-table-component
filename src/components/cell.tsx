@@ -18,9 +18,6 @@ const Cell: FC<PropsWithChildren<CellProps>> = ({
   const cell = getData(coordinates);
 
   const isActiveCell = activeCell?.row === row && activeCell?.col === col;
-  if (!row && !col) {
-    console.log(cell.borderColor, cell.borderWidth);
-  }
 
   return (
     <td
