@@ -60,7 +60,7 @@ export function ContextMenu({ x, y, onClose, options }: ContextMenuProps) {
       {options.map((option, index) => (
         <button
           key={index}
-          className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-100"
+          className="flex w-full items-center gap-2 px-2 text-left text-sm hover:bg-gray-100"
           onClick={() => {
             option.onClick();
             onClose();

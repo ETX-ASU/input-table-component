@@ -1,9 +1,10 @@
-import { Redo, Undo } from "lucide-react";
+import clsx from "clsx";
 import { useCallback, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import useSpreadsheetStore from "../lib/store";
+import { Icon } from "./Icon";
 
-export function UndoRedo() {
+export function UndoRedo({ invisible = false }: { invisible?: boolean }) {
   const { undo, redo, canUndo, canRedo, pushToHistory, lastHistoryId } =
     useSpreadsheetStore();
 
@@ -52,16 +53,18 @@ export function UndoRedo() {
   }, [handleUndo, handleRedo]);
 
   return (
-    <div id="undo-redo" className="flex items-center gap-1">
+    <div
+      id="undo-redo"
+      className={clsx("flex items-center gap-1", invisible && "invisible")}
+    >
       <Button
         variant="outline"
         size="icon"
         onClick={handleUndo}
         disabled={!canUndo()}
         title="Undo (Ctrl+Z)"
-        className="h-8 w-8"
       >
-        <Undo className="h-4 w-4" />
+        <Icon name="undo" />
       </Button>
       <Button
         variant="outline"
@@ -69,9 +72,8 @@ export function UndoRedo() {
         onClick={handleRedo}
         disabled={!canRedo()}
         title="Redo (Ctrl+Y)"
-        className="h-8 w-8"
       >
-        <Redo className="h-4 w-4" />
+        <Icon name="redo" />
       </Button>
     </div>
   );

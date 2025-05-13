@@ -1,10 +1,10 @@
-import { Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ROW_HEADER_WIDTH } from "../lib/constants";
 import useSpreadsheetStore, { CellCoordinates, CellData } from "../lib/store";
 import { Cell } from "./cell";
 import { InputCell, LinkCell, SelectCell } from "./cell-types";
 import { ContextMenu } from "./context-menu";
+import { Icon } from "./Icon";
 import { ColumnHeaders, RowHeader } from "./spreadsheet-headers";
 
 // Context menu types
@@ -425,7 +425,7 @@ export function SpreadsheetGrid() {
                 <>
                   <tr>
                     {/* Top-left corner cell */}
-                    <th className="sticky top-0 left-0 z-30 w-10 border border-gray-300 bg-gray-100" />
+                    <th className="sticky top-0 left-0 z-30 w-10 border border-light-gray-80 bg-light-gray-20" />
 
                     <ColumnHeaders onContextMenu={handleColumnContextMenu} />
                   </tr>
@@ -468,14 +468,14 @@ export function SpreadsheetGrid() {
               ? [
                   {
                     label: "Delete Row",
-                    icon: <Trash2 className="mr-2 h-4 w-4" />,
+                    icon: <Icon name="delete-row" className="h-10 w-10" />,
                     onClick: () => deleteRow(contextMenu.index),
                   },
                 ]
               : [
                   {
                     label: "Delete Column",
-                    icon: <Trash2 className="mr-2 h-4 w-4" />,
+                    icon: <Icon name="delete-column" className="h-10 w-10" />,
                     onClick: () => deleteColumn(contextMenu.index),
                   },
                 ]

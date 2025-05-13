@@ -1,14 +1,9 @@
-import {
-  Check,
-  ChevronDown,
-  Hash,
-  ListFilter,
-  Lock,
-  TextIcon,
-} from "lucide-react";
+import clsx from "clsx";
+import { Check, Hash, ListFilter, Lock, TextIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
 import useSpreadsheetStore, { CellContentType } from "../lib/store";
+import { Icon } from "./Icon";
 import { Command, CommandGroup, CommandItem, CommandList } from "./ui/command";
 import {
   Dialog,
@@ -21,7 +16,6 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-
 interface CellTypeSelectorProps {
   value: CellContentType;
   onChange: (type: CellContentType) => void;
@@ -30,13 +24,14 @@ interface CellTypeSelectorProps {
   disabled?: boolean;
   correctAnswer: string | null;
   onCorrectAnswerChange: (correctAnswer: string) => void;
+  invisible?: boolean;
 }
 
 const cellTypeOptions = [
   { value: "not-editable", label: "Not Editable", icon: Lock },
-  { value: "text", label: "Text", icon: TextIcon },
-  { value: "number", label: "Number", icon: Hash },
-  { value: "select", label: "Select", icon: ListFilter },
+  { value: "text", label: "Text input", icon: TextIcon },
+  { value: "number", label: "Number input", icon: Hash },
+  { value: "select", label: "Select input", icon: ListFilter },
 ];
 
 export function CellTypeSelector({
@@ -47,6 +42,7 @@ export function CellTypeSelector({
   disabled = false,
   correctAnswer,
   onCorrectAnswerChange,
+  invisible = false,
 }: CellTypeSelectorProps) {
   const [open, setOpen] = useState(false);
   const { setIsSelectOptionsDialogOpen, isSelectOptionsDialogOpen } =
@@ -63,9 +59,6 @@ export function CellTypeSelector({
   useEffect(() => {
     setTempOptions([...selectOptions]);
   }, [selectOptions]);
-
-  const currentType =
-    cellTypeOptions.find((type) => type.value === value) || cellTypeOptions[0];
 
   const handleTypeChange = (type: CellContentType) => {
     onChange(type);
@@ -122,20 +115,24 @@ export function CellTypeSelector({
   };
 
   return (
-    <div id="cell-type-selector">
+    <>
       <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
           <Button
+            id="cell-type-selector"
+            size="icon"
             variant="outline"
             role="combobox"
             aria-expanded={open}
             disabled={disabled}
+            className={clsx(
+              "border-none bg-transparent",
+              invisible && "invisible",
+            )}
           >
             <div className="flex items-center gap-2">
-              {currentType.icon && <currentType.icon className="h-4 w-4" />}
-              <span>{currentType.label}</span>
+              <Icon name="cell-type" className="h-10 w-10" />
             </div>
-            <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" style={{ zIndex: 9999 }}>
@@ -255,6 +252,6 @@ export function CellTypeSelector({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

@@ -25,9 +25,9 @@ const ResetTableButton = () => {
           size="sm"
           onClick={() => setIsResetDialogOpen(true)}
           disabled={isPreviewMode}
-          className="border-red-200 bg-red-50 hover:bg-red-100"
+          className="border-red-60 bg-red-20 hover:bg-red-40"
         >
-          <RefreshCw className="mr-1 h-4 w-4 text-red-500" /> Reset Table
+          <RefreshCw className="mr-1 h-4 w-4 text-red-dark80" /> Reset Table
         </Button>
       </div>
       <ConfirmationDialog

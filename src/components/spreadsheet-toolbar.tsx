@@ -1,228 +1,316 @@
 import clsx from "clsx";
-import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
-  Bold,
-  Italic,
-  Paintbrush,
-  Plus,
-  Square,
-  Type,
-} from "lucide-react";
-import {
-  DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_BORDER_COLOR,
-  DEFAULT_FONT_COLOR,
-} from "../lib/constants";
-import useSpreadsheetStore from "../lib/store";
+import { useState } from "react";
+import { useResponsiveToolbar } from "../hooks/use-responsive-toolbar";
+import { DEFAULT_FONT_COLOR } from "../lib/constants";
+import useSpreadsheetStore, { TextAlign } from "../lib/store";
 import { buildDefaultCell } from "../lib/utils";
-import { BorderWidthSelector } from "./border-width-selector";
 import { CellTypeSelector } from "./cell-type-selector";
 import { ColorPicker } from "./color-picker";
 import { FontSelector } from "./font-selector";
+import { Icon } from "./Icon";
 import { LinkButton } from "./link-button";
 import { ModeToggle } from "./mode-toggle";
 import { ResetTableButton } from "./reset-table-button";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
 import { Toggle } from "./ui/toggle";
 import { UndoRedo } from "./undo-redo";
 
-export function SpreadsheetToolbar() {
+const VerticalSeparator = () => (
+  <div className="mx-[10px] h-10 w-px min-w-px bg-black/20" />
+);
+
+const AddColumnButton = () => {
+  const { addColumn, appMode } = useSpreadsheetStore();
+  const actionsDisabled = appMode === "preview";
+  return (
+    <Button
+      disabled={actionsDisabled}
+      variant="outline"
+      size="icon"
+      onClick={addColumn}
+      title="Add Column"
+      id="add-column"
+    >
+      <Icon name="add-col" className="h-10 w-10" />
+    </Button>
+  );
+};
+
+const AddRowButton = () => {
+  const { addRow, appMode } = useSpreadsheetStore();
+  const actionsDisabled = appMode === "preview";
+  return (
+    <Button
+      disabled={actionsDisabled}
+      variant="outline"
+      size="icon"
+      onClick={addRow}
+      title="Add Row"
+      id="add-row"
+    >
+      <Icon name="add-row" className="h-10 w-10" />
+    </Button>
+  );
+};
+
+const CellTypeSelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
   const {
-    appMode,
     activeCell,
-    toggleFormat,
-    setAlignment,
-    setTextColor,
-    setBorderWidth,
-    setBorderColor,
-    setBackgroundColor,
-    setFontFamily,
+    appMode,
     setContentType,
     setSelectOptions,
-    setLink,
-    addRow,
-    addColumn,
-    getData,
     updateCorrectAnswer,
+    getData,
   } = useSpreadsheetStore();
-
-  // Get formatting state for the active cell
+  const actionsDisabled = !activeCell || appMode === "preview";
   const cell = activeCell ? getData(activeCell) : buildDefaultCell();
 
-  const isPreviewMode = appMode === "preview";
-  const actionsDisabled = !activeCell || isPreviewMode;
+  return (
+    <CellTypeSelector
+      value={cell.contentType}
+      onChange={setContentType}
+      selectOptions={cell.selectOptions}
+      onSelectOptionsChange={setSelectOptions}
+      correctAnswer={cell.correctAnswer}
+      onCorrectAnswerChange={updateCorrectAnswer}
+      disabled={actionsDisabled}
+      invisible={isHidden}
+    />
+  );
+};
+
+const FontSelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
+  const { activeCell, appMode, setFontFamily, getData } = useSpreadsheetStore();
+  const actionsDisabled = !activeCell || appMode === "preview";
+  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
 
   return (
-    <div id="spreadsheet-toolbar">
-      <div id="mode-toggle">
+    <FontSelector
+      value={cell.fontFamily}
+      onChange={setFontFamily}
+      disabled={actionsDisabled}
+      invisible={isHidden}
+    />
+  );
+};
+
+const TextFormatButton = ({
+  format,
+}: {
+  format: "isBold" | "isItalic" | "isStrikethrough";
+}) => {
+  const { activeCell, appMode, toggleFormat, getData } = useSpreadsheetStore();
+  const actionsDisabled = !activeCell || appMode === "preview";
+  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  return (
+    <Toggle
+      size="icon"
+      aria-label={`Toggle ${format}`}
+      pressed={cell[format]}
+      onPressedChange={() => toggleFormat(format)}
+      disabled={actionsDisabled}
+      id={`toggle-${format}`}
+    >
+      <Icon
+        name={
+          format === "isBold"
+            ? "bold"
+            : format === "isItalic"
+              ? "italic"
+              : "strike-through"
+        }
+      />
+    </Toggle>
+  );
+};
+
+const TextColorPickerButton = ({ isHidden }: { isHidden?: boolean }) => {
+  const { activeCell, appMode, setTextColor, getData } = useSpreadsheetStore();
+  const actionsDisabled = !activeCell || appMode === "preview";
+  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  return (
+    <ColorPicker
+      id="text-color"
+      value={cell.textColor}
+      onChange={setTextColor}
+      disabled={actionsDisabled}
+      defaultColor={DEFAULT_FONT_COLOR}
+      label="Text Color"
+      icon={
+        <Icon
+          name="font-color"
+          color={cell.textColor || DEFAULT_FONT_COLOR}
+          className="h-10 w-10"
+        />
+      }
+      invisible={isHidden}
+    />
+  );
+};
+
+const AlignToggleButton = ({ align }: { align: TextAlign }) => {
+  const { activeCell, appMode, setAlignment, getData } = useSpreadsheetStore();
+  const actionsDisabled = !activeCell || appMode === "preview";
+  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  return (
+    <Toggle
+      size="icon"
+      aria-label={`Align ${align}`}
+      pressed={cell.textAlign === align}
+      onPressedChange={() => setAlignment(align)}
+      disabled={actionsDisabled}
+      id={`toggle-align-${align}`}
+    >
+      <Icon name={`align-${align}`} />
+    </Toggle>
+  );
+};
+
+const LinkButtonButton = ({ isHidden }: { isHidden?: boolean }) => {
+  const { activeCell, appMode, setLink, getData } = useSpreadsheetStore();
+  const actionsDisabled = !activeCell || appMode === "preview";
+  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+
+  return (
+    <LinkButton
+      link={cell.link}
+      disabled={actionsDisabled}
+      onSave={setLink}
+      invisible={!!isHidden}
+    />
+  );
+};
+
+export function SpreadsheetToolbar() {
+  // const {
+  //   appMode,
+  //   activeCell,
+  //   toggleFormat,
+  //   setAlignment,
+  //   setTextColor,
+  //   setBorderWidth,
+  //   setBorderColor,
+  //   setBackgroundColor,
+  //   setFontFamily,
+  //   setContentType,
+  //   setSelectOptions,
+  //   setLink,
+  //   addRow,
+  //   addColumn,
+  //   getData,
+  //   updateCorrectAnswer,
+  // } = useSpreadsheetStore();
+
+  const { toolbarRef, hiddenItems } = useResponsiveToolbar();
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
+
+  return (
+    <div id="spreadsheet-toolbar" className="w-full bg-light-gray-20">
+      <div className="mb-2 flex items-center justify-between">
         <ModeToggle />
-      </div>
-      <div
-        className={clsx(
-          "relative z-40 mb-4 flex flex-wrap items-center gap-2",
-          isPreviewMode && "hidden",
-        )}
-      >
-        <Separator orientation="vertical" className="h-8" />
-
-        <UndoRedo />
-
-        <Separator orientation="vertical" className="h-8" />
-
-        <CellTypeSelector
-          value={cell.contentType}
-          onChange={setContentType}
-          selectOptions={cell.selectOptions}
-          onSelectOptionsChange={setSelectOptions}
-          correctAnswer={cell.correctAnswer}
-          onCorrectAnswerChange={updateCorrectAnswer}
-          disabled={actionsDisabled}
-        />
-
-        <Separator orientation="vertical" className="h-8" />
-
-        <FontSelector
-          value={cell.fontFamily}
-          onChange={setFontFamily}
-          disabled={actionsDisabled}
-        />
-
-        <Separator orientation="vertical" className="h-8" />
-
-        <div className="flex items-center gap-1 rounded-md border p-1">
-          <Toggle
-            aria-label="Toggle bold"
-            pressed={cell.isBold}
-            onPressedChange={() => toggleFormat("isBold")}
-            disabled={actionsDisabled}
-            id="toggle-bold"
-          >
-            <Bold className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            aria-label="Toggle italic"
-            pressed={cell.isItalic}
-            onPressedChange={() => toggleFormat("isItalic")}
-            disabled={actionsDisabled}
-            id="toggle-italic"
-          >
-            <Italic className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            aria-label="Toggle strikethrough"
-            pressed={cell.isStrikethrough}
-            onPressedChange={() => toggleFormat("isStrikethrough")}
-            disabled={actionsDisabled}
-            id="toggle-strikethrough"
-          >
-            <Type className="h-4 w-4" />
-          </Toggle>
-
-          <LinkButton
-            link={cell.link}
-            disabled={actionsDisabled}
-            onSave={setLink}
-          />
-
-          <ColorPicker
-            value={cell.textColor}
-            onChange={setTextColor}
-            disabled={actionsDisabled}
-            defaultColor={DEFAULT_FONT_COLOR}
-            label="Text Color"
-          />
-        </div>
-
-        <Separator orientation="vertical" className="h-8" />
-
-        <div className={clsx("flex items-center gap-1 rounded-md border p-1")}>
-          <Toggle
-            aria-label="Align left"
-            pressed={cell.textAlign === "left"}
-            onPressedChange={() => setAlignment("left")}
-            disabled={actionsDisabled}
-            id="toggle-align-left"
-          >
-            <AlignLeft className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            aria-label="Align center"
-            pressed={cell.textAlign === "center"}
-            onPressedChange={() => setAlignment("center")}
-            disabled={actionsDisabled}
-            id="toggle-align-center"
-          >
-            <AlignCenter className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            aria-label="Align right"
-            pressed={cell.textAlign === "right"}
-            onPressedChange={() => setAlignment("right")}
-            disabled={actionsDisabled}
-            id="toggle-align-right"
-          >
-            <AlignRight className="h-4 w-4" />
-          </Toggle>
-        </div>
-
-        <Separator orientation="vertical" className="h-8" />
-
-        <div className={clsx("flex items-center gap-1 rounded-md border p-1")}>
-          <BorderWidthSelector
-            value={cell.borderWidth}
-            onChange={setBorderWidth}
-            disabled={actionsDisabled}
-          />
-          <div className="relative">
-            <ColorPicker
-              value={cell.borderColor}
-              onChange={setBorderColor}
-              disabled={actionsDisabled}
-              defaultColor={DEFAULT_BORDER_COLOR}
-              label="Border Color"
-            />
-            <div className="absolute -top-1 -right-1">
-              <Square className="h-3 w-3 text-gray-500" />
-            </div>
-          </div>
-          <div className="relative">
-            <ColorPicker
-              value={cell.backgroundColor}
-              onChange={setBackgroundColor}
-              disabled={actionsDisabled}
-              defaultColor={DEFAULT_BACKGROUND_COLOR}
-              label="Background Color"
-            />
-            <div className="absolute -top-1 -right-1">
-              <Paintbrush className="h-3 w-3 text-gray-500" />
-            </div>
-          </div>
-        </div>
-
-        <Separator orientation="vertical" className="h-8" />
-
-        <div id="add-row" className={clsx("flex items-center gap-1")}>
-          <Button variant="outline" size="sm" onClick={addRow}>
-            <Plus className="mr-1 h-4 w-4" /> Row
-          </Button>
-        </div>
-
-        <Separator orientation="vertical" className="h-8" />
-
-        <div id="add-column" className={clsx("flex items-center gap-1")}>
-          <Button variant="outline" size="sm" onClick={addColumn}>
-            <Plus className="mr-1 h-4 w-4" /> Column
-          </Button>
-        </div>
-
-        {/* Add this after the last Separator */}
-        <Separator orientation="vertical" className="h-8" />
-
         <ResetTableButton />
       </div>
+      <div className="flex gap-1 py-1">
+        <div ref={toolbarRef} className="flex items-center overflow-x-auto">
+          <UndoRedo invisible={hiddenItems.has("undo-redo")} />
+
+          <VerticalSeparator />
+
+          <div
+            id="add-column-row"
+            className={clsx(
+              hiddenItems.has("add-column-row") && "invisible",
+              "flex shrink-0 gap-1",
+            )}
+          >
+            <AddColumnButton />
+            <AddRowButton />
+          </div>
+
+          <VerticalSeparator />
+
+          <CellTypeSelectorButton
+            isHidden={hiddenItems.has("cell-type-selector")}
+          />
+
+          <VerticalSeparator />
+
+          <FontSelectorButton isHidden={hiddenItems.has("font-selector")} />
+
+          <div
+            id="text-format"
+            className={clsx(
+              hiddenItems.has("text-format") && "invisible",
+              "flex shrink-0 gap-1",
+            )}
+          >
+            <TextFormatButton format="isBold" />
+            <TextFormatButton format="isItalic" />
+            <TextFormatButton format="isStrikethrough" />
+          </div>
+
+          <TextColorPickerButton isHidden={hiddenItems.has("text-color")} />
+
+          <LinkButtonButton isHidden={hiddenItems.has("link-button")} />
+
+          <div
+            id="toggle-align"
+            className={clsx(
+              hiddenItems.has("toggle-align") && "invisible",
+              "flex shrink-0 gap-1",
+            )}
+          >
+            <AlignToggleButton align="left" />
+            <AlignToggleButton align="center" />
+            <AlignToggleButton align="right" />
+          </div>
+        </div>
+        <div className="flex flex-1 items-center">
+          {hiddenItems.size > 0 && (
+            <Button
+              variant="outline"
+              size="icon"
+              title="More Options"
+              onClick={() => setShowMoreOptions(!showMoreOptions)}
+            >
+              <Icon name="more-options" className="h-10 w-10" />
+            </Button>
+          )}
+        </div>
+      </div>
+      {showMoreOptions && (
+        <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-1">
+            {hiddenItems.has("add-column-row") && (
+              <>
+                <AddColumnButton />
+                <AddRowButton />
+              </>
+            )}
+            {hiddenItems.has("cell-type-selector") && (
+              <CellTypeSelectorButton />
+            )}
+            {hiddenItems.has("font-selector") && <FontSelectorButton />}
+            {hiddenItems.has("text-format") && (
+              <div className="flex shrink-0 gap-1">
+                <TextFormatButton format="isBold" />
+                <TextFormatButton format="isItalic" />
+                <TextFormatButton format="isStrikethrough" />
+              </div>
+            )}
+            {hiddenItems.has("text-color") && <TextColorPickerButton />}
+            {hiddenItems.has("link-button") && <LinkButtonButton />}
+            {hiddenItems.has("toggle-align") && (
+              <div className="flex shrink-0 gap-1">
+                <AlignToggleButton align="left" />
+                <AlignToggleButton align="center" />
+                <AlignToggleButton align="right" />
+              </div>
+            )}
+          </div>
+          <div className="w-10" />
+        </div>
+      )}
     </div>
   );
 }

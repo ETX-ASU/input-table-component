@@ -1,7 +1,8 @@
 import * as SelectPrimitive from "@radix-ui/react-select";
 import clsx from "clsx";
-import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, ChevronUp } from "lucide-react";
 import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
+import { Icon } from "../Icon";
 
 const Select = SelectPrimitive.Root;
 
@@ -23,7 +24,7 @@ const SelectTrigger = forwardRef<
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <Icon name="chevron-down" className="h-4 w-4 opacity-50" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -41,7 +42,7 @@ const SelectScrollUpButton = forwardRef<
     )}
     {...props}
   >
-    <ChevronUp className="h-4 w-4" />
+    <ChevronUp className="h-4 w-4 text-blue-100" />
   </SelectPrimitive.ScrollUpButton>
 ));
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName;
@@ -58,7 +59,7 @@ const SelectScrollDownButton = forwardRef<
     )}
     {...props}
   >
-    <ChevronDown className="h-4 w-4" />
+    <Icon name="chevron-down" className="h-4 w-4" />
   </SelectPrimitive.ScrollDownButton>
 ));
 SelectScrollDownButton.displayName =

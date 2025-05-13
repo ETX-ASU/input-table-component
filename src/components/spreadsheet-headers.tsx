@@ -33,8 +33,8 @@ const ColumnHeaders: FC<ColumnHeadersProps> = ({ onContextMenu }) => {
       id={`column-header-${idx}`}
       key={idx}
       className={clsx(
-        "sticky top-0 z-20 border-t border-r border-b border-gray-300 select-none",
-        activeCell?.col === idx ? "bg-gray-200" : "bg-gray-100",
+        "sticky top-0 z-20 border-t border-r border-b border-light-gray-80 select-none",
+        activeCell?.col === idx ? "bg-light-gray-60" : "bg-light-gray-20",
       )}
       style={{ width: columnWidths[idx] }}
       onContextMenu={(e) => onContextMenu(e, idx)}
@@ -65,8 +65,8 @@ const RowHeader: FC<RowHeaderProps> = ({ rowIndex, onContextMenu }) => {
   return (
     <td
       className={clsx(
-        "sticky left-0 z-10 border-x border-b border-gray-300 text-center",
-        activeCell?.row === rowIndex ? "bg-gray-200" : "bg-gray-100",
+        "sticky left-0 z-10 border-x border-b border-light-gray-80 text-center",
+        activeCell?.row === rowIndex ? "bg-light-gray-60" : "bg-light-gray-20",
       )}
       style={{
         height: rowHeights[rowIndex],

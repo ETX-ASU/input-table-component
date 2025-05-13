@@ -1,6 +1,7 @@
-import { Link } from "lucide-react";
+import clsx from "clsx";
 import { useEffect, useState } from "react";
 import useSpreadsheetStore from "../lib/store";
+import { Icon } from "./Icon";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -92,16 +93,24 @@ interface LinkButtonProps {
   link: string | null;
   disabled: boolean;
   onSave: (url: string | null) => void;
+  invisible: boolean;
 }
 
-export function LinkButton({ link, disabled, onSave }: LinkButtonProps) {
+export function LinkButton({
+  link,
+  disabled,
+  onSave,
+  invisible,
+}: LinkButtonProps) {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const { appMode } = useSpreadsheetStore();
   const isPreviewMode = appMode === "preview";
 
   return (
-    <div id="link-button">
+    <>
       <Toggle
+        id="link-button"
+        size="icon"
         aria-label="Toggle link"
         pressed={link !== null}
         onPressedChange={() => {
@@ -109,8 +118,9 @@ export function LinkButton({ link, disabled, onSave }: LinkButtonProps) {
           setIsLinkDialogOpen(true);
         }}
         disabled={disabled}
+        className={clsx(invisible && "invisible")}
       >
-        <Link className="h-4 w-4" />
+        <Icon name="link" />
       </Toggle>
       <LinkDialog
         isOpen={isLinkDialogOpen}
@@ -118,6 +128,6 @@ export function LinkButton({ link, disabled, onSave }: LinkButtonProps) {
         onSave={onSave}
         initialUrl={link}
       />
-    </div>
+    </>
   );
 }

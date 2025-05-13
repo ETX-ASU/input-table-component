@@ -14,8 +14,8 @@ export const DEFAULT_FONT_FAMILY: WebSafeFont = WebSafeFont.Arial;
 export const DEFAULT_FONT_SIZE = 12;
 export const DEFAULT_FONT_COLOR = colorPalette.gray[100];
 
-export const DEFAULT_ROW_HEIGHT = 28;
-export const DEFAULT_COLUMN_WIDTH = 100;
+export const DEFAULT_ROW_HEIGHT = 46;
+export const DEFAULT_COLUMN_WIDTH = 150;
 export const DEFAULT_COLUMN_COUNT = 5;
 export const DEFAULT_ROW_COUNT = 5;
 

@@ -1,11 +1,5 @@
 import clsx from "clsx";
-import {
-  ChevronDown,
-  CircleAlert,
-  CircleCheck,
-  ExternalLink,
-  Lock,
-} from "lucide-react";
+import { CircleAlert, CircleCheck, ExternalLink, Lock } from "lucide-react";
 import { FC, forwardRef, ReactNode, useState } from "react";
 import { DEFAULT_ROW_HEIGHT } from "../lib/constants";
 import useSpreadsheetStore, {
@@ -14,6 +8,7 @@ import useSpreadsheetStore, {
   TextAlign,
 } from "../lib/store";
 import { colorPalette } from "./color-picker";
+import { Icon } from "./Icon";
 import {
   Select,
   SelectContent,
@@ -67,7 +62,11 @@ const CorrectnessIndicatorWrapper = ({
 
   return (
     <div
-      className={clsx("flex items-center gap-2 truncate px-2 py-1", className)}
+      className={clsx(
+        "flex items-center gap-2 truncate",
+        showIndicator && "px-2 py-1",
+        className,
+      )}
     >
       {showIndicator && (
         <div className="flex-shrink-0 rounded">
@@ -135,7 +134,7 @@ const ConfigInputCell = forwardRef<HTMLInputElement, InputCellProps>(
     };
 
     const placeholder = ["text", "number"].includes(cell.contentType)
-      ? "Enter answer..."
+      ? "Enter answer"
       : undefined;
 
     const value =
@@ -156,6 +155,8 @@ const ConfigInputCell = forwardRef<HTMLInputElement, InputCellProps>(
           buildCommonClasses(cell, true),
           "placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
           "focus:outline-none",
+          cell.contentType !== "not-editable" &&
+            "border border-light-gray-80 p-1",
         )}
         style={buildCommonStyles(cell)}
         disabled={!canInteractWithCell(coordinates)}
@@ -187,8 +188,8 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
 
     const placeholder = canInteractWithCell(coordinates)
       ? inputMode === "numeric"
-        ? "Enter a number..."
-        : "Enter answer..."
+        ? "Enter number"
+        : "Enter text"
       : undefined;
 
     const value = showCorrectAnswers
@@ -202,6 +203,10 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
           showCorrectAnswers ||
           (showHints && !!cell.content && cell.correctAnswer === cell.content)
         }
+        className={clsx(
+          cell.contentType !== "not-editable" &&
+            "border border-light-gray-80 p-1",
+        )}
       >
         <input
           ref={ref}
@@ -213,7 +218,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
           onKeyDown={(e) => handleKeyDown(e, row, col)}
           className={clsx(
             buildCommonClasses(cell, canInteractWithCell(coordinates)),
-            "placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
+            "px-1 placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
             "focus:outline-none",
           )}
           style={buildCommonStyles(cell)}
@@ -285,7 +290,7 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
     <div
       className={clsx(
         buildCommonClasses(cell, canInteractWithCell(coordinates)),
-        "relative flex h-full items-center gap-2",
+        "relative flex h-full items-center gap-2 border border-light-gray-80 p-2",
         !canInteractWithCell(coordinates) && "cursor-not-allowed",
       )}
       style={buildCommonStyles(cell)}
@@ -307,15 +312,15 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
         >
           {showCorrectAnswers
             ? cell.correctAnswer
-            : cell.content || "Choose..."}
+            : cell.content || "Choose a correct answer"}
         </div>
       </CorrectnessIndicatorWrapper>
       <div
-        className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-gray-100"
+        className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-light-gray-20"
         onClick={handleOpenSelectDropdown}
       >
         {canInteractWithCell(coordinates) ? (
-          <ChevronDown className="h-3 w-3 cursor-pointer" />
+          <Icon name="chevron-down" className="h-3 w-3 cursor-pointer" />
         ) : (
           <Lock className="h-3 w-3" />
         )}
@@ -376,7 +381,7 @@ const ConfigSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
     <div
       className={clsx(
         buildCommonClasses(cell, canInteractWithCell(coordinates)),
-        "relative flex h-full items-center gap-2",
+        "relative flex h-full items-center gap-2 border border-light-gray-40 px-1",
         !canInteractWithCell(coordinates) && "cursor-not-allowed",
       )}
       style={buildCommonStyles(cell)}
@@ -384,10 +389,10 @@ const ConfigSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
     >
       <div className={clsx("flex-1 truncate")}>{cell.correctAnswer}</div>
       <div
-        className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-gray-100"
+        className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-light-gray-20"
         onClick={() => setIsSelectOptionsDialogOpen(true)}
       >
-        <ChevronDown className="h-3 w-3 cursor-pointer" />
+        <Icon name="chevron-down" className="h-3 w-3 cursor-pointer" />
       </div>
       {/* Hidden Select component that opens when dropdown icon is clicked */}
       <Select

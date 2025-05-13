@@ -9,7 +9,6 @@ export function ModeToggle() {
 
   return (
     <Button
-      variant={appMode === "config" ? "default" : "outline"}
       size="sm"
       onClick={toggleAppMode}
       className="flex items-center gap-1"
