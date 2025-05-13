@@ -290,7 +290,7 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
     <div
       className={clsx(
         buildCommonClasses(cell, canInteractWithCell(coordinates)),
-        "relative flex h-full items-center gap-2 border border-light-gray-80 p-2",
+        "relative flex h-full items-center gap-2 border border-light-gray-80 px-1",
         !canInteractWithCell(coordinates) && "cursor-not-allowed",
       )}
       style={buildCommonStyles(cell)}

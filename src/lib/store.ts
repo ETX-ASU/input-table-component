@@ -138,6 +138,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     startWidth: 0,
     startHeight: 0,
 
+    // showCorrectAnswers: true,
     showCorrectAnswers: capi.defaults[CapiFields.IsComplete],
     enableTable: capi.defaults[CapiFields.Enabled],
     showHints: capi.defaults[CapiFields.ShowHints],
