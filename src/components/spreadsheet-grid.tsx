@@ -34,7 +34,6 @@ export function SpreadsheetGrid() {
     deleteRow,
     deleteColumn,
     getData,
-    canInteractWithCell,
   } = useSpreadsheetStore();
 
   const spreadsheetRef = useRef<HTMLDivElement>(null);
@@ -45,7 +44,6 @@ export function SpreadsheetGrid() {
   const isPreviewMode = appMode === "preview";
 
   const handleCellClick = (row: number, col: number) => {
-    if (!canInteractWithCell({ row, col })) return;
     setActiveCell(row, col);
   };
 
@@ -114,98 +112,10 @@ export function SpreadsheetGrid() {
           break;
         case "left":
           newCol = Math.max(0, col - 1);
-          // newCol = Math.max(0, col - 1);
           break;
         case "right":
           newCol = Math.min(colCount - 1, col + 1);
-          // newCol = Math.min(colCount - 1, col + 1);
           break;
-      }
-
-      // Skip disabled cells in preview mode
-      if (
-        isPreviewMode &&
-        newRow >= 0 &&
-        newRow < rowCount &&
-        newCol >= 0 &&
-        newCol < colCount &&
-        data[newRow][newCol].disabled
-      ) {
-        // Try to find the next non-disabled cell in the same direction
-        let attempts = 0;
-        const maxAttempts = rowCount * colCount; // Prevent infinite loops
-
-        while (attempts < maxAttempts) {
-          attempts++;
-
-          // Continue in the same direction
-          switch (direction) {
-            case "up":
-              newRow--;
-              if (newRow < 0) {
-                // Wrap to the previous column
-                newRow = rowCount - 1;
-                newCol--;
-                if (newCol < 0) {
-                  // We've reached the top-left corner
-                  return;
-                }
-              }
-              break;
-            case "down":
-              newRow++;
-              if (newRow >= rowCount) {
-                // Wrap to the next column
-                newRow = 0;
-                newCol++;
-                if (newCol >= colCount) {
-                  // We've reached the bottom-right corner
-                  return;
-                }
-              }
-              break;
-            case "left":
-              newCol--;
-              if (newCol < 0) {
-                // Wrap to the previous row
-                newCol = colCount - 1;
-                newRow--;
-                if (newRow < 0) {
-                  // We've reached the top-left corner
-                  return;
-                }
-              }
-              break;
-            case "right":
-              newCol++;
-              if (newCol >= colCount) {
-                // Wrap to the next row
-                newCol = 0;
-                newRow++;
-                if (newRow >= rowCount) {
-                  // We've reached the bottom-right corner
-                  return;
-                }
-              }
-              break;
-          }
-
-          // Check if we've found a non-disabled cell
-          if (
-            newRow >= 0 &&
-            newRow < rowCount &&
-            newCol >= 0 &&
-            newCol < colCount &&
-            !data[newRow][newCol].disabled
-          ) {
-            break;
-          }
-
-          // If we've made too many attempts, give up to prevent infinite loops
-          if (attempts >= maxAttempts) {
-            return;
-          }
-        }
       }
 
       // Only update if the cell position has changed
@@ -213,7 +123,7 @@ export function SpreadsheetGrid() {
         setActiveCell(newRow, newCol);
       }
     },
-    [activeCell, data, isPreviewMode, setActiveCell],
+    [activeCell, data, setActiveCell],
   );
 
   // Handle keyboard events for input cells
@@ -223,7 +133,7 @@ export function SpreadsheetGrid() {
     col: number,
   ) => {
     const input = e.currentTarget;
-    const { selectionStart, selectionEnd, value } = input;
+    const { selectionStart, selectionEnd, value, type } = input;
 
     // For Tab and Enter, always prevent default and handle navigation
     if (["Tab", "Enter"].includes(e.key)) {
@@ -245,8 +155,7 @@ export function SpreadsheetGrid() {
           // Normal left/right navigation within a row
           navigateToCell(e.shiftKey ? "left" : "right");
         }
-      } else {
-        // Enter
+      } else if (e.key === "Enter") {
         navigateToCell(e.shiftKey ? "up" : "down");
       }
       return;
@@ -255,11 +164,15 @@ export function SpreadsheetGrid() {
     // For arrow keys, check if we should navigate within the text or between cells
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
       // For text navigation within the cell
-      if (e.key === "ArrowLeft" && selectionStart !== 0) {
+      if (e.key === "ArrowLeft" && type === "text" && selectionStart !== 0) {
         // If cursor is not at the beginning, allow normal text navigation
         return;
       }
-      if (e.key === "ArrowRight" && selectionEnd !== value.length) {
+      if (
+        e.key === "ArrowRight" &&
+        type === "text" &&
+        selectionEnd !== value.length
+      ) {
         // If cursor is not at the end, allow normal text navigation
         return;
       }

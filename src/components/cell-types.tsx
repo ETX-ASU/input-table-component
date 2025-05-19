@@ -204,6 +204,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
       updateCellContent,
       showHints,
       showCorrectAnswers,
+      setActiveCell,
     } = useSpreadsheetStore();
 
     const cell = getData(coordinates);
@@ -212,6 +213,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
       cell.contentType !== "not-editable" && (showHints || showCorrectAnswers);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setActiveCell(row, col);
       if (canInteractWithCell(coordinates)) {
         updateCellContent(e.target.value);
       }
@@ -232,7 +234,13 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
         showIndicator={showCorrectness}
         isCorrect={
           showCorrectAnswers ||
-          (showHints && !!cell.content && cell.correctAnswer === cell.content)
+          (showHints &&
+            !!cell.content &&
+            cell.correctAnswer === cell.content) ||
+          (showHints &&
+            !!cell.content &&
+            inputMode === "numeric" &&
+            +cell.correctAnswer! === +cell.content)
         }
         className={clsx(
           cell.contentType !== "not-editable" &&
@@ -254,7 +262,6 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
             "focus:outline-none",
           )}
           style={buildCommonStyles(cell)}
-          disabled={!canInteractWithCell(coordinates)}
         />
       </CorrectnessIndicatorWrapper>
     );
@@ -307,8 +314,6 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
   };
 
   const handleCellClick = () => {
-    if (!canInteractWithCell(coordinates)) return;
-
     setActiveCell(row, col);
     setOpen(true);
   };
