@@ -100,6 +100,7 @@ const handlers = {
     capiChange:
       ({ dataRef }: { dataRef: MutableRefObject<CellData[][] | null> }) =>
       () => {
+        console.log("initial config changed");
         const strInitialConfig = simModel.get(CapiFields.InitialConfig);
         const initialConfig = parseState(strInitialConfig);
         const curr = useSpreadsheetStore.getState();
