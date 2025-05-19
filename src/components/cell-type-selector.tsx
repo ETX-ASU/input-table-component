@@ -216,7 +216,7 @@ export function CellTypeSelector({
                     {tempOptions.map((option, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-2"
+                        className="flex cursor-pointer items-center justify-between p-2 hover:bg-light-gray-20"
                       >
                         <div className="flex flex-1 items-center gap-2">
                           <RadioGroupItem
