@@ -175,9 +175,10 @@ const ConfigInputCell = forwardRef<HTMLInputElement, InputCellProps>(
     return (
       <input
         ref={ref}
-        type="text"
+        type={inputMode === "numeric" ? "number" : "text"}
         placeholder={placeholder}
         inputMode={inputMode}
+        step="any"
         value={value}
         onChange={handleInputChange}
         onKeyDown={(e) => handleKeyDown(e, row, col)}
@@ -240,9 +241,10 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
       >
         <input
           ref={ref}
-          type="text"
+          type={inputMode === "numeric" ? "number" : "text"}
           placeholder={placeholder}
           inputMode={inputMode}
+          step="any"
           value={value}
           onChange={handleInputChange}
           onKeyDown={(e) => handleKeyDown(e, row, col)}

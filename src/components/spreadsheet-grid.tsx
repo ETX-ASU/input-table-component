@@ -114,9 +114,11 @@ export function SpreadsheetGrid() {
           break;
         case "left":
           newCol = Math.max(0, col - 1);
+          // newCol = Math.max(0, col - 1);
           break;
         case "right":
           newCol = Math.min(colCount - 1, col + 1);
+          // newCol = Math.min(colCount - 1, col + 1);
           break;
       }
 
@@ -217,7 +219,7 @@ export function SpreadsheetGrid() {
   // Handle keyboard events for input cells
   const handleInputKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
-    _: number,
+    row: number,
     col: number,
   ) => {
     const input = e.currentTarget;
@@ -225,18 +227,24 @@ export function SpreadsheetGrid() {
 
     // For Tab and Enter, always prevent default and handle navigation
     if (["Tab", "Enter"].includes(e.key)) {
-      // Allow default behavior for Tab if we're at the edge of the grid
-      if (e.key === "Tab" && col === data[0].length - 1 && !e.shiftKey) {
-        return;
-      }
-      if (e.key === "Tab" && col === 0 && e.shiftKey) {
-        return;
-      }
-
       e.preventDefault();
 
       if (e.key === "Tab") {
-        navigateToCell(e.shiftKey ? "left" : "right");
+        // Handle Tab navigation with row wrapping
+        if (col === data[0].length - 1 && !e.shiftKey) {
+          // At the end of row, move to first cell of next row
+          if (row < data.length - 1) {
+            setActiveCell(row + 1, 0);
+          }
+        } else if (col === 0 && e.shiftKey) {
+          // At the beginning of row, move to last cell of previous row
+          if (row > 0) {
+            setActiveCell(row - 1, data[0].length - 1);
+          }
+        } else {
+          // Normal left/right navigation within a row
+          navigateToCell(e.shiftKey ? "left" : "right");
+        }
       } else {
         // Enter
         navigateToCell(e.shiftKey ? "up" : "down");
