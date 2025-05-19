@@ -31,7 +31,7 @@ function FontSizeSelector({
             role="combobox"
             aria-expanded={open}
             className={clsx(
-              "w-[60px] justify-start overflow-hidden border-none bg-transparent",
+              "w-[50px] justify-start overflow-hidden border-none bg-transparent",
               invisible && "invisible",
             )}
             disabled={disabled}
