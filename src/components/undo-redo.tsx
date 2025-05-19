@@ -3,6 +3,7 @@ import { useCallback, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import useSpreadsheetStore from "../lib/store";
 import { Icon } from "./Icon";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function UndoRedo({ invisible = false }: { invisible?: boolean }) {
   const { undo, redo, canUndo, canRedo, pushToHistory, lastHistoryId } =
@@ -57,24 +58,32 @@ export function UndoRedo({ invisible = false }: { invisible?: boolean }) {
       id="undo-redo"
       className={clsx("flex items-center gap-1", invisible && "invisible")}
     >
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={handleUndo}
-        disabled={!canUndo()}
-        title="Undo (Ctrl+Z)"
-      >
-        <Icon name="undo" />
-      </Button>
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={handleRedo}
-        disabled={!canRedo()}
-        title="Redo (Ctrl+Y)"
-      >
-        <Icon name="redo" />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleUndo}
+            disabled={!canUndo()}
+          >
+            <Icon name="undo" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRedo}
+            disabled={!canRedo()}
+          >
+            <Icon name="redo" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Redo (Ctrl+Y)</TooltipContent>
+      </Tooltip>
     </div>
   );
 }
