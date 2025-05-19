@@ -2,6 +2,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import clsx from "clsx";
 import { ButtonHTMLAttributes, forwardRef } from "react";
+import { Tooltip } from "./tooltip";
 
 const buttonVariants = cva(
   "cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
@@ -36,12 +37,21 @@ export interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  tooltip?: string;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, tooltip, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    return (
+    return tooltip ? (
+      <Tooltip text={tooltip}>
+        <Comp
+          className={clsx(buttonVariants({ variant, size, className }))}
+          ref={ref}
+          {...props}
+        />
+      </Tooltip>
+    ) : (
       <Comp
         className={clsx(buttonVariants({ variant, size, className }))}
         ref={ref}
