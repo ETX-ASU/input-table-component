@@ -203,7 +203,11 @@ const handlers = {
         .filter(
           (cell) => cell.contentType !== "not-editable" && cell.correctAnswer,
         )
-        .every((cell) => cell.content === cell.correctAnswer);
+        .every(
+          ({ content, contentType, correctAnswer }) =>
+            content === correctAnswer ||
+            (contentType === "number" && +correctAnswer! === +content),
+        );
 
       console.log("isCorrect", isCorrect);
       simModel.set(CapiFields.IsCorrect, isCorrect);
