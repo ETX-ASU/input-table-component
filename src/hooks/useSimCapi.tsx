@@ -1,5 +1,12 @@
 import { cloneDeep, isEmpty, isEqual, omit } from "lodash";
-import { MutableRefObject, useEffect, useRef } from "react";
+import {
+  Dispatch,
+  MutableRefObject,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   cellModelKey,
   dinamicallyAddToSimModel,
@@ -98,9 +105,14 @@ const handlers = {
       // }
     },
     capiChange:
-      ({ dataRef }: { dataRef: MutableRefObject<CellData[][] | null> }) =>
+      ({
+        dataRef,
+        setIsFinished,
+      }: {
+        dataRef: MutableRefObject<CellData[][] | null>;
+        setIsFinished: Dispatch<SetStateAction<boolean>>;
+      }) =>
       () => {
-        console.log("initial config changed");
         const strInitialConfig = simModel.get(CapiFields.InitialConfig);
         const initialConfig = parseState(strInitialConfig);
         const curr = useSpreadsheetStore.getState();
@@ -109,6 +121,7 @@ const handlers = {
           if (isEqual(curr, initialConfig)) return;
           dataRef.current = initialConfig.data || null;
           useSpreadsheetStore.setState(initialConfig);
+          setIsFinished(true);
         }
       },
   },
@@ -331,6 +344,9 @@ export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
   const { isLoading } = useSpreadsheetStore.getState();
   useOnce(handlers.PermissionLevel.capiChange());
+  const [isFinished, setIsFinished] = useState(
+    process.env.NODE_ENV === "development" ? true : false,
+  );
 
   useEffect(() => {
     let unsub: VoidFunction[] = [];
@@ -418,11 +434,10 @@ export const useSimCapi = () => {
       if (
         state.permissionLevel === "student" &&
         state.appMode === "preview" &&
-        initialData.current
+        isFinished
       ) {
-        console.log(initialData.current, state.data);
         handlers.IsCorrect.stateChange(state.data);
-        handlers.IsModified.stateChange(initialData.current, state.data);
+        handlers.IsModified.stateChange(initialData.current || [], state.data);
         handlers.IsComplete.stateChange(state);
       }
 
@@ -448,7 +463,7 @@ export const useSimCapi = () => {
     ).map((key) =>
       addCapiEventListener(
         key,
-        handlers[key].capiChange({ dataRef: initialData }),
+        handlers[key].capiChange({ dataRef: initialData, setIsFinished }),
       ),
     );
 
