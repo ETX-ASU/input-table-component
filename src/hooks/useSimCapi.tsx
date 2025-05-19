@@ -419,6 +419,7 @@ export const useSimCapi = () => {
         state.appMode === "preview" &&
         initialData.current
       ) {
+        console.log(initialData.current, state.data);
         handlers.IsCorrect.stateChange(state.data);
         handlers.IsModified.stateChange(initialData.current, state.data);
         handlers.IsComplete.stateChange(state);
