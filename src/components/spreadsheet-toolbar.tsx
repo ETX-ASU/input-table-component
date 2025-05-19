@@ -276,7 +276,7 @@ export function SpreadsheetToolbar() {
         <ResetTableButton />
       </div>
       <div className="flex gap-1 py-1">
-        <div ref={toolbarRef} className="flex items-center overflow-x-auto">
+        <div ref={toolbarRef} className="flex items-center overflow-x-hidden">
           <UndoRedo invisible={hiddenItems.has("undo-redo")} />
 
           <VerticalSeparator />
