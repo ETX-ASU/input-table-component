@@ -414,9 +414,13 @@ export const useSimCapi = () => {
       handlers.InitialConfig.stateChange(clonedState);
       handlers.TableJSON.stateChange(clonedState);
 
-      if (state.permissionLevel === "student" && state.appMode === "preview") {
+      if (
+        state.permissionLevel === "student" &&
+        state.appMode === "preview" &&
+        initialData.current
+      ) {
         handlers.IsCorrect.stateChange(state.data);
-        handlers.IsModified.stateChange(initialData.current || [], state.data);
+        handlers.IsModified.stateChange(initialData.current, state.data);
         handlers.IsComplete.stateChange(state);
       }
 
