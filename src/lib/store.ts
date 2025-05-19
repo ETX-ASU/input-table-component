@@ -27,6 +27,7 @@ export interface CellData {
   borderColor: string;
   backgroundColor: string;
   fontFamily: string;
+  fontSize: number;
   contentType: CellContentType;
   selectOptions: string[];
   link: string | null;
@@ -86,6 +87,7 @@ export interface SpreadsheetState {
   setBorderColor: (color: string) => void;
   setBackgroundColor: (color: string) => void;
   setFontFamily: (fontFamily: string) => void;
+  setFontSize: (fontSize: number) => void;
   setContentType: (contentType: CellContentType) => void;
   setSelectOptions: (options: string[]) => void;
   setLink: (url: string | null) => void;
@@ -472,6 +474,21 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         };
 
         // Push to history immediately
+        const result = { data: newData };
+        get().pushToHistory();
+        return result;
+      }),
+
+    setFontSize: (fontSize) =>
+      set((state) => {
+        if (!state.activeCell || state.appMode === "preview") return state;
+
+        const newData = [...state.data];
+        newData[state.activeCell.row][state.activeCell.col] = {
+          ...newData[state.activeCell.row][state.activeCell.col],
+          fontSize,
+        };
+
         const result = { data: newData };
         get().pushToHistory();
         return result;

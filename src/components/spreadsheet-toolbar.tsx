@@ -11,7 +11,8 @@ import { buildDefaultCell } from "../lib/utils";
 import { BorderWidthSelector } from "./border-width-selector";
 import { CellTypeSelector } from "./cell-type-selector";
 import { ColorPicker } from "./color-picker";
-import { FontSelector } from "./font-selector";
+import { FontFamilySelector } from "./font-family-selector";
+import { FontSizeSelector } from "./font-size-selector";
 import { Icon } from "./Icon";
 import { LinkButton } from "./link-button";
 import { ModeToggle } from "./mode-toggle";
@@ -84,15 +85,30 @@ const CellTypeSelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
   );
 };
 
-const FontSelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
+const FontFamilySelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
   const { activeCell, appMode, setFontFamily, getData } = useSpreadsheetStore();
   const actionsDisabled = !activeCell || appMode === "preview";
   const cell = activeCell ? getData(activeCell) : buildDefaultCell();
 
   return (
-    <FontSelector
+    <FontFamilySelector
       value={cell.fontFamily}
       onChange={setFontFamily}
+      disabled={actionsDisabled}
+      invisible={isHidden}
+    />
+  );
+};
+
+const FontSizeSelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
+  const { activeCell, appMode, setFontSize, getData } = useSpreadsheetStore();
+  const actionsDisabled = !activeCell || appMode === "preview";
+  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+
+  return (
+    <FontSizeSelector
+      value={cell.fontSize}
+      onChange={setFontSize}
       disabled={actionsDisabled}
       invisible={isHidden}
     />
@@ -284,7 +300,13 @@ export function SpreadsheetToolbar() {
 
           <VerticalSeparator />
 
-          <FontSelectorButton isHidden={hiddenItems.has("font-selector")} />
+          <FontSizeSelectorButton
+            isHidden={hiddenItems.has("font-size-selector")}
+          />
+
+          <FontFamilySelectorButton
+            isHidden={hiddenItems.has("font-family-selector")}
+          />
 
           <div
             id="text-format"
@@ -353,7 +375,10 @@ export function SpreadsheetToolbar() {
                   </>
                 )}
                 {item === "cell-type-selector" && <CellTypeSelectorButton />}
-                {item === "font-selector" && <FontSelectorButton />}
+                {item === "font-size-selector" && <FontSizeSelectorButton />}
+                {item === "font-family-selector" && (
+                  <FontFamilySelectorButton />
+                )}
                 {item === "text-format" && (
                   <div className="flex shrink-0 gap-1">
                     <TextFormatButton format="isBold" />

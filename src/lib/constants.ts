@@ -1,5 +1,5 @@
 import { colorPalette } from "../components/color-picker";
-import { WebSafeFont } from "../components/font-selector";
+import { WebSafeFont } from "../components/font-family-selector";
 import { TextAlign } from "./store";
 
 export const DEFAULT_BORDER_WIDTH = 0.5;
@@ -11,7 +11,7 @@ export const BACKGROUND_COLOR_LIGHT_GRAY = colorPalette.lightGray[20];
 export const BACKGROUND_COLOR_SUBTLE_GRAY = colorPalette.lightGray[20];
 
 export const DEFAULT_FONT_FAMILY: WebSafeFont = WebSafeFont.Arial;
-export const DEFAULT_FONT_SIZE = 12;
+export const DEFAULT_FONT_SIZE = 16;
 export const DEFAULT_FONT_COLOR = colorPalette.gray[100];
 
 export const DEFAULT_ROW_HEIGHT = 46;

@@ -44,7 +44,7 @@ const fontOptions: { value: WebSafeFont; label: string }[] = [
   { value: WebSafeFont.BrushScriptMT, label: "Brush Script MT" },
 ];
 
-function FontSelector({
+function FontFamilySelector({
   value,
   onChange,
   disabled = false,
@@ -57,7 +57,7 @@ function FontSelector({
     fontOptions.find((font) => font.value === value) || fontOptions[0];
 
   return (
-    <div id="font-selector">
+    <div id="font-family-selector">
       <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
           <Button
@@ -112,4 +112,4 @@ function FontSelector({
   );
 }
 
-export { FontSelector, WebSafeFont };
+export { FontFamilySelector, WebSafeFont };

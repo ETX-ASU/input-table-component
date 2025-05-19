@@ -27,6 +27,7 @@ const buildAlignmentClass = (align: TextAlign) => {
 const buildCommonStyles = (cell: CellData) => ({
   color: cell.textColor,
   fontFamily: cell.fontFamily,
+  fontSize: cell.fontSize,
 });
 
 const buildCommonClasses = (cell: CellData, canInteractWithCell: boolean) =>

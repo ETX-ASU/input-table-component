@@ -5,6 +5,7 @@ import {
   DEFAULT_CONTENT_ALIGN,
   DEFAULT_FONT_COLOR,
   DEFAULT_FONT_FAMILY,
+  DEFAULT_FONT_SIZE,
 } from "./constants";
 import { CellData } from "./store";
 
@@ -19,6 +20,7 @@ const buildDefaultCell = (): CellData => ({
   borderColor: DEFAULT_BORDER_COLOR,
   backgroundColor: DEFAULT_BACKGROUND_COLOR,
   fontFamily: DEFAULT_FONT_FAMILY,
+  fontSize: DEFAULT_FONT_SIZE,
   contentType: "not-editable",
   selectOptions: [],
   link: null,
