@@ -369,7 +369,6 @@ export const useSimCapi = () => {
         "isUndoRedo",
         "isResizingRow",
         "isSelectOptionsDialogOpen",
-        "isModified",
       ] as const;
 
       const noCellsChanged = [addedCells, removedCells, modifiedCells].every(
@@ -387,6 +386,7 @@ export const useSimCapi = () => {
 
       const clonedState: Partial<SpreadsheetState> = omit(cloneDeep(state), [
         ...keysToOmit,
+        "isModified",
       ]);
 
       clonedState.data?.forEach((rowArr, ridx) => {
