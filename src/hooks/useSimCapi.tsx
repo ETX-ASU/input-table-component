@@ -328,6 +328,7 @@ export const useSimCapi = () => {
     let unsubAddedCells: VoidFunction[] = [];
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
+      console.log(state);
 
       const addedCells: CellCoordinates[] = [];
       const removedCells: CellCoordinates[] = [];
@@ -375,6 +376,8 @@ export const useSimCapi = () => {
         isEmpty,
       );
 
+      console.log([addedCells, removedCells, modifiedCells]);
+
       const statesAreTheSame = isEqual(
         omit(state, [...keysToOmit]),
         omit(prevState, [...keysToOmit]),
@@ -401,7 +404,6 @@ export const useSimCapi = () => {
         handlers.InitialConfig.stateChange(clonedState);
       }
       handlers.TableJSON.stateChange(clonedState);
-      console.log(state.isModified, "isModified");
       if (
         state.permissionLevel === "student" &&
         state.appMode === "preview" &&
