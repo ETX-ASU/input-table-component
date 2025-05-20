@@ -109,7 +109,7 @@ const handlers = {
           dataRef.current = initialConfig.data || null;
           useSpreadsheetStore.setState({
             ...initialConfig,
-            isLoadingState: false,
+            isLoading: false,
           });
         }
       },
@@ -129,7 +129,7 @@ const handlers = {
           return useSpreadsheetStore.setState({
             permissionLevel: "ld",
             appMode: "config",
-            isLoadingCapi: false,
+            isLoading: false,
           });
         }
 
@@ -137,7 +137,7 @@ const handlers = {
           return useSpreadsheetStore.setState({
             permissionLevel: "student",
             appMode: "preview",
-            isLoadingCapi: false,
+            isLoading: false,
           });
         }
 
@@ -148,13 +148,13 @@ const handlers = {
           useSpreadsheetStore.setState({
             permissionLevel: "student",
             appMode: "preview",
-            isLoadingCapi: false,
+            isLoading: false,
           });
         } else {
           useSpreadsheetStore.setState({
             permissionLevel: "ld",
             appMode: "config",
-            isLoadingCapi: false,
+            isLoading: false,
           });
         }
       };
@@ -179,12 +179,7 @@ const handlers = {
     },
   },
   [CapiFields.IsModified]: {
-    stateChange: (prevCells: CellData[][], newCells: CellData[][]) => {
-      const isModified = prevCells
-        .flatMap((row) => row)
-        .some((cell, index) => !isEqual(cell, newCells[index]));
-
-      console.log("isModified", isModified);
+    stateChange: (isModified: boolean) => {
       simModel.set(CapiFields.IsModified, isModified);
     },
   },
@@ -423,7 +418,7 @@ export const useSimCapi = () => {
         !isLoading
       ) {
         handlers.IsCorrect.stateChange(state.data);
-        handlers.IsModified.stateChange(initialData.current || [], state.data);
+        handlers.IsModified.stateChange(state.isModified);
         handlers.IsComplete.stateChange(state);
       }
 

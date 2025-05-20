@@ -43,8 +43,6 @@ interface HistoryEntry {
 }
 
 export interface SpreadsheetState {
-  isLoadingCapi: boolean;
-  isLoadingState: boolean;
   isLoading: boolean;
 
   data: CellData[][];
@@ -58,6 +56,7 @@ export interface SpreadsheetState {
   startWidth: number;
   startHeight: number;
 
+  isModified: boolean;
   showHints: boolean;
   showCorrectAnswers: boolean;
   permissionLevel: PermissionLevel;
@@ -129,13 +128,7 @@ const createInitialData = (rows: number, cols: number): CellData[][] => {
 
 const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
   return {
-    isLoadingCapi: process.env.NODE_ENV !== "development",
-    isLoadingState: process.env.NODE_ENV !== "development",
-
-    get isLoading() {
-      console.log(this.isLoadingCapi, this.isLoadingState);
-      return this.isLoadingCapi || this.isLoadingState;
-    },
+    isLoading: true,
 
     data: createInitialData(DEFAULT_ROW_COUNT, DEFAULT_COLUMN_COUNT),
     activeCell: null,
@@ -148,6 +141,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     startWidth: 0,
     startHeight: 0,
 
+    isModified: false,
     showCorrectAnswers: capi.defaults[CapiFields.IsComplete],
     enableTable: capi.defaults[CapiFields.Enabled],
     showHints: capi.defaults[CapiFields.ShowHints],
@@ -368,7 +362,10 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         };
 
         // Push to history immediately
-        const result = { data: newData };
+        const result = {
+          data: newData,
+          isModified: state.permissionLevel === "student",
+        };
         get().pushToHistory();
         return result;
       }),
