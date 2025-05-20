@@ -86,17 +86,7 @@ const handlers = {
   },
   [CapiFields.InitialConfig]: {
     stateChange: (state: Partial<SpreadsheetState>) => {
-      // const currentCapiInitialConfig = simModel.get(CapiFields.InitialConfig);
-      // const { data: prevData } = parseState(currentCapiInitialConfig) || {};
       simModel.set(CapiFields.InitialConfig, stringifyState(state));
-      // if (getCapiContext() === "AUTHOR") {
-      //   const nextState = merge(cloneDeep(state), {
-      //     data: prevData,
-      //   });
-      //   simModel.set(CapiFields.InitialConfig, stringifyState(nextState));
-      // } else {
-      //   simModel.set(CapiFields.InitialConfig, stringifyState(state));
-      // }
     },
     capiChange: () => () => {
       const strInitialConfig = simModel.get(CapiFields.InitialConfig);
@@ -398,13 +388,18 @@ export const useSimCapi = () => {
 
       clonedState.data?.forEach((rowArr, ridx) => {
         rowArr.forEach((cell, cidx) => {
-          if (cell.contentType !== "not-editable") {
+          if (
+            cell.contentType !== "not-editable" &&
+            state.permissionLevel === "ld"
+          ) {
             clonedState.data![ridx][cidx].content = "";
           }
         });
       });
 
-      handlers.InitialConfig.stateChange(clonedState);
+      if (state.permissionLevel === "ld") {
+        handlers.InitialConfig.stateChange(clonedState);
+      }
       handlers.TableJSON.stateChange(clonedState);
 
       if (
