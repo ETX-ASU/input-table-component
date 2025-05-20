@@ -366,7 +366,6 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
           data: newData,
           isModified: state.permissionLevel === "student",
         };
-        console.log(state.permissionLevel, result);
         get().pushToHistory();
         return result;
       }),

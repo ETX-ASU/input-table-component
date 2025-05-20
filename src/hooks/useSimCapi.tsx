@@ -328,7 +328,6 @@ export const useSimCapi = () => {
     let unsubAddedCells: VoidFunction[] = [];
     const unsubState = useSpreadsheetStore.subscribe((state, prevState) => {
       if (isEqual(prevState, state)) return;
-      console.log(state);
 
       const addedCells: CellCoordinates[] = [];
       const removedCells: CellCoordinates[] = [];
@@ -374,8 +373,6 @@ export const useSimCapi = () => {
       const noCellsChanged = [addedCells, removedCells, modifiedCells].every(
         isEmpty,
       );
-
-      console.log([addedCells, removedCells, modifiedCells]);
 
       const statesAreTheSame = isEqual(
         omit(state, [...keysToOmit]),
