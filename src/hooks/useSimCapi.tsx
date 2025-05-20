@@ -121,6 +121,7 @@ const handlers = {
           if (isEqual(curr, initialConfig)) return;
           dataRef.current = initialConfig.data || null;
           useSpreadsheetStore.setState(initialConfig);
+          console.log("setting isFinished to true");
           setIsFinished(true);
         }
       },
