@@ -1,5 +1,5 @@
 import { cloneDeep, isEmpty, isEqual, omit } from "lodash";
-import { useEffect, useRef } from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 import {
   cellModelKey,
   dinamicallyAddToSimModel,
@@ -98,18 +98,21 @@ const handlers = {
       //   simModel.set(CapiFields.InitialConfig, stringifyState(state));
       // }
     },
-    capiChange: () => () => {
-      const strInitialConfig = simModel.get(CapiFields.InitialConfig);
-      const initialConfig = parseState(strInitialConfig);
-      const curr = useSpreadsheetStore.getState();
+    capiChange:
+      ({ dataRef }: { dataRef: MutableRefObject<CellData[][] | null> }) =>
+      () => {
+        const strInitialConfig = simModel.get(CapiFields.InitialConfig);
+        const initialConfig = parseState(strInitialConfig);
+        const curr = useSpreadsheetStore.getState();
 
-      if (initialConfig) {
-        if (isEqual(curr, initialConfig)) return;
-        useSpreadsheetStore.setState({
-          ...initialConfig,
-        });
-      }
-    },
+        if (initialConfig) {
+          if (isEqual(curr, initialConfig)) return;
+          dataRef.current = initialConfig.data || null;
+          useSpreadsheetStore.setState({
+            ...initialConfig,
+          });
+        }
+      },
   },
   PermissionLevel: {
     capiChange: () => () => {
@@ -176,7 +179,12 @@ const handlers = {
     },
   },
   [CapiFields.IsModified]: {
-    stateChange: (isModified: boolean) => {
+    stateChange: (prevCells: CellData[][], newCells: CellData[][]) => {
+      const isModified = prevCells
+        .flatMap((row) => row)
+        .some((cell, index) => !isEqual(cell, newCells[index]));
+
+      console.log("isModified", isModified);
       simModel.set(CapiFields.IsModified, isModified);
     },
   },
@@ -321,6 +329,7 @@ const dynamicCellHandlers = {
 };
 
 export const useSimCapi = () => {
+  const initialData = useRef<CellData[][] | null>(null);
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
   const { isLoading } = useSpreadsheetStore.getState();
   useOnce(handlers.PermissionLevel.capiChange());
@@ -415,9 +424,9 @@ export const useSimCapi = () => {
         state.appMode === "preview" &&
         !isFirstRender
       ) {
-        console.log(state.isModified);
         handlers.IsCorrect.stateChange(state.data);
-        handlers.IsModified.stateChange(state.isModified);
+        // handlers.IsModified.stateChange(state.isModified);
+        handlers.IsModified.stateChange(initialData.current || [], state.data);
         handlers.IsComplete.stateChange(state);
       }
 
@@ -440,7 +449,12 @@ export const useSimCapi = () => {
         CapiFields.ShowHints,
         CapiFields.ShowCorrectAnswers,
       ] as const
-    ).map((key) => addCapiEventListener(key, handlers[key].capiChange()));
+    ).map((key) =>
+      addCapiEventListener(
+        key,
+        handlers[key].capiChange({ dataRef: initialData }),
+      ),
+    );
 
     return () => {
       unsubState();
