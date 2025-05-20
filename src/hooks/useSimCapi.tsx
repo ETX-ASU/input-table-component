@@ -177,6 +177,7 @@ const handlers = {
   },
   [CapiFields.IsModified]: {
     stateChange: (isModified: boolean) => {
+      console.log("isModified", isModified);
       simModel.set(CapiFields.IsModified, isModified);
     },
   },
