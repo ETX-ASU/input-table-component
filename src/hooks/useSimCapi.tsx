@@ -376,8 +376,8 @@ export const useSimCapi = () => {
       );
 
       const statesAreTheSame = isEqual(
-        omit(state, [...keysToOmit, "showCorrectAnswers"]),
-        omit(prevState, [...keysToOmit, "showCorrectAnswers"]),
+        omit(state, [...keysToOmit]),
+        omit(prevState, [...keysToOmit]),
       );
 
       if (noCellsChanged && statesAreTheSame) return;
