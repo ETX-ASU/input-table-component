@@ -249,14 +249,7 @@ const handlers = {
 
 const dynamicCellHandlers = {
   setup: (): VoidFunction[] => {
-    const { data, getData, permissionLevel } = useSpreadsheetStore.getState();
-
-    const getDefaultValue = (coordinates: CellCoordinates) => {
-      const { contentType, content, correctAnswer } = getData(coordinates);
-      return permissionLevel === "ld" && contentType !== "not-editable"
-        ? correctAnswer
-        : content;
-    };
+    const { data, getData } = useSpreadsheetStore.getState();
 
     const toAdd = data
       .flatMap((row, rowIdx) =>
@@ -264,7 +257,7 @@ const dynamicCellHandlers = {
       )
       .map((coordinates) => ({
         name: cellModelKey(coordinates),
-        defaultValue: getDefaultValue(coordinates) || "",
+        defaultValue: getData(coordinates).content,
         coordinates,
       }));
 
@@ -272,20 +265,13 @@ const dynamicCellHandlers = {
     return addDynamicCellsEventListener(toAdd);
   },
   addedCells: (cellsToAdd: CellCoordinates[]): VoidFunction[] => {
-    const { getData, permissionLevel } = useSpreadsheetStore.getState();
-
-    const getDefaultValue = (coordinates: CellCoordinates) => {
-      const { contentType, content, correctAnswer } = getData(coordinates);
-      return permissionLevel === "ld" && contentType !== "not-editable"
-        ? correctAnswer
-        : content;
-    };
+    const { getData } = useSpreadsheetStore.getState();
 
     const toAdd = cellsToAdd
       .filter((coordinates) => !simModel.has(cellModelKey(coordinates)))
       .map((coordinates) => ({
         name: cellModelKey(coordinates),
-        defaultValue: getDefaultValue(coordinates) || "",
+        defaultValue: getData(coordinates).content,
         coordinates,
       }));
 
@@ -293,27 +279,16 @@ const dynamicCellHandlers = {
 
     return toAdd.map((cell) =>
       addCapiEventListener(cell.name, () => {
-        const { data, getData, permissionLevel } =
-          useSpreadsheetStore.getState();
+        const { data } = useSpreadsheetStore.getState();
         const { row, col } = cell.coordinates;
 
         const newValue = simModel.get(cell.name);
-        const prevValue = getData(cell.coordinates).content;
+        const prevValue = data[row][col].content;
 
         if (isEqual(prevValue, newValue)) return;
 
         const newData = cloneDeep(data);
-        if (
-          permissionLevel === "ld" &&
-          getData(cell.coordinates).contentType !== "not-editable"
-        ) {
-          newData[row][col].correctAnswer = newValue;
-        } else {
-          // Students only write the content
-          // Ld's write the content when it's not editable only
-          newData[row][col].content = newValue;
-        }
-
+        newData[row][col].content = newValue;
         useSpreadsheetStore.setState({ data: newData });
       }),
     );
@@ -330,18 +305,11 @@ const dynamicCellHandlers = {
     dinamicallyRemoveFromSimModel(toRemove);
   },
   stateChange: (modifiedCells: CellCoordinates[]) => {
-    const { getData, permissionLevel } = useSpreadsheetStore.getState();
-
-    const getDefaultValue = (coordinates: CellCoordinates) => {
-      const { contentType, content, correctAnswer } = getData(coordinates);
-      return permissionLevel === "ld" && contentType !== "not-editable"
-        ? correctAnswer
-        : content;
-    };
+    const { getData } = useSpreadsheetStore.getState();
 
     modifiedCells.forEach((cell) => {
       const key = cellModelKey(cell);
-      const value = getDefaultValue(cell);
+      const value = getData(cell).content;
       const prevValue = simModel.get(key);
 
       if (!isEqual(prevValue, value)) simModel.set(key, value);
