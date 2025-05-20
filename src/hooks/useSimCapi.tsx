@@ -474,5 +474,5 @@ export const useSimCapi = () => {
       unsubsCapi.forEach((unsub) => unsub());
       unsubAddedCells.forEach((unsub) => unsub());
     };
-  }, []);
+  }, [isFinished]);
 };
