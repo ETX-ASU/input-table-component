@@ -314,6 +314,7 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
   };
 
   const handleCellClick = () => {
+    if (!canInteractWithCell(coordinates)) return;
     setActiveCell(row, col);
     setOpen(true);
   };
