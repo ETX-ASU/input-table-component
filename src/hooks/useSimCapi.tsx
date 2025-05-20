@@ -13,6 +13,7 @@ import useSpreadsheetStore, {
   SpreadsheetState,
 } from "../lib/store";
 import { injectCSS } from "../lib/utils";
+import { useIsFirstRender } from "./use-is-first-render";
 import { useOnce } from "./useOnce";
 
 const stringifyState = (state: Partial<SpreadsheetState>) => {
@@ -323,6 +324,7 @@ export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
   const { isLoading } = useSpreadsheetStore.getState();
   useOnce(handlers.PermissionLevel.capiChange());
+  const isFirstRender = useIsFirstRender();
 
   useEffect(() => {
     let unsub: VoidFunction[] = [];
@@ -408,7 +410,11 @@ export const useSimCapi = () => {
       handlers.InitialConfig.stateChange(clonedState);
       handlers.TableJSON.stateChange(clonedState);
 
-      if (state.permissionLevel === "student" && state.appMode === "preview") {
+      if (
+        state.permissionLevel === "student" &&
+        state.appMode === "preview" &&
+        !isFirstRender
+      ) {
         console.log(state.isModified);
         handlers.IsCorrect.stateChange(state.data);
         handlers.IsModified.stateChange(state.isModified);
@@ -441,5 +447,5 @@ export const useSimCapi = () => {
       unsubsCapi.forEach((unsub) => unsub());
       unsubAddedCells.forEach((unsub) => unsub());
     };
-  }, [isLoading]);
+  }, [isLoading, isFirstRender]);
 };
