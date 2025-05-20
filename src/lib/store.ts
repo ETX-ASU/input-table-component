@@ -43,6 +43,8 @@ interface HistoryEntry {
 }
 
 export interface SpreadsheetState {
+  isLoadingCapi: boolean;
+  isLoadingState: boolean;
   isLoading: boolean;
 
   data: CellData[][];
@@ -127,7 +129,13 @@ const createInitialData = (rows: number, cols: number): CellData[][] => {
 
 const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
   return {
-    isLoading: true,
+    isLoadingCapi: process.env.NODE_ENV !== "development",
+    isLoadingState: process.env.NODE_ENV !== "development",
+
+    get isLoading() {
+      console.log(this.isLoadingCapi, this.isLoadingState);
+      return this.isLoadingCapi || this.isLoadingState;
+    },
 
     data: createInitialData(DEFAULT_ROW_COUNT, DEFAULT_COLUMN_COUNT),
     activeCell: null,
@@ -140,11 +148,9 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     startWidth: 0,
     startHeight: 0,
 
-    // showCorrectAnswers: true,
     showCorrectAnswers: capi.defaults[CapiFields.IsComplete],
     enableTable: capi.defaults[CapiFields.Enabled],
-    // showHints: capi.defaults[CapiFields.ShowHints],
-    showHints: true,
+    showHints: capi.defaults[CapiFields.ShowHints],
     permissionLevel: "student",
     title: null,
     setTitle: (title) => set({ title }),

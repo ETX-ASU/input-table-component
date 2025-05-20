@@ -1,12 +1,5 @@
 import { cloneDeep, isEmpty, isEqual, omit } from "lodash";
-import {
-  Dispatch,
-  MutableRefObject,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 import {
   cellModelKey,
   dinamicallyAddToSimModel,
@@ -105,13 +98,7 @@ const handlers = {
       // }
     },
     capiChange:
-      ({
-        dataRef,
-        setIsFinished,
-      }: {
-        dataRef: MutableRefObject<CellData[][] | null>;
-        setIsFinished: Dispatch<SetStateAction<boolean>>;
-      }) =>
+      ({ dataRef }: { dataRef: MutableRefObject<CellData[][] | null> }) =>
       () => {
         const strInitialConfig = simModel.get(CapiFields.InitialConfig);
         const initialConfig = parseState(strInitialConfig);
@@ -120,9 +107,10 @@ const handlers = {
         if (initialConfig) {
           if (isEqual(curr, initialConfig)) return;
           dataRef.current = initialConfig.data || null;
-          useSpreadsheetStore.setState(initialConfig);
-          console.log("setting isFinished to true");
-          setIsFinished(true);
+          useSpreadsheetStore.setState({
+            ...initialConfig,
+            isLoadingState: false,
+          });
         }
       },
   },
@@ -141,7 +129,7 @@ const handlers = {
           return useSpreadsheetStore.setState({
             permissionLevel: "ld",
             appMode: "config",
-            isLoading: false,
+            isLoadingCapi: false,
           });
         }
 
@@ -149,7 +137,7 @@ const handlers = {
           return useSpreadsheetStore.setState({
             permissionLevel: "student",
             appMode: "preview",
-            isLoading: false,
+            isLoadingCapi: false,
           });
         }
 
@@ -160,13 +148,13 @@ const handlers = {
           useSpreadsheetStore.setState({
             permissionLevel: "student",
             appMode: "preview",
-            isLoading: false,
+            isLoadingCapi: false,
           });
         } else {
           useSpreadsheetStore.setState({
             permissionLevel: "ld",
             appMode: "config",
-            isLoading: false,
+            isLoadingCapi: false,
           });
         }
       };
@@ -345,9 +333,6 @@ export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
   const { isLoading } = useSpreadsheetStore.getState();
   useOnce(handlers.PermissionLevel.capiChange());
-  const [isFinished, setIsFinished] = useState(
-    process.env.NODE_ENV === "development" ? true : false,
-  );
 
   useEffect(() => {
     let unsub: VoidFunction[] = [];
@@ -432,11 +417,10 @@ export const useSimCapi = () => {
       handlers.InitialConfig.stateChange(clonedState);
       handlers.TableJSON.stateChange(clonedState);
 
-      console.log(isFinished);
       if (
         // state.permissionLevel === "student" &&
         state.appMode === "preview" &&
-        isFinished
+        !isLoading
       ) {
         handlers.IsCorrect.stateChange(state.data);
         handlers.IsModified.stateChange(initialData.current || [], state.data);
@@ -465,7 +449,7 @@ export const useSimCapi = () => {
     ).map((key) =>
       addCapiEventListener(
         key,
-        handlers[key].capiChange({ dataRef: initialData, setIsFinished }),
+        handlers[key].capiChange({ dataRef: initialData }),
       ),
     );
 
@@ -474,5 +458,5 @@ export const useSimCapi = () => {
       unsubsCapi.forEach((unsub) => unsub());
       unsubAddedCells.forEach((unsub) => unsub());
     };
-  }, [isFinished]);
+  }, [isLoading]);
 };
