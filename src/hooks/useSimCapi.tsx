@@ -1,5 +1,5 @@
 import { cloneDeep, isEmpty, isEqual, omit } from "lodash";
-import { MutableRefObject, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   cellModelKey,
   dinamicallyAddToSimModel,
@@ -97,22 +97,18 @@ const handlers = {
       //   simModel.set(CapiFields.InitialConfig, stringifyState(state));
       // }
     },
-    capiChange:
-      ({ dataRef }: { dataRef: MutableRefObject<CellData[][] | null> }) =>
-      () => {
-        const strInitialConfig = simModel.get(CapiFields.InitialConfig);
-        const initialConfig = parseState(strInitialConfig);
-        const curr = useSpreadsheetStore.getState();
+    capiChange: () => () => {
+      const strInitialConfig = simModel.get(CapiFields.InitialConfig);
+      const initialConfig = parseState(strInitialConfig);
+      const curr = useSpreadsheetStore.getState();
 
-        if (initialConfig) {
-          if (isEqual(curr, initialConfig)) return;
-          dataRef.current = initialConfig.data || null;
-          useSpreadsheetStore.setState({
-            ...initialConfig,
-            isLoading: false,
-          });
-        }
-      },
+      if (initialConfig) {
+        if (isEqual(curr, initialConfig)) return;
+        useSpreadsheetStore.setState({
+          ...initialConfig,
+        });
+      }
+    },
   },
   PermissionLevel: {
     capiChange: () => () => {
@@ -324,7 +320,6 @@ const dynamicCellHandlers = {
 };
 
 export const useSimCapi = () => {
-  const initialData = useRef<CellData[][] | null>(null); // Only used to calculate isModified
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
   const { isLoading } = useSpreadsheetStore.getState();
   useOnce(handlers.PermissionLevel.capiChange());
@@ -438,12 +433,7 @@ export const useSimCapi = () => {
         CapiFields.ShowHints,
         CapiFields.ShowCorrectAnswers,
       ] as const
-    ).map((key) =>
-      addCapiEventListener(
-        key,
-        handlers[key].capiChange({ dataRef: initialData }),
-      ),
-    );
+    ).map((key) => addCapiEventListener(key, handlers[key].capiChange()));
 
     return () => {
       unsubState();
