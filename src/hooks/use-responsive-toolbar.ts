@@ -1,5 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 
+function debounce<T extends (...args: unknown[]) => unknown>(
+  func: T,
+  wait: number,
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
 export function useResponsiveToolbar() {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [hiddenItems, setHiddenItems] = useState<Set<string>>(new Set());
@@ -7,7 +18,7 @@ export function useResponsiveToolbar() {
   useEffect(() => {
     if (!toolbarRef.current) return;
 
-    const observer = new ResizeObserver(() => {
+    const handleResize = () => {
       const toolbar = toolbarRef.current;
       if (!toolbar) return;
 
@@ -29,7 +40,10 @@ export function useResponsiveToolbar() {
       });
 
       setHiddenItems(newHiddenItems);
-    });
+    };
+
+    const debouncedHandleResize = debounce(handleResize, 1);
+    const observer = new ResizeObserver(debouncedHandleResize);
 
     observer.observe(toolbarRef.current);
     return () => observer.disconnect();

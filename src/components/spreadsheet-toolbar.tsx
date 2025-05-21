@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState } from "react";
+import { FC, PropsWithChildren, useState } from "react";
 import { Tooltip as InitTooltip } from "react-tooltip";
 import { useResponsiveToolbar } from "../hooks/use-responsive-toolbar";
 import {
@@ -24,7 +24,7 @@ import { Tooltip } from "./ui/tooltip";
 import { UndoRedo } from "./undo-redo";
 
 const VerticalSeparator = () => (
-  <div className="mx-[10px] h-10 w-px min-w-px bg-black/20" />
+  <div className="mx-[5px] h-10 w-px min-w-px bg-black/20" />
 );
 
 const AddColumnButton = () => {
@@ -39,7 +39,7 @@ const AddColumnButton = () => {
       tooltip="Add Column"
       id="add-column"
     >
-      <Icon name="add-col" className="h-10 w-10" />
+      <Icon name="add-col" className="h-4 w-4" />
     </Button>
   );
 };
@@ -56,7 +56,7 @@ const AddRowButton = () => {
       tooltip="Add Row"
       id="add-row"
     >
-      <Icon name="add-row" className="h-10 w-10" />
+      <Icon name="add-row" className="h-4 w-4" />
     </Button>
   );
 };
@@ -163,7 +163,7 @@ const TextFormatButton = ({
   );
 };
 
-const TextColorPickerButton = ({ isHidden }: { isHidden?: boolean }) => {
+const TextColorPickerButton = () => {
   const { activeCell, appMode, setTextColor, getData } = useSpreadsheetStore();
   const actionsDisabled = !activeCell || appMode === "preview";
   const cell = activeCell ? getData(activeCell) : buildDefaultCell();
@@ -180,10 +180,9 @@ const TextColorPickerButton = ({ isHidden }: { isHidden?: boolean }) => {
           <Icon
             name="font-color"
             color={cell.textColor || DEFAULT_FONT_COLOR}
-            className="h-10 w-10"
+            className="h-4 w-4"
           />
         }
-        invisible={isHidden}
       />
     </Tooltip>
   );
@@ -277,7 +276,7 @@ const CellBorderWidthButton = () => {
   );
 };
 
-const LinkButtonButton = ({ isHidden }: { isHidden?: boolean }) => {
+const LinkButtonButton = () => {
   const { activeCell, appMode, setLink, getData } = useSpreadsheetStore();
   const cell = activeCell ? getData(activeCell) : buildDefaultCell();
   const actionsDisabled =
@@ -289,7 +288,6 @@ const LinkButtonButton = ({ isHidden }: { isHidden?: boolean }) => {
         link={cell.link}
         disabled={actionsDisabled}
         onSave={setLink}
-        invisible={!!isHidden}
       />
     </Tooltip>
   );
@@ -298,6 +296,21 @@ const LinkButtonButton = ({ isHidden }: { isHidden?: boolean }) => {
 export function SpreadsheetToolbar() {
   const { toolbarRef, hiddenItems } = useResponsiveToolbar();
   const [showMoreOptions, setShowMoreOptions] = useState(false);
+
+  const Hidable: FC<PropsWithChildren<{ id: string; className?: string }>> = ({
+    children,
+    id,
+    className,
+  }) => {
+    return (
+      <div
+        id={id}
+        className={clsx(hiddenItems.has(id) && "invisible", className)}
+      >
+        {children}
+      </div>
+    );
+  };
 
   return (
     <div id="spreadsheet-toolbar" className="w-full bg-light-gray-20">
@@ -312,78 +325,58 @@ export function SpreadsheetToolbar() {
         <ResetTableButton />
       </div>
       <div className="flex gap-1 py-1">
-        <div ref={toolbarRef} className="flex items-center overflow-x-hidden">
+        <div
+          ref={toolbarRef}
+          className="flex items-center gap-1 overflow-x-hidden"
+        >
           <UndoRedo invisible={hiddenItems.has("undo-redo")} />
 
-          <VerticalSeparator />
-
-          <div
-            id="add-column-row"
-            className={clsx(
-              hiddenItems.has("add-column-row") && "invisible",
-              "flex shrink-0 gap-1",
-            )}
-          >
+          <Hidable id="add-column-row" className="flex shrink-0 gap-1">
+            <VerticalSeparator />
             <AddColumnButton />
             <AddRowButton />
-          </div>
+          </Hidable>
 
-          <VerticalSeparator />
+          <Hidable id="cell-type-selector" className="flex shrink-0 gap-1">
+            <VerticalSeparator />
+            <CellTypeSelectorButton />
+          </Hidable>
 
-          <CellTypeSelectorButton
-            isHidden={hiddenItems.has("cell-type-selector")}
-          />
+          <Hidable id="font-size-selector" className="flex shrink-0 gap-1">
+            <VerticalSeparator />
+            <FontSizeSelectorButton />
+          </Hidable>
 
-          <VerticalSeparator />
+          <Hidable id="font-family-selector" className="flex shrink-0 gap-1">
+            <FontFamilySelectorButton />
+          </Hidable>
 
-          <FontSizeSelectorButton
-            isHidden={hiddenItems.has("font-size-selector")}
-          />
-
-          <FontFamilySelectorButton
-            isHidden={hiddenItems.has("font-family-selector")}
-          />
-
-          <div
-            id="text-format"
-            className={clsx(
-              hiddenItems.has("text-format") && "invisible",
-              "flex shrink-0 gap-1",
-            )}
-          >
+          <Hidable id="text-format" className="flex shrink-0 gap-1">
             <TextFormatButton format="isBold" />
             <TextFormatButton format="isItalic" />
             <TextFormatButton format="isStrikethrough" />
-          </div>
+          </Hidable>
 
-          <TextColorPickerButton isHidden={hiddenItems.has("text-color")} />
+          <Hidable id="text-color" className="flex shrink-0 gap-1">
+            <TextColorPickerButton />
+          </Hidable>
 
-          <LinkButtonButton isHidden={hiddenItems.has("link-button")} />
+          <Hidable id="link-button" className="flex shrink-0 gap-1">
+            <LinkButtonButton />
+          </Hidable>
 
-          <div
-            id="toggle-align"
-            className={clsx(
-              hiddenItems.has("toggle-align") && "invisible",
-              "flex shrink-0 gap-1",
-            )}
-          >
+          <Hidable id="toggle-align" className="flex shrink-0 gap-1">
             <AlignToggleButton align="left" />
             <AlignToggleButton align="center" />
             <AlignToggleButton align="right" />
-          </div>
+          </Hidable>
 
-          <div
-            id="cell-styles"
-            className={clsx(
-              hiddenItems.has("cell-styles") && "invisible",
-              "flex shrink-0 gap-1",
-            )}
-          >
+          <Hidable id="cell-styles" className="flex shrink-0 gap-1">
             <VerticalSeparator />
             <CellBackgroundPickerButton />
             <CellBorderColorButton />
             <CellBorderWidthButton />
-          </div>
+          </Hidable>
         </div>
         <div className="flex flex-1 items-center">
           {hiddenItems.size > 0 && (
@@ -402,7 +395,7 @@ export function SpreadsheetToolbar() {
         <div className="flex justify-end">
           <div className="flex flex-wrap justify-end gap-1">
             {Array.from(hiddenItems).map((item, index) => (
-              <>
+              <div key={item} className="flex shrink-0 gap-1">
                 {index > 0 && <VerticalSeparator />}
                 {item === "add-column-row" && (
                   <>
@@ -438,7 +431,7 @@ export function SpreadsheetToolbar() {
                     <CellBorderWidthButton />
                   </div>
                 )}
-              </>
+              </div>
             ))}
           </div>
           <div className="w-10" />

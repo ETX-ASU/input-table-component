@@ -143,7 +143,7 @@ export function CellTypeSelector({
             )}
           >
             <div className="flex items-center gap-2">
-              <Icon name="cell-type" className="h-10 w-10" />
+              <Icon name="cell-type" className="h-4 w-4" />
             </div>
           </Button>
         </PopoverTrigger>

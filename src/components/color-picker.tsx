@@ -13,7 +13,6 @@ interface ColorPickerProps {
   defaultColor: string;
   label?: string;
   icon: React.ReactNode;
-  invisible?: boolean;
 }
 
 const blue = {
@@ -135,7 +134,6 @@ function ColorPicker({
   defaultColor,
   label = "Color Palette",
   icon,
-  invisible,
 }: ColorPickerProps) {
   const [customColor, setCustomColor] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -186,7 +184,7 @@ function ColorPicker({
           id={id}
           variant="outline"
           size="icon"
-          className={clsx("relative h-8 w-8 p-0", invisible && "invisible")}
+          className="relative h-8 w-8 p-0"
           disabled={disabled}
         >
           {icon}

@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import { useEffect, useState } from "react";
 import useSpreadsheetStore from "../lib/store";
 import { Icon } from "./Icon";
@@ -93,15 +92,9 @@ interface LinkButtonProps {
   link: string | null;
   disabled: boolean;
   onSave: (url: string | null) => void;
-  invisible: boolean;
 }
 
-export function LinkButton({
-  link,
-  disabled,
-  onSave,
-  invisible,
-}: LinkButtonProps) {
+export function LinkButton({ link, disabled, onSave }: LinkButtonProps) {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const { appMode } = useSpreadsheetStore();
   const isPreviewMode = appMode === "preview";
@@ -118,9 +111,8 @@ export function LinkButton({
           setIsLinkDialogOpen(true);
         }}
         disabled={disabled}
-        className={clsx(invisible && "invisible")}
       >
-        <Icon name="link" />
+        <Icon name="link" className="h-4 w-4" />
       </Toggle>
       <LinkDialog
         isOpen={isLinkDialogOpen}

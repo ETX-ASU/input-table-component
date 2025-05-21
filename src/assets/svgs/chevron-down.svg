@@ -1,6 +1,1 @@
-<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<mask id="path-1-inside-1_146_4283" fill="white">
-<path d="M10.0176 0.181885L19.9171 10.0814L10.0176 19.9809L0.118083 10.0814L10.0176 0.181885Z"/>
-</mask>
-<path d="M10.0176 19.9809L7.18915 22.8093L10.0176 25.6377L12.846 22.8093L10.0176 19.9809ZM19.9171 10.0814L17.0886 7.25295L7.18915 17.1524L10.0176 19.9809L12.846 22.8093L22.7455 12.9098L19.9171 10.0814ZM10.0176 19.9809L12.846 17.1524L2.94651 7.25295L0.118083 10.0814L-2.71034 12.9098L7.18915 22.8093L10.0176 19.9809Z" fill="#006586" mask="url(#path-1-inside-1_146_4283)"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
