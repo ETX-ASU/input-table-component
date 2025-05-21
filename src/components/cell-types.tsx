@@ -61,13 +61,7 @@ const CorrectnessIndicatorWrapper = ({
   );
 
   return (
-    <div
-      className={clsx(
-        "flex items-center gap-2 truncate",
-        showIndicator && "px-2 py-1",
-        className,
-      )}
-    >
+    <div className={clsx("flex items-center gap-2 truncate", className)}>
       {showIndicator && (
         <div className="flex-shrink-0 rounded">
           {isCorrect ? correctIcon : incorrectIcon}
@@ -245,6 +239,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
         className={clsx(
           cell.contentType !== "not-editable" &&
             "border border-light-gray-80 p-1",
+          !showCorrectness && "px-2",
         )}
       >
         <input
@@ -258,7 +253,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
           onKeyDown={(e) => handleKeyDown(e, row, col)}
           className={clsx(
             buildCommonClasses(cell, canInteractWithCell(coordinates)),
-            "px-1 placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
+            "placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
             "focus:outline-none",
           )}
           style={buildCommonStyles(cell)}
@@ -323,10 +318,11 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
     <div
       className={clsx(
         buildCommonClasses(cell, canInteractWithCell(coordinates)),
-        "relative flex h-full items-center gap-2 border border-light-gray-80 px-1",
+        "relative flex h-full items-center gap-2 border border-light-gray-80 p-1",
         !canInteractWithCell(coordinates)
           ? "cursor-not-allowed"
           : "cursor-pointer",
+        !showCorrectness && "px-2",
       )}
       style={buildCommonStyles(cell)}
       onClick={handleCellClick}
@@ -341,7 +337,7 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
       >
         <div
           className={clsx(
-            "flex-1 truncate",
+            "flex-1 truncate leading-none",
             !cell.content && !showCorrectAnswers && "text-xs text-gray-400",
           )}
         >
