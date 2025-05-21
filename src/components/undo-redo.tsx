@@ -64,7 +64,7 @@ export function UndoRedo({ invisible = false }: { invisible?: boolean }) {
         disabled={!canUndo()}
         tooltip="Undo"
       >
-        <Icon name="undo" className="h-10 w-10" />
+        <Icon name="undo" className="h-8 w-8" />
       </Button>
 
       <Button
@@ -74,7 +74,7 @@ export function UndoRedo({ invisible = false }: { invisible?: boolean }) {
         disabled={!canRedo()}
         tooltip="Redo"
       >
-        <Icon name="redo" className="h-10 w-10" />
+        <Icon name="redo" className="h-8 w-8" />
       </Button>
     </div>
   );

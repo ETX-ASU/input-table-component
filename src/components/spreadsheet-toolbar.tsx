@@ -157,6 +157,7 @@ const TextFormatButton = ({
                 ? "italic"
                 : "strike-through"
           }
+          className="h-4 w-4"
         />
       </Toggle>
     </Tooltip>
@@ -226,7 +227,7 @@ const CellBackgroundPickerButton = () => {
           <Icon
             name="cell-background-color"
             color={cell.backgroundColor || DEFAULT_BACKGROUND_COLOR}
-            className="h-5 w-5"
+            className="h-4 w-4"
           />
         }
       />
@@ -252,7 +253,7 @@ const CellBorderColorButton = () => {
           <Icon
             name="cell-border-color"
             color={cell.borderColor || DEFAULT_BORDER_COLOR}
-            className="h-5 w-5"
+            className="h-4 w-4"
           />
         }
       />
