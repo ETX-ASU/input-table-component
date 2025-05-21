@@ -24,7 +24,7 @@ import { Tooltip } from "./ui/tooltip";
 import { UndoRedo } from "./undo-redo";
 
 const VerticalSeparator = () => (
-  <div className="mx-[5px] h-10 w-px min-w-px bg-black/20" />
+  <div className="mx-px h-10 w-px min-w-px bg-black/20" />
 );
 
 const AddColumnButton = () => {
