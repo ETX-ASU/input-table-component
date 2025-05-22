@@ -17,6 +17,7 @@ export type AppMode = "config" | "preview";
 export type PermissionLevel = "student" | "ld";
 
 export interface CellData {
+  isCorrect?: boolean;
   content: string;
   isBold: boolean;
   isItalic: boolean;
@@ -58,6 +59,7 @@ export interface SpreadsheetState {
 
   isModified: boolean;
   showHints: boolean;
+  setShowHints: (showHints: boolean) => void;
   showCorrectAnswers: boolean;
   permissionLevel: PermissionLevel;
   enableTable: boolean;
@@ -165,6 +167,30 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     isSelectOptionsDialogOpen: false,
     setIsSelectOptionsDialogOpen: (isOpen: boolean) =>
       set({ isSelectOptionsDialogOpen: isOpen }),
+
+    setShowHints: (showHints) =>
+      set((state) => {
+        const newData = cloneDeep(state.data);
+
+        newData.forEach((row, rowIdx) => {
+          row.forEach((cell, colIdx) => {
+            if (cell.contentType !== "not-editable" && cell.correctAnswer) {
+              if (showHints) {
+                newData[rowIdx][colIdx].isCorrect =
+                  cell.content === cell.correctAnswer ||
+                  +cell.content === +cell.correctAnswer;
+              } else {
+                newData[rowIdx][colIdx].isCorrect = undefined;
+              }
+            }
+          });
+        });
+
+        return {
+          showHints,
+          data: newData,
+        };
+      }),
 
     updateCorrectAnswer: (correctAnswer) =>
       set((state) => {

@@ -227,14 +227,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
       <CorrectnessIndicatorWrapper
         showIndicator={showCorrectness}
         isCorrect={
-          showCorrectAnswers ||
-          (showHints &&
-            !!cell.content &&
-            cell.correctAnswer === cell.content) ||
-          (showHints &&
-            !!cell.content &&
-            inputMode === "numeric" &&
-            +cell.correctAnswer! === +cell.content)
+          showCorrectAnswers || (showHints && !!cell.content && cell.isCorrect!)
         }
         className={clsx(
           cell.contentType !== "not-editable" &&
@@ -330,8 +323,7 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
       <CorrectnessIndicatorWrapper
         showIndicator={showCorrectness}
         isCorrect={
-          showCorrectAnswers ||
-          (showHints && !!cell.content && cell.correctAnswer === cell.content)
+          showCorrectAnswers || (showHints && !!cell.content && cell.isCorrect!)
         }
         className="flex-1"
       >

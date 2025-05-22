@@ -208,7 +208,8 @@ const handlers = {
   [CapiFields.ShowHints]: {
     capiChange: () => () => {
       const showHints = simModel.get(CapiFields.ShowHints);
-      useSpreadsheetStore.setState({ showHints });
+      const { setShowHints } = useSpreadsheetStore.getState();
+      setShowHints(showHints);
     },
   },
   [CapiFields.Title]: {
