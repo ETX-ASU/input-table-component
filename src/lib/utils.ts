@@ -38,4 +38,9 @@ const injectCSS = (cssString: string, styleId = "dynamic-style") => {
   styleTag.textContent = cssString;
 };
 
-export { buildDefaultCell, injectCSS };
+const replaceWithHtmlTags = (content: string): string =>
+  content
+    .replace(/\^([^^]+)\^/g, "<sup>$1</sup>")
+    .replace(/_([^_]+)_/g, "<sub>$1</sub>");
+
+export { buildDefaultCell, injectCSS, replaceWithHtmlTags };

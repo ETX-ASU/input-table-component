@@ -6,6 +6,7 @@ import useSpreadsheetStore, {
   CellData,
   TextAlign,
 } from "../lib/store";
+import { replaceWithHtmlTags } from "../lib/utils";
 import { colorPalette } from "./color-picker";
 import { Icon } from "./Icon";
 import {
@@ -91,7 +92,10 @@ const PreviewLinkCell: FC<LinkCellProps> = ({ cell, coordinates }) => {
       )}
       style={{ ...buildCommonStyles(cell), cursor: "pointer" }}
     >
-      <span className="flex-1 truncate">{cell.content}</span>
+      <span
+        className="flex-1 truncate"
+        dangerouslySetInnerHTML={{ __html: replaceWithHtmlTags(cell.content) }}
+      />
 
       <ExternalLink className="h-3 w-3" />
     </a>
@@ -178,7 +182,7 @@ const ConfigInputCell = forwardRef<HTMLInputElement, InputCellProps>(
         onKeyDown={(e) => handleKeyDown(e, row, col)}
         className={clsx(
           buildCommonClasses(cell, true),
-          "placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
+          "truncate placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
           "focus:outline-none",
           cell.contentType !== "not-editable" &&
             "border border-light-gray-80 p-1",
@@ -235,22 +239,31 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
           !showCorrectness && "px-2",
         )}
       >
-        <input
-          ref={ref}
-          type={inputMode === "numeric" ? "number" : "text"}
-          placeholder={placeholder}
-          inputMode={inputMode}
-          step="any"
-          value={value}
-          onChange={handleInputChange}
-          onKeyDown={(e) => handleKeyDown(e, row, col)}
-          className={clsx(
-            buildCommonClasses(cell, canInteractWithCell(coordinates)),
-            "placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
-            "focus:outline-none",
-          )}
-          style={buildCommonStyles(cell)}
-        />
+        {cell.contentType === "not-editable" ? (
+          <div
+            className="flex-1 truncate"
+            dangerouslySetInnerHTML={{
+              __html: replaceWithHtmlTags(cell.content),
+            }}
+          />
+        ) : (
+          <input
+            ref={ref}
+            type={inputMode === "numeric" ? "number" : "text"}
+            placeholder={placeholder}
+            inputMode={inputMode}
+            step="any"
+            value={value}
+            onChange={handleInputChange}
+            onKeyDown={(e) => handleKeyDown(e, row, col)}
+            className={clsx(
+              buildCommonClasses(cell, canInteractWithCell(coordinates)),
+              "placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
+              "focus:outline-none",
+            )}
+            style={buildCommonStyles(cell)}
+          />
+        )}
       </CorrectnessIndicatorWrapper>
     );
   },
