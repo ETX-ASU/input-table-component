@@ -135,6 +135,8 @@ export function SpreadsheetGrid() {
     const input = e.currentTarget;
     const { selectionStart, selectionEnd, value, type } = input;
 
+    console.log("handleInputKeyDown", e.key, row, col);
+
     // For Tab and Enter, always prevent default and handle navigation
     if (["Tab", "Enter"].includes(e.key)) {
       e.preventDefault();

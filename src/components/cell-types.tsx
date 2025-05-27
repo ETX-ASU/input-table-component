@@ -240,16 +240,27 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
         )}
       >
         {cell.contentType === "not-editable" ? (
-          <div
-            className={clsx(
-              "flex-1 truncate",
-              buildCommonClasses(cell, canInteractWithCell(coordinates)),
-            )}
-            style={buildCommonStyles(cell)}
-            dangerouslySetInnerHTML={{
-              __html: replaceWithHtmlTags(cell.content),
-            }}
-          />
+          <div className="relative w-full">
+            <input
+              onKeyDown={(e) => handleKeyDown(e, row, col)}
+              ref={ref}
+              className={clsx(
+                "absolute",
+                buildCommonClasses(cell, canInteractWithCell(coordinates)),
+              )}
+              value=""
+            />
+            <div
+              dangerouslySetInnerHTML={{
+                __html: replaceWithHtmlTags(cell.content),
+              }}
+              className={clsx(
+                "flex-1 truncate",
+                buildCommonClasses(cell, canInteractWithCell(coordinates)),
+              )}
+              style={buildCommonStyles(cell)}
+            />
+          </div>
         ) : (
           <input
             ref={ref}
