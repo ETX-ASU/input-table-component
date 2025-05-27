@@ -241,7 +241,11 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
       >
         {cell.contentType === "not-editable" ? (
           <div
-            className="flex-1 truncate"
+            className={clsx(
+              "flex-1 truncate",
+              buildCommonClasses(cell, canInteractWithCell(coordinates)),
+            )}
+            style={buildCommonStyles(cell)}
             dangerouslySetInnerHTML={{
               __html: replaceWithHtmlTags(cell.content),
             }}
