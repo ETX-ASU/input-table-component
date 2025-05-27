@@ -1,4 +1,4 @@
-import { cloneDeep } from "lodash";
+import { cloneDeep, uniq } from "lodash";
 import { create } from "zustand";
 import {
   DEFAULT_COLUMN_COUNT,
@@ -8,7 +8,7 @@ import {
   MAX_HISTORY_LENGTH,
 } from "./constants";
 import { capi, CapiFields } from "./simcapi/model";
-import { buildDefaultCell } from "./utils";
+import { buildDefaultCell, isSameCell } from "./utils";
 
 export type TextAlign = "left" | "center" | "right";
 export type CellContentType = "text" | "number" | "select" | "not-editable";
@@ -73,6 +73,10 @@ export interface SpreadsheetState {
 
   isSelectOptionsDialogOpen: boolean;
   setIsSelectOptionsDialogOpen: (isOpen: boolean) => void;
+  selectedCells: CellCoordinates[];
+  setSelectedCells: (cells: CellCoordinates[]) => void;
+  clearCellSelection: () => void;
+  addCellToSelection: (cell: CellCoordinates) => void;
 
   title: string | null;
   summary: string | null;
@@ -128,6 +132,17 @@ const createInitialData = (rows: number, cols: number): CellData[][] => {
     .map(() => Array(cols).fill(0).map(buildDefaultCell));
 };
 
+const updateCells = (
+  data: CellData[][],
+  cellsCoordinates: CellCoordinates[],
+  updates: Partial<CellData>,
+) => {
+  cellsCoordinates.forEach(({ row, col }) => {
+    data[row][col] = { ...data[row][col], ...updates };
+  });
+  return data;
+};
+
 const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
   return {
     isLoading: true,
@@ -157,6 +172,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => ({
         appMode: state.appMode === "config" ? "preview" : "config",
         activeCell: null,
+        selectedCells: [],
       })),
 
     undoStack: [],
@@ -167,6 +183,19 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
     isSelectOptionsDialogOpen: false,
     setIsSelectOptionsDialogOpen: (isOpen: boolean) =>
       set({ isSelectOptionsDialogOpen: isOpen }),
+    selectedCells: [],
+    setSelectedCells: (cells) => set({ selectedCells: cells }),
+    clearCellSelection: () => set({ selectedCells: [] }),
+    addCellToSelection: (coordinates) =>
+      set((state) => {
+        const cellExists = state.selectedCells.some((cell) =>
+          isSameCell(cell, coordinates),
+        );
+        if (!cellExists) {
+          return { selectedCells: [...state.selectedCells, coordinates] };
+        }
+        return state;
+      }),
 
     setShowHints: (showHints) =>
       set((state) => {
@@ -246,6 +275,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         activeCell: null,
         columnWidths: newColumnWidths,
         rowHeights: newRowHeights,
+        selectedCells: [],
       });
     },
 
@@ -400,12 +430,16 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => {
         if (!state.activeCell || state.appMode === "preview") return state;
 
-        const newData = [...state.data];
-        const currentCell = newData[state.activeCell.row][state.activeCell.col];
-        newData[state.activeCell.row][state.activeCell.col] = {
-          ...currentCell,
-          [format]: !currentCell[format],
-        };
+        const currentCell =
+          state.data[state.activeCell.row][state.activeCell.col];
+
+        const newData = updateCells(
+          state.data,
+          uniq([...state.selectedCells, state.activeCell]),
+          {
+            [format]: !currentCell[format],
+          },
+        );
 
         // Push to history immediately
         const result = { data: newData };
@@ -417,11 +451,13 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => {
         if (!state.activeCell || state.appMode === "preview") return state;
 
-        const newData = [...state.data];
-        newData[state.activeCell.row][state.activeCell.col] = {
-          ...newData[state.activeCell.row][state.activeCell.col],
-          textAlign: alignment,
-        };
+        const newData = updateCells(
+          state.data,
+          uniq([...state.selectedCells, state.activeCell]),
+          {
+            textAlign: alignment,
+          },
+        );
 
         // Push to history immediately
         const result = { data: newData };
@@ -433,11 +469,13 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => {
         if (!state.activeCell || state.appMode === "preview") return state;
 
-        const newData = [...state.data];
-        newData[state.activeCell.row][state.activeCell.col] = {
-          ...newData[state.activeCell.row][state.activeCell.col],
-          textColor: color,
-        };
+        const newData = updateCells(
+          state.data,
+          uniq([...state.selectedCells, state.activeCell]),
+          {
+            textColor: color,
+          },
+        );
 
         // Push to history immediately
         const result = { data: newData };
@@ -449,11 +487,13 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => {
         if (!state.activeCell || state.appMode === "preview") return state;
 
-        const newData = [...state.data];
-        newData[state.activeCell.row][state.activeCell.col] = {
-          ...newData[state.activeCell.row][state.activeCell.col],
-          borderWidth: width,
-        };
+        const newData = updateCells(
+          state.data,
+          uniq([...state.selectedCells, state.activeCell]),
+          {
+            borderWidth: width,
+          },
+        );
 
         // Push to history immediately
         const result = { data: newData };
@@ -465,11 +505,13 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => {
         if (!state.activeCell || state.appMode === "preview") return state;
 
-        const newData = [...state.data];
-        newData[state.activeCell.row][state.activeCell.col] = {
-          ...newData[state.activeCell.row][state.activeCell.col],
-          borderColor: color,
-        };
+        const newData = updateCells(
+          state.data,
+          uniq([...state.selectedCells, state.activeCell]),
+          {
+            borderColor: color,
+          },
+        );
 
         // Push to history immediately
         const result = { data: newData };
@@ -481,11 +523,13 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => {
         if (!state.activeCell || state.appMode === "preview") return state;
 
-        const newData = [...state.data];
-        newData[state.activeCell.row][state.activeCell.col] = {
-          ...newData[state.activeCell.row][state.activeCell.col],
-          backgroundColor: color,
-        };
+        const newData = updateCells(
+          state.data,
+          uniq([...state.selectedCells, state.activeCell]),
+          {
+            backgroundColor: color,
+          },
+        );
 
         // Push to history immediately
         const result = { data: newData };
@@ -497,11 +541,13 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => {
         if (!state.activeCell || state.appMode === "preview") return state;
 
-        const newData = [...state.data];
-        newData[state.activeCell.row][state.activeCell.col] = {
-          ...newData[state.activeCell.row][state.activeCell.col],
-          fontFamily,
-        };
+        const newData = updateCells(
+          state.data,
+          uniq([...state.selectedCells, state.activeCell]),
+          {
+            fontFamily,
+          },
+        );
 
         // Push to history immediately
         const result = { data: newData };
@@ -513,11 +559,13 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set((state) => {
         if (!state.activeCell || state.appMode === "preview") return state;
 
-        const newData = [...state.data];
-        newData[state.activeCell.row][state.activeCell.col] = {
-          ...newData[state.activeCell.row][state.activeCell.col],
-          fontSize,
-        };
+        const newData = updateCells(
+          state.data,
+          uniq([...state.selectedCells, state.activeCell]),
+          {
+            fontSize,
+          },
+        );
 
         const result = { data: newData };
         get().pushToHistory();

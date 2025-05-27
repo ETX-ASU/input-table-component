@@ -7,7 +7,7 @@ import {
   DEFAULT_FONT_FAMILY,
   DEFAULT_FONT_SIZE,
 } from "./constants";
-import { CellData } from "./store";
+import { CellCoordinates, CellData } from "./store";
 
 const buildDefaultCell = (): CellData => ({
   content: "",
@@ -43,4 +43,9 @@ const replaceWithHtmlTags = (content: string): string =>
     .replace(/\^([^^]+)\^/g, "<sup>$1</sup>")
     .replace(/_([^_]+)_/g, "<sub>$1</sub>");
 
-export { buildDefaultCell, injectCSS, replaceWithHtmlTags };
+const isSameCell = (
+  cell1: CellCoordinates | null,
+  cell2: CellCoordinates | null,
+) => cell1?.row === cell2?.row && cell1?.col === cell2?.col;
+
+export { buildDefaultCell, injectCSS, isSameCell, replaceWithHtmlTags };

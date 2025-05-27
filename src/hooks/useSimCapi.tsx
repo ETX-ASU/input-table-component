@@ -369,6 +369,7 @@ export const useSimCapi = () => {
         "isUndoRedo",
         "isResizingRow",
         "isSelectOptionsDialogOpen",
+        "selectedCells",
       ] as const;
 
       const noCellsChanged = [addedCells, removedCells, modifiedCells].every(

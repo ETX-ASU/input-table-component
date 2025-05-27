@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ROW_HEADER_WIDTH } from "../lib/constants";
 import useSpreadsheetStore, { CellCoordinates, CellData } from "../lib/store";
+import { isSameCell } from "../lib/utils";
 import { Cell } from "./cell";
 import { InputCell, LinkCell, SelectCell } from "./cell-types";
 import { ContextMenu } from "./context-menu";
@@ -19,6 +20,11 @@ interface ContextMenuState {
 }
 
 export function SpreadsheetGrid() {
+  const [isMouseSelecting, setIsMouseSelecting] = useState(false);
+  const [selectionStart, setSelectionStart] = useState<CellCoordinates | null>(
+    null,
+  );
+
   const {
     data,
     activeCell,
@@ -26,6 +32,7 @@ export function SpreadsheetGrid() {
     isResizing,
     isResizingRow,
     appMode,
+    selectedCells,
     setActiveCell,
     updateResize,
     endResize,
@@ -34,6 +41,8 @@ export function SpreadsheetGrid() {
     deleteRow,
     deleteColumn,
     getData,
+    setSelectedCells,
+    clearCellSelection,
   } = useSpreadsheetStore();
 
   const spreadsheetRef = useRef<HTMLDivElement>(null);
@@ -43,9 +52,100 @@ export function SpreadsheetGrid() {
 
   const isPreviewMode = appMode === "preview";
 
+  const calculateSelectionRange = (
+    start: { row: number; col: number },
+    end: { row: number; col: number },
+  ) => {
+    const minRow = Math.min(start.row, end.row);
+    const maxRow = Math.max(start.row, end.row);
+    const minCol = Math.min(start.col, end.col);
+    const maxCol = Math.max(start.col, end.col);
+
+    const cells: { row: number; col: number }[] = [];
+    for (let row = minRow; row <= maxRow; row++) {
+      for (let col = minCol; col <= maxCol; col++) {
+        cells.push({ row, col });
+      }
+    }
+    return cells;
+  };
+
   const handleCellClick = (row: number, col: number) => {
     setActiveCell(row, col);
+
+    if (!isMouseSelecting && selectedCells.length > 0) {
+      clearCellSelection();
+    }
   };
+
+  const handleCellMouseDown = (
+    e: React.MouseEvent,
+    row: number,
+    col: number,
+  ) => {
+    // Only handle left mouse button
+    if (e.button !== 0) return;
+
+    // In preview mode, don't select disabled cells
+    if (isPreviewMode && data[row][col].disabled) {
+      return;
+    }
+
+    // Only allow selection to start from the currently active cell
+    if (activeCell && (activeCell.row !== row || activeCell.col !== col)) {
+      // If clicking on a different cell, just set it as active and return
+      setActiveCell(row, col);
+      clearCellSelection();
+      return;
+    }
+
+    e.preventDefault();
+
+    clearCellSelection();
+
+    setSelectionStart(activeCell);
+
+    setIsMouseSelecting(true);
+  };
+
+  // Add mouse enter handler for updating selection:
+  const handleCellMouseEnter = (row: number, col: number) => {
+    if (!selectionStart) return;
+
+    const hasMoved = selectionStart.row !== row || selectionStart.col !== col;
+
+    if (hasMoved && !isMouseSelecting) {
+      // Start mouse selection on first movement
+      setIsMouseSelecting(true);
+    }
+
+    if (isMouseSelecting && hasMoved) {
+      if (isPreviewMode && data[row][col].disabled) {
+        return;
+      }
+
+      // Calculate and update selection
+      const selectedRange = calculateSelectionRange(selectionStart, {
+        row,
+        col,
+      });
+      setSelectedCells(selectedRange);
+    }
+  };
+
+  const handleMouseUp = useCallback(() => {
+    if (isMouseSelecting) {
+      setIsMouseSelecting(false);
+    }
+    setSelectionStart(null);
+  }, [isMouseSelecting]);
+
+  useEffect(() => {
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [handleMouseUp]);
 
   const handleRowContextMenu = (e: React.MouseEvent, rowIndex: number) => {
     if (isPreviewMode) return;
@@ -135,7 +235,7 @@ export function SpreadsheetGrid() {
     const input = e.currentTarget;
     const { selectionStart, selectionEnd, value, type } = input;
 
-    console.log("handleInputKeyDown", e.key, row, col);
+    clearCellSelection();
 
     // For Tab and Enter, always prevent default and handle navigation
     if (["Tab", "Enter"].includes(e.key)) {
@@ -280,8 +380,8 @@ export function SpreadsheetGrid() {
     rowIndex: number,
     colIndex: number,
   ) => {
-    const isActive =
-      activeCell?.row === rowIndex && activeCell?.col === colIndex;
+    const isActive = isSameCell(activeCell, { row: rowIndex, col: colIndex });
+
     const coordinates: CellCoordinates = { row: rowIndex, col: colIndex };
 
     // If cell has a link and is not being edited, show a link display
@@ -369,6 +469,8 @@ export function SpreadsheetGrid() {
                       key={colIndex}
                       coordinates={{ row: rowIndex, col: colIndex }}
                       onCellClick={handleCellClick}
+                      handleCellMouseDown={handleCellMouseDown}
+                      handleCellMouseEnter={handleCellMouseEnter}
                     >
                       {renderCellContent(cell, rowIndex, colIndex)}
                     </Cell>
