@@ -209,7 +209,6 @@ const handlers = {
     capiChange: () => () => {
       const showHints = simModel.get(CapiFields.ShowHints);
       const { setShowHints } = useSpreadsheetStore.getState();
-      console.log("changing showHints", showHints);
       setShowHints(showHints);
     },
   },

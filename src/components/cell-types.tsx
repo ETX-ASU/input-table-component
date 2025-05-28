@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { isBoolean } from "lodash";
 import { CircleAlert, CircleCheck, ExternalLink, Lock } from "lucide-react";
-import { FC, forwardRef, ReactNode, useState } from "react";
+import { FC, forwardRef, ReactNode, Ref, useRef } from "react";
 import useSpreadsheetStore, {
   CellCoordinates,
   CellData,
@@ -88,6 +88,7 @@ const PreviewLinkCell: FC<LinkCellProps> = ({ cell, coordinates }) => {
       target="_blank"
       rel="noopener noreferrer"
       className={clsx(
+        !canInteractWithCell(coordinates) && "cursor-none",
         buildCommonClasses(cell, canInteractWithCell(coordinates)),
         "flex items-center gap-1 overflow-hidden text-blue-600 underline",
       )}
@@ -249,7 +250,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
               onKeyDown={(e) => handleKeyDown(e, row, col)}
               ref={ref}
               className={clsx(
-                "absolute",
+                "absolute cursor-none",
                 buildCommonClasses(cell, canInteractWithCell(coordinates)),
               )}
               value=""
@@ -276,6 +277,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
             onChange={handleInputChange}
             onKeyDown={(e) => handleKeyDown(e, row, col)}
             className={clsx(
+              !canInteractWithCell(coordinates) && "cursor-none",
               buildCommonClasses(cell, canInteractWithCell(coordinates)),
               "placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
               "focus:outline-none",
@@ -308,184 +310,225 @@ const InputCell = forwardRef<HTMLInputElement, InputCellProps>(
 
 type SelectCellProps = {
   coordinates: CellCoordinates;
+  handleKeyDown: (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    row: number,
+    col: number,
+  ) => void;
+  onSelectClick: (isOpen: boolean) => void;
+  isOpen: boolean;
 };
 
-const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
-  const {
-    canInteractWithCell,
-    getData,
-    setActiveCell,
-    updateCellContent,
-    unsetCorrectnessFromCell,
-    showHints,
-    showCorrectAnswers,
-  } = useSpreadsheetStore();
+const PreviewSelectCell = forwardRef<HTMLDivElement, SelectCellProps>(
+  ({ coordinates, handleKeyDown, onSelectClick, isOpen }, ref) => {
+    const {
+      canInteractWithCell,
+      getData,
+      setActiveCell,
+      updateCellContent,
+      unsetCorrectnessFromCell,
+      showHints,
+      showCorrectAnswers,
+    } = useSpreadsheetStore();
 
-  const [open, setOpen] = useState(false);
+    // const [open, setOpen] = useState(false);
+    const contentRef = useRef<HTMLDivElement>(null);
 
-  const cell = getData(coordinates);
-  const { row, col } = coordinates;
-  const showCorrectness =
-    showCorrectAnswers || (showHints && isBoolean(cell.isCorrect));
+    const cell = getData(coordinates);
+    const { row, col } = coordinates;
+    const showCorrectness =
+      showCorrectAnswers || (showHints && isBoolean(cell.isCorrect));
 
-  const handleValueChange = (value: string) => {
-    if (!canInteractWithCell(coordinates)) return;
+    const handleValueChange = (value: string) => {
+      if (!canInteractWithCell(coordinates)) return;
 
-    unsetCorrectnessFromCell(coordinates);
-    setActiveCell(row, col);
-    updateCellContent(value);
-  };
+      unsetCorrectnessFromCell(coordinates);
+      setActiveCell(row, col);
+      updateCellContent(value);
+    };
 
-  const handleCellClick = () => {
-    if (!canInteractWithCell(coordinates)) return;
-    setActiveCell(row, col);
-    setOpen(true);
-  };
+    const handleCellClick = () => {
+      if (!canInteractWithCell(coordinates)) return;
+      setActiveCell(row, col);
+      onSelectClick(true);
+    };
 
-  return (
-    <div
-      className={clsx(
-        buildCommonClasses(cell, canInteractWithCell(coordinates)),
-        "relative flex h-full items-center gap-2 border border-light-gray-80 p-1",
-        !canInteractWithCell(coordinates)
-          ? "cursor-not-allowed"
-          : "cursor-pointer",
-        !showCorrectness && "px-2",
-      )}
-      style={buildCommonStyles(cell)}
-      onClick={handleCellClick}
-    >
-      <CorrectnessIndicatorWrapper
-        showIndicator={showCorrectness}
-        isCorrect={
-          showCorrectAnswers || (showHints && !!cell.content && cell.isCorrect!)
-        }
-        className="flex-1"
-      >
-        <div
-          className={clsx(
-            "flex-1 truncate leading-none",
-            !cell.content && !showCorrectAnswers && "text-xs text-gray-400",
-          )}
-        >
-          {showCorrectAnswers
-            ? cell.correctAnswer
-            : cell.content || "Choose a correct answer"}
-        </div>
-      </CorrectnessIndicatorWrapper>
-      <div className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-light-gray-20">
-        {canInteractWithCell(coordinates) ? (
-          <Icon name="chevron-down" className="h-3 w-3 cursor-pointer" />
-        ) : (
-          <Lock className="h-3 w-3" />
-        )}
-      </div>
-      {/* Hidden Select component that opens when dropdown icon is clicked */}
-      <Select
-        value={cell.content}
-        onValueChange={handleValueChange}
-        open={open}
-        onOpenChange={(_open) => !_open && setOpen(false)}
-        disabled={!canInteractWithCell(coordinates)}
-      >
-        <SelectTrigger className="sr-only">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {cell.selectOptions.map((option: string) => (
-            <SelectItem
-              key={option}
-              value={option}
-              style={{
-                fontFamily: cell.fontFamily,
-              }}
-            >
-              {option}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-};
-
-const ConfigSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
-  const {
-    canInteractWithCell,
-    setIsSelectOptionsDialogOpen,
-    getData,
-    setActiveCell,
-    updateCellContent,
-  } = useSpreadsheetStore();
-
-  const [open, setOpen] = useState(false);
-
-  const cell = getData(coordinates);
-  const { row, col } = coordinates;
-
-  const handleValueChange = (value: string) => {
-    setActiveCell(row, col);
-    updateCellContent(value);
-  };
-
-  const handleCellClick = () => {
-    setActiveCell(row, col);
-  };
-
-  return (
-    <div
-      className={clsx(
-        buildCommonClasses(cell, canInteractWithCell(coordinates)),
-        "relative flex h-full items-center gap-2 border border-light-gray-40 px-1",
-        !canInteractWithCell(coordinates) && "cursor-not-allowed",
-      )}
-      style={buildCommonStyles(cell)}
-      onClick={handleCellClick}
-    >
-      <div className={clsx("flex-1 truncate")}>{cell.correctAnswer}</div>
+    return (
       <div
-        className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-light-gray-20"
-        onClick={() => setIsSelectOptionsDialogOpen(true)}
+        className={clsx(
+          buildCommonClasses(cell, canInteractWithCell(coordinates)),
+          "relative flex h-full items-center gap-2 border border-light-gray-80 p-1",
+          !canInteractWithCell(coordinates)
+            ? "cursor-not-allowed"
+            : "cursor-pointer",
+          !showCorrectness && "px-2",
+        )}
+        style={buildCommonStyles(cell)}
+        onClick={handleCellClick}
+        onKeyDown={(e) =>
+          handleKeyDown(e as React.KeyboardEvent<HTMLInputElement>, row, col)
+        }
       >
-        <Icon name="chevron-down" className="h-3 w-3 cursor-pointer" />
+        <CorrectnessIndicatorWrapper
+          showIndicator={showCorrectness}
+          isCorrect={
+            showCorrectAnswers ||
+            (showHints && !!cell.content && cell.isCorrect!)
+          }
+          className="flex-1"
+        >
+          <div
+            className={clsx(
+              "flex-1 truncate leading-none",
+              !cell.content && !showCorrectAnswers && "text-xs text-gray-400",
+            )}
+          >
+            {showCorrectAnswers
+              ? cell.correctAnswer
+              : cell.content || "Choose a correct answer"}
+          </div>
+        </CorrectnessIndicatorWrapper>
+        <div className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-light-gray-20">
+          {canInteractWithCell(coordinates) ? (
+            <Icon name="chevron-down" className="h-3 w-3 cursor-pointer" />
+          ) : (
+            <Lock className="h-3 w-3" />
+          )}
+        </div>
+        {/* Hidden Select component that opens when dropdown icon is clicked */}
+        <Select
+          value={cell.content}
+          onValueChange={handleValueChange}
+          open={isOpen}
+          onOpenChange={(_open) => onSelectClick(_open)}
+          disabled={!canInteractWithCell(coordinates)}
+        >
+          <SelectTrigger
+            ref={ref as Ref<HTMLButtonElement>}
+            className="sr-only focus:outline-none"
+            onKeyDown={(e) => {
+              e.preventDefault();
+
+              if (e.key === " ") {
+                onSelectClick(true);
+                contentRef.current?.focus();
+              }
+            }}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent ref={contentRef}>
+            {cell.selectOptions.map((option: string) => (
+              <SelectItem
+                key={option}
+                value={option}
+                style={{
+                  fontFamily: cell.fontFamily,
+                }}
+                className="focus:bg-light-gray-20"
+              >
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-      {/* Hidden Select component that opens when dropdown icon is clicked */}
-      <Select
-        value={cell.content}
-        onValueChange={handleValueChange}
-        open={open}
-        onOpenChange={(_open) => !_open && setOpen(false)}
-        disabled={!canInteractWithCell(coordinates)}
+    );
+  },
+);
+
+const ConfigSelectCell = forwardRef<HTMLDivElement, SelectCellProps>(
+  ({ coordinates, onSelectClick, isOpen }, ref) => {
+    const {
+      canInteractWithCell,
+      setIsSelectOptionsDialogOpen,
+      getData,
+      setActiveCell,
+      updateCellContent,
+    } = useSpreadsheetStore();
+
+    const cell = getData(coordinates);
+    const { row, col } = coordinates;
+
+    const handleValueChange = (value: string) => {
+      setActiveCell(row, col);
+      updateCellContent(value);
+    };
+
+    const handleCellClick = () => {
+      setActiveCell(row, col);
+    };
+
+    return (
+      <div
+        ref={ref}
+        className={clsx(
+          buildCommonClasses(cell, canInteractWithCell(coordinates)),
+          "relative flex h-full items-center gap-2 border border-light-gray-40 px-1",
+          !canInteractWithCell(coordinates) && "cursor-not-allowed",
+        )}
+        style={buildCommonStyles(cell)}
+        onClick={handleCellClick}
       >
-        <SelectTrigger className="sr-only">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {cell.selectOptions.map((option: string) => (
-            <SelectItem
-              key={option}
-              value={option}
-              style={{
-                fontFamily: cell.fontFamily,
-              }}
-            >
-              {option}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-};
+        <div className={clsx("flex-1 truncate")}>{cell.correctAnswer}</div>
+        <div
+          className="ml-1 flex-shrink-0 rounded p-0.5 hover:bg-light-gray-20"
+          onClick={() => setIsSelectOptionsDialogOpen(true)}
+        >
+          <Icon name="chevron-down" className="h-3 w-3 cursor-pointer" />
+        </div>
+        {/* Hidden Select component that opens when dropdown icon is clicked */}
+        <Select
+          value={cell.content}
+          onValueChange={handleValueChange}
+          open={isOpen}
+          onOpenChange={(_open) => onSelectClick(_open)}
+          disabled={!canInteractWithCell(coordinates)}
+        >
+          <SelectTrigger className="sr-only">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {cell.selectOptions.map((option: string) => (
+              <SelectItem
+                key={option}
+                value={option}
+                style={{
+                  fontFamily: cell.fontFamily,
+                }}
+              >
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  },
+);
 
-const SelectCell: FC<SelectCellProps> = ({ coordinates }) => {
-  const { appMode } = useSpreadsheetStore();
+const SelectCell = forwardRef<HTMLDivElement, SelectCellProps>(
+  ({ coordinates, handleKeyDown, onSelectClick, isOpen }, ref) => {
+    const { appMode } = useSpreadsheetStore();
 
-  const SelectCellComponent =
-    appMode === "config" ? ConfigSelectCell : PreviewSelectCell;
+    const SelectCellComponent =
+      appMode === "config" ? ConfigSelectCell : PreviewSelectCell;
 
-  return <SelectCellComponent coordinates={coordinates} />;
-};
+    return (
+      <SelectCellComponent
+        coordinates={coordinates}
+        ref={ref}
+        handleKeyDown={handleKeyDown}
+        onSelectClick={onSelectClick}
+        isOpen={isOpen}
+      />
+    );
+  },
+);
+
+PreviewSelectCell.displayName = "PreviewSelectCell";
+ConfigSelectCell.displayName = "ConfigSelectCell";
+SelectCell.displayName = "SelectCell";
 
 ConfigInputCell.displayName = "ConfigInputCell";
 InputCell.displayName = "InputCell";

@@ -49,6 +49,9 @@ export function SpreadsheetGrid() {
   const cellRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [isSelectCellActive, setIsSelectCellActive] = useState(false);
+  const [openSelectCells, setOpenSelectCells] = useState<
+    Record<string, boolean>
+  >({});
 
   const isPreviewMode = appMode === "preview";
 
@@ -179,15 +182,9 @@ export function SpreadsheetGrid() {
   useEffect(() => {
     if (activeCell) {
       const key = `${activeCell.row}-${activeCell.col}`;
-      const cell = getData(activeCell);
+      const cellInput = cellRefs.current[key];
 
-      // Only focus input elements, not select elements
-      if (cell.contentType !== "select") {
-        const cellInput = cellRefs.current[key];
-        if (cellInput) {
-          cellInput.focus();
-        }
-      }
+      if (cellInput) cellInput.focus();
     }
   }, [activeCell, getData]);
 
@@ -292,6 +289,8 @@ export function SpreadsheetGrid() {
         ArrowRight: "right",
       };
 
+      if (Object.keys(openSelectCells).length) return;
+
       navigateToCell(directionMap[e.key]);
     }
   };
@@ -302,10 +301,10 @@ export function SpreadsheetGrid() {
       // Only handle navigation if we have an active cell and it's a select cell
       if (!activeCell || !isSelectCellActive) return;
 
-      // Skip if we're in an input or textarea
       if (
         document.activeElement instanceof HTMLInputElement ||
-        document.activeElement instanceof HTMLTextAreaElement
+        document.activeElement instanceof HTMLTextAreaElement ||
+        document.activeElement instanceof HTMLButtonElement
       ) {
         return;
       }
@@ -322,6 +321,8 @@ export function SpreadsheetGrid() {
           ArrowRight: "right",
         };
 
+        if (Object.keys(openSelectCells).length) return;
+
         navigateToCell(directionMap[e.key]);
       }
     };
@@ -330,7 +331,7 @@ export function SpreadsheetGrid() {
     return () => {
       window.removeEventListener("keydown", handleGlobalKeyDown);
     };
-  }, [activeCell, isSelectCellActive, navigateToCell]);
+  }, [activeCell, isSelectCellActive, navigateToCell, openSelectCells]);
 
   // Update isSelectCellActive when activeCell changes
   useEffect(() => {
@@ -413,7 +414,27 @@ export function SpreadsheetGrid() {
           />
         );
       case "select":
-        return <SelectCell coordinates={coordinates} />;
+        return (
+          <SelectCell
+            coordinates={coordinates}
+            ref={(el) => {
+              cellRefs.current[`${rowIndex}-${colIndex}`] =
+                el as HTMLInputElement;
+            }}
+            handleKeyDown={handleInputKeyDown}
+            onSelectClick={(isOpen) =>
+              setOpenSelectCells((prev) => {
+                if (isOpen) {
+                  return { ...prev, [`${rowIndex}-${colIndex}`]: isOpen };
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { [`${rowIndex}-${colIndex}`]: _, ...rest } = prev;
+                return rest;
+              })
+            }
+            isOpen={openSelectCells[`${rowIndex}-${colIndex}`] ?? false}
+          />
+        );
       default: // text
         return (
           <InputCell
