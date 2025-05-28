@@ -85,6 +85,7 @@ export interface SpreadsheetState {
 
   resetTable: VoidFunction;
 
+  removeActiveCell: VoidFunction;
   setActiveCell: (row: number, col: number) => void;
   updateCellContent: (content: string) => void;
   toggleFormat: (format: "isBold" | "isItalic" | "isStrikethrough") => void;
@@ -384,6 +385,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       return get().redoStack.length > 0;
     },
 
+    removeActiveCell: () => set({ activeCell: null }),
     setActiveCell: (row, col) => set({ activeCell: { row, col } }),
 
     updateCellContent: (content) =>

@@ -25,7 +25,8 @@ type ColumnHeadersProps = {
 const ColumnHeaders: FC<ColumnHeadersProps> = ({ onContextMenu }) => {
   const { appMode } = useSpreadsheetStore();
   const isPreviewMode = appMode === "preview";
-  const { columnWidths, data, activeCell, startResize } = useSpreadsheetStore();
+  const { columnWidths, data, activeCell, startResize, setSelectedCells } =
+    useSpreadsheetStore();
   const columnsLength = data[0].length;
 
   return Array.from({ length: columnsLength }).map((_, idx) => (
@@ -33,11 +34,19 @@ const ColumnHeaders: FC<ColumnHeadersProps> = ({ onContextMenu }) => {
       id={`column-header-${idx}`}
       key={idx}
       className={clsx(
-        "sticky top-0 z-20 border-t border-r border-b border-light-gray-80 select-none",
+        "sticky top-0 z-20 cursor-pointer border-t border-r border-b border-light-gray-80 select-none",
         activeCell?.col === idx ? "bg-light-gray-60" : "bg-light-gray-20",
       )}
       style={{ width: columnWidths[idx] }}
       onContextMenu={(e) => onContextMenu(e, idx)}
+      onClick={() => {
+        setSelectedCells(
+          Array.from({ length: data.length }, (_, rowIndex) => ({
+            row: rowIndex,
+            col: idx,
+          })),
+        );
+      }}
     >
       <div className="flex items-center justify-center px-2 py-1">
         <span>{getColumnLabel(idx)}</span>
@@ -58,14 +67,15 @@ type RowHeaderProps = {
 };
 
 const RowHeader: FC<RowHeaderProps> = ({ rowIndex, onContextMenu }) => {
-  const { rowHeights, activeCell, startRowResize } = useSpreadsheetStore();
+  const { data, rowHeights, activeCell, startRowResize, setSelectedCells } =
+    useSpreadsheetStore();
   const { appMode } = useSpreadsheetStore();
   const isPreviewMode = appMode === "preview";
 
   return (
     <td
       className={clsx(
-        "sticky left-0 z-10 border-x border-b border-light-gray-80 text-center",
+        "sticky left-0 z-10 cursor-pointer border-x border-b border-light-gray-80 text-center select-none",
         activeCell?.row === rowIndex ? "bg-light-gray-60" : "bg-light-gray-20",
       )}
       style={{
@@ -73,6 +83,14 @@ const RowHeader: FC<RowHeaderProps> = ({ rowIndex, onContextMenu }) => {
         width: ROW_HEADER_WIDTH,
       }}
       onContextMenu={(e) => onContextMenu(e, rowIndex)}
+      onClick={() => {
+        setSelectedCells(
+          Array.from({ length: data[0].length }, (_, colIndex) => ({
+            row: rowIndex,
+            col: colIndex,
+          })),
+        );
+      }}
     >
       <div className="flex h-full items-center justify-center">
         {rowIndex + 1}
