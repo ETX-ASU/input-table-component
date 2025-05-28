@@ -88,7 +88,6 @@ const PreviewLinkCell: FC<LinkCellProps> = ({ cell, coordinates }) => {
       target="_blank"
       rel="noopener noreferrer"
       className={clsx(
-        !canInteractWithCell(coordinates) && "cursor-none",
         buildCommonClasses(cell, canInteractWithCell(coordinates)),
         "flex items-center gap-1 overflow-hidden text-blue-600 underline",
       )}
@@ -250,7 +249,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
               onKeyDown={(e) => handleKeyDown(e, row, col)}
               ref={ref}
               className={clsx(
-                "absolute cursor-none",
+                "absolute caret-transparent",
                 buildCommonClasses(cell, canInteractWithCell(coordinates)),
               )}
               value=""
@@ -277,7 +276,6 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
             onChange={handleInputChange}
             onKeyDown={(e) => handleKeyDown(e, row, col)}
             className={clsx(
-              !canInteractWithCell(coordinates) && "cursor-none",
               buildCommonClasses(cell, canInteractWithCell(coordinates)),
               "placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
               "focus:outline-none",
