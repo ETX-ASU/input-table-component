@@ -60,6 +60,7 @@ export interface SpreadsheetState {
   isModified: boolean;
   showHints: boolean;
   setShowHints: (showHints: boolean) => void;
+  unsetCorrectnessFromCell: (coordinates: CellCoordinates) => void;
   showCorrectAnswers: boolean;
   permissionLevel: PermissionLevel;
   enableTable: boolean;
@@ -196,6 +197,15 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
           return { selectedCells: [...state.selectedCells, coordinates] };
         }
         return state;
+      }),
+
+    unsetCorrectnessFromCell: (coordinates) =>
+      set((state) => {
+        return {
+          data: updateCells(state.data, [coordinates], {
+            isCorrect: undefined,
+          }),
+        };
       }),
 
     setShowHints: (showHints) =>

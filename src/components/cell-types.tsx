@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { isBoolean } from "lodash";
 import { CircleAlert, CircleCheck, ExternalLink, Lock } from "lucide-react";
 import { FC, forwardRef, ReactNode, useState } from "react";
 import useSpreadsheetStore, {
@@ -202,17 +203,20 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
       updateCellContent,
       showHints,
       showCorrectAnswers,
+      unsetCorrectnessFromCell,
       setActiveCell,
     } = useSpreadsheetStore();
 
     const cell = getData(coordinates);
     const { row, col } = coordinates;
     const showCorrectness =
-      cell.contentType !== "not-editable" && (showHints || showCorrectAnswers);
+      cell.contentType !== "not-editable" &&
+      ((showHints && isBoolean(cell.isCorrect)) || showCorrectAnswers);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setActiveCell(row, col);
       if (canInteractWithCell(coordinates)) {
+        unsetCorrectnessFromCell(coordinates);
         updateCellContent(e.target.value);
       }
     };
@@ -312,6 +316,7 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
     getData,
     setActiveCell,
     updateCellContent,
+    unsetCorrectnessFromCell,
     showHints,
     showCorrectAnswers,
   } = useSpreadsheetStore();
@@ -320,11 +325,13 @@ const PreviewSelectCell: FC<SelectCellProps> = ({ coordinates }) => {
 
   const cell = getData(coordinates);
   const { row, col } = coordinates;
-  const showCorrectness = showCorrectAnswers || showHints;
+  const showCorrectness =
+    showCorrectAnswers || (showHints && isBoolean(cell.isCorrect));
 
   const handleValueChange = (value: string) => {
     if (!canInteractWithCell(coordinates)) return;
 
+    unsetCorrectnessFromCell(coordinates);
     setActiveCell(row, col);
     updateCellContent(value);
   };
