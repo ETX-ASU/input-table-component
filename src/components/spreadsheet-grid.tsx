@@ -43,6 +43,7 @@ export function SpreadsheetGrid() {
     getData,
     setSelectedCells,
     clearCellSelection,
+    setAllCellsSelected,
   } = useSpreadsheetStore();
 
   const spreadsheetRef = useRef<HTMLDivElement>(null);
@@ -469,7 +470,10 @@ export function SpreadsheetGrid() {
                 <>
                   <tr>
                     {/* Top-left corner cell */}
-                    <th className="sticky top-0 left-0 z-30 w-10 border border-light-gray-80 bg-light-gray-20" />
+                    <th
+                      className="sticky top-0 left-0 z-30 w-10 cursor-pointer border border-light-gray-80 bg-light-gray-20"
+                      onClick={() => setAllCellsSelected()}
+                    />
 
                     <ColumnHeaders onContextMenu={handleColumnContextMenu} />
                   </tr>

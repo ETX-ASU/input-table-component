@@ -99,6 +99,7 @@ export interface SpreadsheetState {
   setFontSize: (fontSize: number) => void;
   setContentType: (contentType: CellContentType) => void;
   setSelectOptions: (options: string[]) => void;
+  setAllCellsSelected: VoidFunction;
   setLink: (url: string | null) => void;
   addRow: VoidFunction;
   removeRow: VoidFunction;
@@ -187,6 +188,15 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
       set({ isSelectOptionsDialogOpen: isOpen }),
     selectedCells: [],
     setSelectedCells: (cells) => set({ selectedCells: cells }),
+    setAllCellsSelected: () =>
+      set((state) => {
+        const cells = state.data
+          .map((row, rowIdx) =>
+            row.map((_, colIdx) => ({ row: rowIdx, col: colIdx })),
+          )
+          .flat();
+        return { selectedCells: cells, activeCell: null };
+      }),
     clearCellSelection: () => set({ selectedCells: [] }),
     addCellToSelection: (coordinates) =>
       set((state) => {
