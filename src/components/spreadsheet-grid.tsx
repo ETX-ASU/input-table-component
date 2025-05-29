@@ -461,7 +461,7 @@ export function SpreadsheetGrid() {
       >
         <div className="relative">
           <table
-            className="table-fixed border-separate border-spacing-0"
+            className="table-fixed border-collapse border-spacing-0"
             style={{ width: totalWidth }}
           >
             <thead>
