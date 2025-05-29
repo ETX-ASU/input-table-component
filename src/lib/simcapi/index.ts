@@ -36,12 +36,6 @@ const dinamicallyRemoveFromSimModel = (toRemove: string[]) => {
   toRemove.forEach((name) => simcapi.CapiAdapter.unexpose(name, simModel));
 };
 
-simcapi.Transporter.triggerCheck({
-  complete: function () {
-    console.log("----complete----");
-  },
-});
-
 export {
   cellModelKey,
   dinamicallyAddToSimModel,

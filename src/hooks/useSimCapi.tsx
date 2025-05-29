@@ -316,6 +316,14 @@ export const useSimCapi = () => {
   const isFirstRender = useIsFirstRender();
 
   useEffect(() => {
+    window.simcapi.Transporter.triggerCheck({
+      complete: () => {
+        console.log("----complete----");
+      },
+    });
+  }, []);
+
+  useEffect(() => {
     let unsub: VoidFunction[] = [];
     if (!isLoading) {
       unsub = dynamicCellHandlers.setup();
