@@ -315,20 +315,11 @@ export const useSimCapi = () => {
   useOnce(handlers.PermissionLevel.capiChange());
   const isFirstRender = useIsFirstRender();
 
-  useEffect(() => {
-    window.simcapi.Transporter.triggerCheck({
-      complete: () => {
-        console.log("----complete----");
-      },
-    });
-
-    window.simcapi.Transporter.addCheckStartListener(function () {
-      console.log("----check start----");
-    });
-    window.simcapi.Transporter.addCheckCompleteListener(function () {
-      console.log("----check complete----");
-    });
-  }, []);
+  // useEffect(() => {
+  //   window.simcapi.Transporter.addCheckCompleteListener(function () {
+  //     console.log("----check complete----");
+  //   });
+  // }, []);
 
   useEffect(() => {
     let unsub: VoidFunction[] = [];
