@@ -309,6 +309,11 @@ const dynamicCellHandlers = {
   },
 };
 
+window.simcapi.Transporter.addCheckCompleteListener(function () {
+  const { showHints, setShowHints } = useSpreadsheetStore.getState();
+  setShowHints(showHints);
+});
+
 export const useSimCapi = () => {
   const prevData = useRef(cloneDeep(useSpreadsheetStore.getState().data));
   const { isLoading } = useSpreadsheetStore.getState();
