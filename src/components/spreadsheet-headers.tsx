@@ -25,8 +25,14 @@ type ColumnHeadersProps = {
 const ColumnHeaders: FC<ColumnHeadersProps> = ({ onContextMenu }) => {
   const { appMode } = useSpreadsheetStore();
   const isPreviewMode = appMode === "preview";
-  const { columnWidths, data, activeCell, startResize, setSelectedCells } =
-    useSpreadsheetStore();
+  const {
+    columnWidths,
+    data,
+    activeCell,
+    startResize,
+    setSelectedCells,
+    removeActiveCell,
+  } = useSpreadsheetStore();
   const columnsLength = data[0].length;
 
   return Array.from({ length: columnsLength }).map((_, idx) => (
@@ -40,6 +46,7 @@ const ColumnHeaders: FC<ColumnHeadersProps> = ({ onContextMenu }) => {
       style={{ width: columnWidths[idx] }}
       onContextMenu={(e) => onContextMenu(e, idx)}
       onClick={() => {
+        removeActiveCell();
         setSelectedCells(
           Array.from({ length: data.length }, (_, rowIndex) => ({
             row: rowIndex,
@@ -67,8 +74,14 @@ type RowHeaderProps = {
 };
 
 const RowHeader: FC<RowHeaderProps> = ({ rowIndex, onContextMenu }) => {
-  const { data, rowHeights, activeCell, startRowResize, setSelectedCells } =
-    useSpreadsheetStore();
+  const {
+    data,
+    rowHeights,
+    activeCell,
+    startRowResize,
+    setSelectedCells,
+    removeActiveCell,
+  } = useSpreadsheetStore();
   const { appMode } = useSpreadsheetStore();
   const isPreviewMode = appMode === "preview";
 
@@ -84,6 +97,7 @@ const RowHeader: FC<RowHeaderProps> = ({ rowIndex, onContextMenu }) => {
       }}
       onContextMenu={(e) => onContextMenu(e, rowIndex)}
       onClick={() => {
+        removeActiveCell();
         setSelectedCells(
           Array.from({ length: data[0].length }, (_, colIndex) => ({
             row: rowIndex,

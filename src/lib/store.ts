@@ -1,4 +1,4 @@
-import { cloneDeep, uniq } from "lodash";
+import { cloneDeep, compact, uniq } from "lodash";
 import { create } from "zustand";
 import {
   DEFAULT_COLUMN_COUNT,
@@ -136,10 +136,10 @@ const createInitialData = (rows: number, cols: number): CellData[][] => {
 
 const updateCells = (
   data: CellData[][],
-  cellsCoordinates: CellCoordinates[],
+  cellsCoordinates: (CellCoordinates | null)[],
   updates: Partial<CellData>,
 ) => {
-  cellsCoordinates.forEach(({ row, col }) => {
+  uniq(compact(cellsCoordinates)).forEach(({ row, col }) => {
     data[row][col] = { ...data[row][col], ...updates };
   });
   return data;
@@ -440,14 +440,15 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     toggleFormat: (format) =>
       set((state) => {
-        if (!state.activeCell || state.appMode === "preview") return state;
+        const { activeCell, getData, selectedCells } = state;
 
-        const currentCell =
-          state.data[state.activeCell.row][state.activeCell.col];
+        const currentCell = activeCell
+          ? getData(activeCell)
+          : getData(selectedCells[0]);
 
         const newData = updateCells(
           state.data,
-          uniq([...state.selectedCells, state.activeCell]),
+          [...state.selectedCells, state.activeCell],
           {
             [format]: !currentCell[format],
           },
@@ -461,11 +462,11 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     setAlignment: (alignment) =>
       set((state) => {
-        if (!state.activeCell || state.appMode === "preview") return state;
+        if (state.appMode === "preview") return state;
 
         const newData = updateCells(
           state.data,
-          uniq([...state.selectedCells, state.activeCell]),
+          [...state.selectedCells, state.activeCell],
           {
             textAlign: alignment,
           },
@@ -479,11 +480,11 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     setTextColor: (color) =>
       set((state) => {
-        if (!state.activeCell || state.appMode === "preview") return state;
+        if (state.appMode === "preview") return state;
 
         const newData = updateCells(
           state.data,
-          uniq([...state.selectedCells, state.activeCell]),
+          [...state.selectedCells, state.activeCell],
           {
             textColor: color,
           },
@@ -497,11 +498,11 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     setBorderWidth: (width) =>
       set((state) => {
-        if (!state.activeCell || state.appMode === "preview") return state;
+        if (state.appMode === "preview") return state;
 
         const newData = updateCells(
           state.data,
-          uniq([...state.selectedCells, state.activeCell]),
+          [...state.selectedCells, state.activeCell],
           {
             borderWidth: width,
           },
@@ -515,11 +516,11 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     setBorderColor: (color) =>
       set((state) => {
-        if (!state.activeCell || state.appMode === "preview") return state;
+        if (state.appMode === "preview") return state;
 
         const newData = updateCells(
           state.data,
-          uniq([...state.selectedCells, state.activeCell]),
+          [...state.selectedCells, state.activeCell],
           {
             borderColor: color,
           },
@@ -533,11 +534,11 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     setBackgroundColor: (color) =>
       set((state) => {
-        if (!state.activeCell || state.appMode === "preview") return state;
+        if (state.appMode === "preview") return state;
 
         const newData = updateCells(
           state.data,
-          uniq([...state.selectedCells, state.activeCell]),
+          [...state.selectedCells, state.activeCell],
           {
             backgroundColor: color,
           },
@@ -551,11 +552,11 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     setFontFamily: (fontFamily) =>
       set((state) => {
-        if (!state.activeCell || state.appMode === "preview") return state;
+        if (state.appMode === "preview") return state;
 
         const newData = updateCells(
           state.data,
-          uniq([...state.selectedCells, state.activeCell]),
+          [...state.selectedCells, state.activeCell],
           {
             fontFamily,
           },
@@ -569,11 +570,11 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
     setFontSize: (fontSize) =>
       set((state) => {
-        if (!state.activeCell || state.appMode === "preview") return state;
+        if (state.appMode === "preview") return state;
 
         const newData = updateCells(
           state.data,
-          uniq([...state.selectedCells, state.activeCell]),
+          [...state.selectedCells, state.activeCell],
           {
             fontSize,
           },

@@ -320,12 +320,6 @@ export const useSimCapi = () => {
   useOnce(handlers.PermissionLevel.capiChange());
   const isFirstRender = useIsFirstRender();
 
-  // useEffect(() => {
-  //   window.simcapi.Transporter.addCheckCompleteListener(function () {
-  //     console.log("----check complete----");
-  //   });
-  // }, []);
-
   useEffect(() => {
     let unsub: VoidFunction[] = [];
     if (!isLoading) {

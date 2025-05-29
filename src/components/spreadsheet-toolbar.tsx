@@ -69,8 +69,11 @@ const CellTypeSelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
     setSelectOptions,
     updateCorrectAnswer,
     getData,
+    selectedCells,
   } = useSpreadsheetStore();
-  const actionsDisabled = !activeCell || appMode === "preview";
+  const actionsDisabled =
+    (!activeCell && selectedCells.length === 0) || appMode === "preview";
+
   const cell = activeCell ? getData(activeCell) : buildDefaultCell();
 
   return (
@@ -90,9 +93,17 @@ const CellTypeSelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
 };
 
 const FontFamilySelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
-  const { activeCell, appMode, setFontFamily, getData } = useSpreadsheetStore();
-  const actionsDisabled = !activeCell || appMode === "preview";
-  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  const { activeCell, appMode, setFontFamily, getData, selectedCells } =
+    useSpreadsheetStore();
+
+  const actionsDisabled =
+    (!activeCell && selectedCells.length === 0) || appMode === "preview";
+
+  const cell = activeCell
+    ? getData(activeCell)
+    : selectedCells.length
+      ? getData(selectedCells[0])
+      : buildDefaultCell();
 
   return (
     <Tooltip text="Font Family Selector">
@@ -107,9 +118,15 @@ const FontFamilySelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
 };
 
 const FontSizeSelectorButton = ({ isHidden }: { isHidden?: boolean }) => {
-  const { activeCell, appMode, setFontSize, getData } = useSpreadsheetStore();
-  const actionsDisabled = !activeCell || appMode === "preview";
-  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  const { activeCell, appMode, setFontSize, getData, selectedCells } =
+    useSpreadsheetStore();
+  const actionsDisabled =
+    (!activeCell && selectedCells.length === 0) || appMode === "preview";
+  const cell = activeCell
+    ? getData(activeCell)
+    : selectedCells.length
+      ? getData(selectedCells[0])
+      : buildDefaultCell();
 
   return (
     <Tooltip text="Font Size Selector">
@@ -128,9 +145,16 @@ const TextFormatButton = ({
 }: {
   format: "isBold" | "isItalic" | "isStrikethrough";
 }) => {
-  const { activeCell, appMode, toggleFormat, getData } = useSpreadsheetStore();
-  const actionsDisabled = !activeCell || appMode === "preview";
-  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  const { activeCell, appMode, toggleFormat, getData, selectedCells } =
+    useSpreadsheetStore();
+  const actionsDisabled =
+    (!activeCell && selectedCells.length === 0) || appMode === "preview";
+
+  const cell = activeCell
+    ? getData(activeCell)
+    : selectedCells.length
+      ? getData(selectedCells[0])
+      : buildDefaultCell();
 
   const tooltipText =
     format === "isBold"
@@ -165,9 +189,17 @@ const TextFormatButton = ({
 };
 
 const TextColorPickerButton = () => {
-  const { activeCell, appMode, setTextColor, getData } = useSpreadsheetStore();
-  const actionsDisabled = !activeCell || appMode === "preview";
-  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  const { activeCell, appMode, setTextColor, getData, selectedCells } =
+    useSpreadsheetStore();
+  const actionsDisabled =
+    (!activeCell && selectedCells.length === 0) || appMode === "preview";
+
+  const cell = activeCell
+    ? getData(activeCell)
+    : selectedCells.length
+      ? getData(selectedCells[0])
+      : buildDefaultCell();
+
   return (
     <Tooltip text="Text Color Picker">
       <ColorPicker
@@ -190,9 +222,18 @@ const TextColorPickerButton = () => {
 };
 
 const AlignToggleButton = ({ align }: { align: TextAlign }) => {
-  const { activeCell, appMode, setAlignment, getData } = useSpreadsheetStore();
-  const actionsDisabled = !activeCell || appMode === "preview";
-  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  const { activeCell, appMode, setAlignment, getData, selectedCells } =
+    useSpreadsheetStore();
+
+  const actionsDisabled =
+    (!activeCell && selectedCells.length === 0) || appMode === "preview";
+
+  const cell = activeCell
+    ? getData(activeCell)
+    : selectedCells.length
+      ? getData(selectedCells[0])
+      : buildDefaultCell();
+
   return (
     <Tooltip text={`Align ${align}`}>
       <Toggle
@@ -210,10 +251,17 @@ const AlignToggleButton = ({ align }: { align: TextAlign }) => {
 };
 
 const CellBackgroundPickerButton = () => {
-  const { activeCell, appMode, setBackgroundColor, getData } =
+  const { activeCell, appMode, setBackgroundColor, getData, selectedCells } =
     useSpreadsheetStore();
-  const actionsDisabled = !activeCell || appMode === "preview";
-  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  const actionsDisabled =
+    (!activeCell && selectedCells.length === 0) || appMode === "preview";
+
+  const cell = activeCell
+    ? getData(activeCell)
+    : selectedCells.length
+      ? getData(selectedCells[0])
+      : buildDefaultCell();
+
   return (
     <Tooltip text="Background Color Picker">
       <ColorPicker
@@ -236,10 +284,17 @@ const CellBackgroundPickerButton = () => {
 };
 
 const CellBorderColorButton = () => {
-  const { activeCell, appMode, setBorderColor, getData } =
+  const { activeCell, appMode, setBorderColor, getData, selectedCells } =
     useSpreadsheetStore();
-  const actionsDisabled = !activeCell || appMode === "preview";
-  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  const actionsDisabled =
+    (!activeCell && selectedCells.length === 0) || appMode === "preview";
+
+  const cell = activeCell
+    ? getData(activeCell)
+    : selectedCells.length
+      ? getData(selectedCells[0])
+      : buildDefaultCell();
+
   return (
     <Tooltip text="Border Color">
       <ColorPicker
@@ -262,10 +317,17 @@ const CellBorderColorButton = () => {
 };
 
 const CellBorderWidthButton = () => {
-  const { activeCell, appMode, setBorderWidth, getData } =
+  const { activeCell, appMode, setBorderWidth, getData, selectedCells } =
     useSpreadsheetStore();
-  const actionsDisabled = !activeCell || appMode === "preview";
-  const cell = activeCell ? getData(activeCell) : buildDefaultCell();
+  const actionsDisabled =
+    (!activeCell && selectedCells.length === 0) || appMode === "preview";
+
+  const cell = activeCell
+    ? getData(activeCell)
+    : selectedCells.length
+      ? getData(selectedCells[0])
+      : buildDefaultCell();
+
   return (
     <Tooltip text="Border Width">
       <BorderWidthSelector
