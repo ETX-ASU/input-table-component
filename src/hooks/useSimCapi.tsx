@@ -321,6 +321,13 @@ export const useSimCapi = () => {
         console.log("----complete----");
       },
     });
+
+    window.simcapi.Transporter.addCheckStartListener(function () {
+      console.log("----check start----");
+    });
+    window.simcapi.Transporter.addCheckCompleteListener(function () {
+      console.log("----check complete----");
+    });
   }, []);
 
   useEffect(() => {
