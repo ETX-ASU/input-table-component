@@ -32,8 +32,12 @@ const ColumnHeaders: FC<ColumnHeadersProps> = ({ onContextMenu }) => {
     startResize,
     setSelectedCells,
     removeActiveCell,
+    selectedCells,
   } = useSpreadsheetStore();
   const columnsLength = data[0].length;
+
+  const shouldHighlight = (idx: number) =>
+    activeCell?.col === idx || selectedCells.some((cell) => cell.col === idx);
 
   return Array.from({ length: columnsLength }).map((_, idx) => (
     <th
@@ -41,7 +45,7 @@ const ColumnHeaders: FC<ColumnHeadersProps> = ({ onContextMenu }) => {
       key={idx}
       className={clsx(
         "sticky top-0 z-20 cursor-pointer border-t border-r border-b border-light-gray-80 select-none",
-        activeCell?.col === idx ? "bg-light-gray-60" : "bg-light-gray-20",
+        shouldHighlight(idx) ? "bg-light-gray-60" : "bg-light-gray-20",
       )}
       style={{ width: columnWidths[idx] }}
       onContextMenu={(e) => onContextMenu(e, idx)}
@@ -82,14 +86,17 @@ const RowHeader: FC<RowHeaderProps> = ({ rowIndex, onContextMenu }) => {
     setSelectedCells,
     removeActiveCell,
   } = useSpreadsheetStore();
-  const { appMode } = useSpreadsheetStore();
+  const { appMode, selectedCells } = useSpreadsheetStore();
   const isPreviewMode = appMode === "preview";
+  const shouldHighlight =
+    activeCell?.row === rowIndex ||
+    selectedCells.some((cell) => cell.row === rowIndex);
 
   return (
     <td
       className={clsx(
         "sticky left-0 z-10 cursor-pointer border-x border-b border-light-gray-80 text-center select-none",
-        activeCell?.row === rowIndex ? "bg-light-gray-60" : "bg-light-gray-20",
+        shouldHighlight ? "bg-light-gray-60" : "bg-light-gray-20",
       )}
       style={{
         height: rowHeights[rowIndex],
