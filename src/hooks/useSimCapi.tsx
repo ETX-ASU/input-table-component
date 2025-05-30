@@ -167,7 +167,6 @@ const handlers = {
   },
   [CapiFields.IsModified]: {
     stateChange: (isModified: boolean) => {
-      console.log("isModified", isModified);
       simModel.set(CapiFields.IsModified, isModified);
     },
   },
@@ -178,7 +177,6 @@ const handlers = {
         .filter((cell) => cell.contentType !== "not-editable")
         .every((cell) => cell.content.trim() !== "");
 
-      console.log("isComplete", isComplete);
       simModel.set(CapiFields.IsComplete, isComplete);
     },
   },
@@ -195,7 +193,6 @@ const handlers = {
             (contentType === "number" && +correctAnswer! === +content),
         );
 
-      console.log("isCorrect", isCorrect);
       simModel.set(CapiFields.IsCorrect, isCorrect);
     },
   },
@@ -209,7 +206,6 @@ const handlers = {
     capiChange: () => () => {
       const showHints = simModel.get(CapiFields.ShowHints);
       const { setShowHints } = useSpreadsheetStore.getState();
-      console.log("showHints", showHints);
       setShowHints(showHints);
     },
   },
