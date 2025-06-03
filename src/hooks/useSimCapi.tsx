@@ -292,6 +292,8 @@ const dynamicCellHandlers = {
       // .filter((cell) => simModel.has(cellModelKey(cell)))
       .map(cellModelKey);
 
+    console.log(toRemove);
+
     dinamicallyRemoveFromSimModel(toRemove);
   },
   stateChange: (modifiedCells: CellCoordinates[]) => {
