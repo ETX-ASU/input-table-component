@@ -102,10 +102,7 @@ export interface SpreadsheetState {
   setAllCellsSelected: VoidFunction;
   setLink: (url: string | null) => void;
   addRow: VoidFunction;
-  removeRow: VoidFunction;
   addColumn: VoidFunction;
-  removeColumn: VoidFunction;
-
   deleteRow: (rowIndex: number) => void;
   deleteColumn: (colIndex: number) => void;
 
@@ -671,28 +668,6 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         };
       }),
 
-    removeRow: () =>
-      set((state) => {
-        if (state.data.length <= 1 || state.appMode === "preview") return state;
-
-        const newData = [...state.data];
-        newData.pop();
-
-        const newRowHeights = [...state.rowHeights];
-        newRowHeights.pop();
-
-        // Reset active cell if it's in the removed row
-        let activeCell = state.activeCell;
-        if (activeCell && activeCell.row >= newData.length) {
-          activeCell = null;
-        }
-
-        // Push to history immediately
-        const result = { data: newData, rowHeights: newRowHeights, activeCell };
-        get().pushToHistory();
-        return result;
-      }),
-
     deleteRow: (rowIndex) =>
       set((state) => {
         // Don't delete if it's the last row
@@ -718,7 +693,12 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         }
 
         // Push to history immediately
-        const result = { data: newData, rowHeights: newRowHeights, activeCell };
+        const result = {
+          data: newData,
+          rowHeights: newRowHeights,
+          activeCell,
+          selectedCells: [],
+        };
         get().pushToHistory();
         return result;
       }),
@@ -733,36 +713,6 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
 
         // Push to history immediately
         const result = { data: newData, columnWidths: newColumnWidths };
-        get().pushToHistory();
-        return result;
-      }),
-
-    removeColumn: () =>
-      set((state) => {
-        if (state.data[0].length <= 1 || state.appMode === "preview")
-          return state;
-
-        const newData = state.data.map((row) => {
-          const newRow = [...row];
-          newRow.pop();
-          return newRow;
-        });
-
-        const newColumnWidths = [...state.columnWidths];
-        newColumnWidths.pop();
-
-        // Reset active cell if it's in the removed column
-        let activeCell = state.activeCell;
-        if (activeCell && activeCell.col >= newData[0].length) {
-          activeCell = null;
-        }
-
-        // Push to history immediately
-        const result = {
-          data: newData,
-          columnWidths: newColumnWidths,
-          activeCell,
-        };
         get().pushToHistory();
         return result;
       }),
@@ -800,6 +750,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
           data: newData,
           columnWidths: newColumnWidths,
           activeCell,
+          selectedCells: [],
         };
         get().pushToHistory();
         return result;
