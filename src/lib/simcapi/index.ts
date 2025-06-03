@@ -34,6 +34,8 @@ const dinamicallyAddToSimModel = (
 
 const dinamicallyRemoveFromSimModel = (toRemove: string[]) => {
   toRemove.forEach((name) => simcapi.CapiAdapter.unexpose(name, simModel));
+  console.log(simModel);
+  console.log(toRemove.map((x) => simModel.has(x)));
 };
 
 export {

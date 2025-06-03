@@ -256,12 +256,14 @@ const dynamicCellHandlers = {
     const { getData } = useSpreadsheetStore.getState();
 
     const toAdd = cellsToAdd
-      .filter((coordinates) => !simModel.has(cellModelKey(coordinates)))
+      // .filter((coordinates) => !simModel.has(cellModelKey(coordinates)))
       .map((coordinates) => ({
         name: cellModelKey(coordinates),
         defaultValue: getData(coordinates).content,
         coordinates,
       }));
+
+    console.log({ toAdd });
 
     dinamicallyAddToSimModel(toAdd);
 
@@ -287,7 +289,7 @@ const dynamicCellHandlers = {
     if (permissionLevel === "student") return;
 
     const toRemove = cellsToRemove
-      .filter((cell) => simModel.has(cellModelKey(cell)))
+      // .filter((cell) => simModel.has(cellModelKey(cell)))
       .map(cellModelKey);
 
     dinamicallyRemoveFromSimModel(toRemove);
