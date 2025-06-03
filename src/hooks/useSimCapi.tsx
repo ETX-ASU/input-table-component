@@ -263,8 +263,6 @@ const dynamicCellHandlers = {
         coordinates,
       }));
 
-    console.log({ toAdd });
-
     dinamicallyAddToSimModel(toAdd);
 
     return toAdd.map((cell) =>
@@ -291,8 +289,6 @@ const dynamicCellHandlers = {
     const toRemove = cellsToRemove
       // .filter((cell) => simModel.has(cellModelKey(cell)))
       .map(cellModelKey);
-
-    console.log(toRemove);
 
     dinamicallyRemoveFromSimModel(toRemove);
   },

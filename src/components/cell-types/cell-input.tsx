@@ -131,6 +131,8 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
                 buildCommonClasses(cell, canInteractWithCell(coordinates)),
               )}
               value=""
+              aria-label={`Cell content: ${cell.content}`}
+              aria-readonly="true"
             />
             <div
               dangerouslySetInnerHTML={{
@@ -141,6 +143,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
                 buildCommonClasses(cell, canInteractWithCell(coordinates)),
               )}
               style={buildCommonStyles(cell)}
+              aria-hidden="true"
             />
           </div>
         ) : (
@@ -158,6 +161,7 @@ const PreviewInputCell = forwardRef<HTMLInputElement, InputCellProps>(
               "placeholder:text-xs placeholder:text-gray-400 placeholder:italic",
               "focus:outline-none",
             )}
+            aria-label={`Cell content: ${value}`}
             style={buildCommonStyles(cell)}
           />
         )}
