@@ -665,6 +665,7 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         return {
           data: newData,
           rowHeights: newRowHeights,
+          selectedCells: [],
         };
       }),
 
@@ -712,7 +713,11 @@ const useSpreadsheetStore = create<SpreadsheetState>((set, get) => {
         const newColumnWidths = [...state.columnWidths, DEFAULT_COLUMN_WIDTH];
 
         // Push to history immediately
-        const result = { data: newData, columnWidths: newColumnWidths };
+        const result = {
+          data: newData,
+          columnWidths: newColumnWidths,
+          selectedCells: [],
+        };
         get().pushToHistory();
         return result;
       }),
